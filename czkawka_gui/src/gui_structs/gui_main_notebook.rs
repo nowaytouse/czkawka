@@ -52,6 +52,8 @@ pub struct GuiMainNotebook {
     pub combo_box_image_hash_size: ComboBoxText,
 
     pub check_button_image_ignore_same_size: CheckButton,
+    pub check_button_image_size_ratio: CheckButton,
+    pub entry_image_size_ratio: Entry,
     pub check_button_video_ignore_same_size: CheckButton,
 
     pub label_image_similarity: Label,
@@ -129,6 +131,8 @@ impl GuiMainNotebook {
         let combo_box_big_files_mode: ComboBoxText = builder.object("combo_box_big_files_mode").expect("Cambalache");
 
         let check_button_image_ignore_same_size: CheckButton = builder.object("check_button_image_ignore_same_size").expect("Cambalache");
+        let check_button_image_size_ratio: CheckButton = builder.object("check_button_image_size_ratio").expect("Cambalache");
+        let entry_image_size_ratio: Entry = builder.object("entry_image_size_ratio").expect("Cambalache");
         let check_button_video_ignore_same_size: CheckButton = builder.object("check_button_video_ignore_same_size").expect("Cambalache");
 
         let label_similar_images_minimal_similarity: Label = builder.object("label_similar_images_minimal_similarity").expect("Cambalache");
@@ -199,6 +203,8 @@ impl GuiMainNotebook {
             combo_box_image_hash_algorithm,
             combo_box_image_hash_size,
             check_button_image_ignore_same_size,
+            check_button_image_size_ratio,
+            entry_image_size_ratio,
             check_button_video_ignore_same_size,
             label_image_similarity,
             label_image_similarity_max,
@@ -309,21 +315,21 @@ impl GuiMainNotebook {
         {
             let hash_size_index = self.combo_box_image_hash_size.active().expect("Some hash size must be active") as usize;
             let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index];
-            match hash_size {
-                8 => {
-                    self.label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[0][5], 8));
-                }
-                16 => {
-                    self.label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[1][5], 16));
-                }
-                32 => {
-                    self.label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[2][5], 32));
-                }
-                64 => {
-                    self.label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[3][5], 64));
-                }
+            let index = match hash_size {
+                8 => 0,
+                16 => 1,
+                32 => 2,
+                64 => 3,
+                256 => 4,
+                512 => 5,
+                1024 => 6,
+                2048 => 7,
+                4096 => 8,
+                8192 => 9,
                 _ => panic!(),
-            }
+            };
+            self.label_similar_images_minimal_similarity
+                .set_text(&get_string_from_similarity(SIMILAR_VALUES[index][5], hash_size as u16));
         }
 
         let vec_children: Vec<Widget> = self.notebook_main.get_all_direct_children();

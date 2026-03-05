@@ -4,6 +4,7 @@ use gtk4::{Align, CheckButton, Dialog, Orientation, ResponseType, TextView};
 use log::debug;
 use rayon::prelude::*;
 
+use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::gui_data::GuiData;
@@ -258,9 +259,14 @@ pub(crate) fn common_file_remove(sv: &SubView, check_button_settings_use_trash: 
         })
         .collect::<Vec<_>>();
 
+    let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
+
     let (mut removed, failed_to_remove): (Vec<usize>, Vec<String>) = to_remove
         .into_par_iter()
         .map(|(idx, path)| {
+            if pf.is_protected(&path) {
+                return Err(format!("File is protected: {path}"));
+            }
             if file_remove {
                 remove_single_file(&path, use_trash)?;
             } else {

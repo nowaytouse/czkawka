@@ -6,6 +6,7 @@ use gtk4::{ResponseType, TreePath};
 use log::debug;
 
 use crate::connect_things::file_chooser_helpers::extract_paths_from_file_chooser;
+use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::gui_data::GuiData;
@@ -132,6 +133,7 @@ fn move_files_common(
     let start_time = std::time::Instant::now();
 
     // Save to variable paths of files, and remove it when not removing all occurrences.
+    let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
     'next_result: for tree_path in selected_rows.iter().rev() {
         let iter = model.iter(tree_path).expect("Using invalid tree_path");
 
@@ -139,6 +141,13 @@ fn move_files_common(
         let path = model.get::<String>(&iter, column_path);
 
         let thing = get_full_name_from_path_name(&path, &file_name);
+
+        if pf.is_protected(&thing) {
+            messages += &format!("File is protected: {thing}");
+            messages += "\n";
+            continue 'next_result;
+        }
+
         let destination_file = destination_folder.join(&file_name);
         if Path::new(&thing).is_dir() {
             if let Err(e) = fs_extra::dir::move_dir(&thing, &destination_file, &CopyOptions::new()) {

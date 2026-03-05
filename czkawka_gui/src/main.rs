@@ -15,6 +15,7 @@ use connect_things::connect_button_select::connect_button_select;
 use connect_things::connect_button_stop::connect_button_stop;
 use connect_things::connect_change_language::{connect_change_language, load_system_language};
 use connect_things::connect_duplicate_buttons::connect_duplicate_combo_box;
+use connect_things::connect_file_protection::connect_file_protection;
 use connect_things::connect_header_buttons::connect_button_about;
 use connect_things::connect_krokiet_info_dialog::show_krokiet_info_dialog;
 use connect_things::connect_notebook_tabs::connect_notebook_tabs;
@@ -52,6 +53,7 @@ use crate::saving_loading::{DEFAULT_MAXIMAL_FILE_SIZE, DEFAULT_MINIMAL_CACHE_SIZ
 
 mod compute_results;
 mod connect_things;
+mod file_protection;
 mod gtk_traits;
 mod gui_structs;
 mod help_combo_box;
@@ -149,6 +151,7 @@ fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_op
     connect_button_hardlink_symlink(&gui_data);
     connect_button_move(&gui_data);
     connect_button_compare(&gui_data);
+    connect_file_protection(&gui_data);
 
     connect_duplicate_combo_box(&gui_data);
     connect_notebook_tabs(&gui_data);

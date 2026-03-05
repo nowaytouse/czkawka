@@ -30,6 +30,7 @@ use humansize::{BINARY, format_size};
 use czkawka_core::tools::similar_images::traits::format_size_exact;
 use rayon::prelude::*;
 
+use crate::connect_things::connect_file_protection::filter_protected_from_model;
 use crate::flg;
 use crate::gui_structs::common_tree_view::{SharedModelEnum, SubView, TreeViewListStoreTrait};
 use crate::gui_structs::gui_data::GuiData;
@@ -142,6 +143,9 @@ pub(crate) fn connect_compute_results(gui_data: &GuiData, result_receiver: Recei
                 };
 
                 if let Some(found_duplicates) = found_duplicates {
+                    // Filter protected files from scan results
+                    filter_protected_from_model(subview);
+
                     set_specific_buttons_as_active(&shared_buttons, msg_type, found_duplicates);
 
                     set_buttons(

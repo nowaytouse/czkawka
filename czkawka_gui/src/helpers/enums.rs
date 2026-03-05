@@ -32,6 +32,8 @@ pub enum BottomButtonsEnum {
     Move,
     Compare,
     Sort,
+    Protect,
+    Unprotect,
 }
 
 pub enum Message {

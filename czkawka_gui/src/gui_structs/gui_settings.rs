@@ -55,6 +55,7 @@ pub struct GuiSettings {
 
     pub button_settings_open_cache_folder: gtk4::Button,
     pub button_settings_open_settings_folder: gtk4::Button,
+    pub button_settings_clear_protected_files: gtk4::Button,
 }
 
 impl GuiSettings {
@@ -117,6 +118,7 @@ impl GuiSettings {
 
         let button_settings_open_cache_folder: gtk4::Button = builder.object("button_settings_open_cache_folder").expect("Cambalache");
         let button_settings_open_settings_folder: gtk4::Button = builder.object("button_settings_open_settings_folder").expect("Cambalache");
+        let button_settings_clear_protected_files: gtk4::Button = builder.object("button_settings_clear_protected_files").expect("Cambalache");
 
         Self {
             window_settings,
@@ -156,6 +158,7 @@ impl GuiSettings {
             button_settings_reset_configuration,
             button_settings_open_cache_folder,
             button_settings_open_settings_folder,
+            button_settings_clear_protected_files,
         }
     }
 

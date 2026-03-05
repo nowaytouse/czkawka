@@ -171,6 +171,13 @@
                             <property name="receives-default">1</property>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkButton" id="button_settings_clear_protected_files">
+                            <property name="focusable">1</property>
+                            <property name="label" translatable="yes">Clear Protected Files (0)</property>
+                            <property name="receives-default">1</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

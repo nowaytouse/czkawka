@@ -10,6 +10,7 @@ pub mod connect_button_sort;
 pub mod connect_button_stop;
 pub mod connect_change_language;
 pub mod connect_duplicate_buttons;
+pub mod connect_file_protection;
 pub mod connect_header_buttons;
 pub mod connect_krokiet_info_dialog;
 pub mod connect_notebook_tabs;

@@ -6,7 +6,7 @@ use crate::gui_structs::gui_data::CZK_ICON_SORT;
 use crate::helpers::enums::BottomButtonsEnum;
 use crate::helpers::image_operations::set_icon_of_button;
 use crate::{
-    CZK_ICON_COMPARE, CZK_ICON_HARDLINK, CZK_ICON_HIDE_DOWN, CZK_ICON_HIDE_UP, CZK_ICON_MOVE, CZK_ICON_SAVE, CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SYMLINK, CZK_ICON_TRASH,
+    CZK_ICON_COMPARE, CZK_ICON_HARDLINK, CZK_ICON_MOVE, CZK_ICON_SAVE, CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SYMLINK, CZK_ICON_TRASH,
     flg,
 };
 
@@ -21,14 +21,16 @@ pub struct GuiBottomButtons {
     pub buttons_move: gtk4::Button,
     pub buttons_compare: gtk4::Button,
     pub buttons_sort: gtk4::MenuButton,
+    pub buttons_protect: gtk4::Button,
+    pub buttons_unprotect: gtk4::Button,
     pub buttons_show_errors: gtk4::Button,
     pub buttons_show_upper_notebook: gtk4::Button,
 
     pub label_buttons_select: gtk4::Label,
     pub label_buttons_sort: gtk4::Label,
 
-    pub buttons_names: [BottomButtonsEnum; 9],
-    pub buttons_array: [Widget; 9],
+    pub buttons_names: [BottomButtonsEnum; 11],
+    pub buttons_array: [Widget; 11],
 
     pub gc_buttons_select: GestureClick,
     pub gc_buttons_sort: GestureClick,
@@ -45,6 +47,8 @@ impl GuiBottomButtons {
         let buttons_move: gtk4::Button = builder.object("buttons_move").expect("Cambalache");
         let buttons_compare: gtk4::Button = builder.object("buttons_compare").expect("Cambalache");
         let buttons_sort: gtk4::MenuButton = builder.object("buttons_sort").expect("Cambalache");
+        let buttons_protect: gtk4::Button = builder.object("buttons_protect").expect("Cambalache");
+        let buttons_unprotect: gtk4::Button = builder.object("buttons_unprotect").expect("Cambalache");
 
         let buttons_show_errors: gtk4::Button = builder.object("buttons_show_errors").expect("Cambalache");
         let buttons_show_upper_notebook: gtk4::Button = builder.object("buttons_show_upper_notebook").expect("Cambalache");
@@ -67,8 +71,6 @@ impl GuiBottomButtons {
         set_icon_of_button(&buttons_move, CZK_ICON_MOVE);
         set_icon_of_button(&buttons_compare, CZK_ICON_COMPARE);
         set_icon_of_button(&buttons_sort, CZK_ICON_SORT);
-        set_icon_of_button(&buttons_show_errors, CZK_ICON_HIDE_DOWN);
-        set_icon_of_button(&buttons_show_upper_notebook, CZK_ICON_HIDE_UP);
 
         let buttons_names = [
             BottomButtonsEnum::Search,
@@ -80,6 +82,8 @@ impl GuiBottomButtons {
             BottomButtonsEnum::Move,
             BottomButtonsEnum::Compare,
             BottomButtonsEnum::Sort,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
         ];
         let buttons_array = [
             buttons_search.clone().upcast::<Widget>(),
@@ -91,6 +95,8 @@ impl GuiBottomButtons {
             buttons_move.clone().upcast::<Widget>(),
             buttons_compare.clone().upcast::<Widget>(),
             buttons_sort.clone().upcast::<Widget>(),
+            buttons_protect.clone().upcast::<Widget>(),
+            buttons_unprotect.clone().upcast::<Widget>(),
         ];
 
         buttons_select.set_popover(Some(popover_select));
@@ -109,6 +115,8 @@ impl GuiBottomButtons {
             buttons_move,
             buttons_compare,
             buttons_sort,
+            buttons_protect,
+            buttons_unprotect,
             buttons_show_errors,
             buttons_show_upper_notebook,
             label_buttons_select,
@@ -129,6 +137,8 @@ impl GuiBottomButtons {
         self.buttons_hardlink.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_hardlink_button"));
         self.buttons_compare.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_compare_button"));
         self.label_buttons_sort.set_text(&flg!("bottom_sort_button"));
+        self.buttons_protect.get_widget_of_type::<Label>(true).set_text("Protect");
+        self.buttons_unprotect.get_widget_of_type::<Label>(true).set_text("Unprotect");
 
         self.buttons_search.set_tooltip_text(Some(&flg!("bottom_search_button_tooltip")));
         self.buttons_select.set_tooltip_text(Some(&flg!("bottom_select_button_tooltip")));
@@ -138,6 +148,8 @@ impl GuiBottomButtons {
         self.buttons_move.set_tooltip_text(Some(&flg!("bottom_move_button_tooltip")));
         self.buttons_sort.set_tooltip_text(Some(&flg!("bottom_sort_button_tooltip")));
         self.buttons_compare.set_tooltip_text(Some(&flg!("bottom_compare_button_tooltip")));
+        self.buttons_protect.set_tooltip_text(Some("Protect selected files from deletion/moving"));
+        self.buttons_unprotect.set_tooltip_text(Some("Remove protection from selected files"));
         if self.buttons_hardlink.is_sensitive() {
             self.buttons_hardlink.set_tooltip_text(Some(&flg!("bottom_hardlink_button_tooltip")));
         } else {

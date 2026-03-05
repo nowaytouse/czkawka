@@ -423,6 +423,7 @@ export component MainWindow inherits Window {
     }
 
     scan_ended(scan_text) => {
+        Callabler.filter_protected_files_after_scan();
         text_summary_text = scan_text;
         root.scanning = false;
         root.stop_requested = false;

@@ -68,6 +68,7 @@ mod connect_tab_changed;
 mod connect_translation;
 mod create_calculate_task_size;
 mod file_actions;
+mod file_protection;
 mod localizer_krokiet;
 mod model_operations;
 mod set_initial_gui_info;
@@ -135,6 +136,7 @@ fn main() {
     connect_scan_button(&app, progress_sender.clone(), stop_flag.clone(), Arc::clone(&shared_models), Arc::clone(&audio_player));
     connect_stop_button(&app, stop_flag.clone());
     connect_open_items(&app);
+    file_protection::connect::connect_file_protection(&app);
     connect_progress_gathering(&app, progress_receiver);
     connect_add_remove_directories(&app);
     connect_show_preview(&app, Arc::clone(&shared_models));

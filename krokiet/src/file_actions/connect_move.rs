@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::{MAIN_SEPARATOR, Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{fs, path, thread};
@@ -7,6 +7,7 @@ use crossbeam_channel::Sender;
 use czkawka_core::common::progress_data::ProgressData;
 use slint::{ComponentHandle, Weak};
 
+use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
 use crate::{Callabler, GuiState, MainWindow, Settings, flk};
@@ -53,7 +54,13 @@ impl ModelProcessor {
             let path_idx = self.active_tab.get_str_path_idx();
             let name_idx = self.active_tab.get_str_name_idx();
 
-            let mlt_fnc = move |data: &SimplerSingleMainListModel| move_single_item(data, path_idx, name_idx, &output_folder, preserve_structure, copy_mode);
+            let mlt_fnc = move |data: &SimplerSingleMainListModel| {
+                let full_path = format!("{}{MAIN_SEPARATOR}{}", data.val_str[path_idx], data.val_str[name_idx]);
+                if is_file_protected(&full_path) {
+                    return Err(format!("File is protected: {full_path}"));
+                }
+                move_single_item(data, path_idx, name_idx, &output_folder, preserve_structure, copy_mode)
+            };
 
             self.process_and_update_gui_state(
                 &weak_app,

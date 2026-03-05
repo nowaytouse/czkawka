@@ -557,6 +557,18 @@ export component SettingsList inherits VerticalLayout {
             }
 
             HeaderText {
+                text: "File Protection (" + GuiState.protected_files_count + " files)";
+            }
+
+            Button {
+                text: "Clear All Protected Files";
+                enabled: GuiState.protected_files_count > 0;
+                clicked => {
+                    Callabler.clear_all_protected_files();
+                }
+            }
+
+            HeaderText {
                 text <=> Translations.settings_cache_header_text;
             }
 

@@ -63,6 +63,12 @@ export global Callabler {
 
     callback open_link(string);
 
+    // File protection
+    callback protect_selected_items();
+    callback unprotect_selected_items();
+    callback clear_all_protected_files();
+    callback filter_protected_files_after_scan();
+
     callback theme_changed();
     theme_changed => {
         Palette.color-scheme = Settings.dark_theme ? ColorScheme.dark : ColorScheme.light;

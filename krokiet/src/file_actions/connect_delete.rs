@@ -7,6 +7,7 @@ use crossbeam_channel::Sender;
 use czkawka_core::common::progress_data::ProgressData;
 use slint::{ComponentHandle, Weak};
 
+use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
 use crate::{ActiveTab, Callabler, GuiState, MainWindow, Settings};
@@ -37,8 +38,12 @@ impl ModelProcessor {
             let name_idx = self.active_tab.get_str_name_idx();
 
             let dlt_fnc = move |data: &SimplerSingleMainListModel| {
+                let full_path = format!("{}{MAIN_SEPARATOR}{}", data.val_str[path_idx], data.val_str[name_idx]);
+                if is_file_protected(&full_path) {
+                    return Err(format!("File is protected: {full_path}"));
+                }
                 remove_single_item(
-                    &format!("{}{MAIN_SEPARATOR}{}", data.val_str[path_idx], data.val_str[name_idx]),
+                    &full_path,
                     is_empty_folder_tab,
                     remove_to_trash,
                 )

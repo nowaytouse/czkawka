@@ -105,6 +105,9 @@ export global GuiState {
 
     in-out property <bool> file_dialog_open: false;
 
+    // File protection
+    in-out property <int> protected_files_count: 0;
+
     in-out property <bool> cache_cleaning_is_cleaning: false;
     in-out property <bool> cache_cleaning_finished: false;
     in-out property <CacheCleaningProgress> cache_cleaning_progress: {

@@ -21,11 +21,17 @@ pub(crate) fn connect_similar_image_size_change(gui_data: &GuiData) {
             16 => 1,
             32 => 2,
             64 => 3,
+            256 => 4,
+            512 => 5,
+            1024 => 6,
+            2048 => 7,
+            4096 => 8,
+            8192 => 9,
             _ => panic!(),
         };
 
         scale_similarity_similar_images.set_range(0_f64, SIMILAR_VALUES[index][5] as f64);
         scale_similarity_similar_images.set_fill_level(SIMILAR_VALUES[index][5] as f64);
-        label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[index][5], hash_size as u8));
+        label_similar_images_minimal_similarity.set_text(&get_string_from_similarity(SIMILAR_VALUES[index][5], hash_size as u16));
     });
 }

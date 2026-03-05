@@ -579,7 +579,7 @@ fn similar_image_search(
     image_preview_similar_images.set_visible(false);
 
     let hash_size_index = combo_box_image_hash_size.active().expect("Failed to get active search") as usize;
-    let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u8;
+    let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u16;
 
     let image_filter_index = combo_box_image_resize_algorithm.active().expect("Failed to get active search") as usize;
     let image_filter = IMAGES_RESIZE_ALGORITHM_COMBO_BOX[image_filter_index].filter;
@@ -596,7 +596,7 @@ fn similar_image_search(
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
         .spawn(move || {
-            let params = SimilarImagesParameters::new(similarity, hash_size, hash_alg, image_filter, ignore_same_size);
+            let params = SimilarImagesParameters::new(similarity, hash_size, hash_alg, image_filter, ignore_same_size, false, 0.0);
             let mut tool = SimilarImages::new(params);
 
             set_common_settings(&mut tool, &loaded_commons);

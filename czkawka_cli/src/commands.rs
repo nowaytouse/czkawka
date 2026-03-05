@@ -299,10 +299,10 @@ pub struct SimilarImagesArgs {
         long,
         default_value = "16",
         value_parser = parse_image_hash_size,
-        help = "Hash size (8, 16, 32, 64)",
-        long_help = "Size of the perceptual hash. Larger values provide more detailed comparison but require higher max_difference values. 8 is fastest and least detailed, 64 is slowest but most detailed. Recommended: 8 or 16 for typical use."
+        help = "Hash size (8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192)",
+        long_help = "Size of the perceptual hash. Larger values provide more detailed comparison but require higher max_difference values. 8 is fastest and least detailed, 8192 is slowest but most detailed. Recommended: 8 or 16 for typical use."
     )]
-    pub hash_size: u8,
+    pub hash_size: u16,
 }
 
 #[derive(Debug, clap::Args)]
@@ -1194,13 +1194,19 @@ fn parse_similar_hash_algorithm(src: &str) -> Result<HashAlg, String> {
     Ok(algorithm)
 }
 
-fn parse_image_hash_size(src: &str) -> Result<u8, String> {
+fn parse_image_hash_size(src: &str) -> Result<u16, String> {
     let hash_size = match src.to_lowercase().as_str() {
         "8" => 8,
         "16" => 16,
         "32" => 32,
         "64" => 64,
-        _ => return Err("Couldn't parse the image hash size (allowed: 8, 16, 32, 64)".to_string()),
+        "256" => 256,
+        "512" => 512,
+        "1024" => 1024,
+        "2048" => 2048,
+        "4096" => 4096,
+        "8192" => 8192,
+        _ => return Err("Couldn't parse the image hash size (allowed: 8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192)".to_string()),
     };
     Ok(hash_size)
 }

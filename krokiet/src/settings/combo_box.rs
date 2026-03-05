@@ -23,7 +23,7 @@ where
 
 pub struct StringComboBoxItems {
     pub languages: Vec<StringComboBoxItem<String>>,
-    pub hash_size: Vec<StringComboBoxItem<u8>>,
+    pub hash_size: Vec<StringComboBoxItem<u16>>,
     pub resize_algorithm: Vec<StringComboBoxItem<FilterType>>,
     pub image_hash_alg: Vec<StringComboBoxItem<HashAlg>>,
     pub duplicates_hash_type: Vec<StringComboBoxItem<HashType>>,
@@ -64,7 +64,7 @@ impl StringComboBoxItems {
             })
             .collect();
 
-        let hash_size = Self::convert_to_combobox_items(&[("8", "8", 8), ("16", "16", 16), ("32", "32", 32), ("64", "64", 64)]);
+        let hash_size = Self::convert_to_combobox_items(&[("8", "8", 8u16), ("16", "16", 16), ("32", "32", 32), ("64", "64", 64), ("256", "256", 256), ("512", "512", 512), ("1024", "1024", 1024), ("2048", "2048", 2048), ("4096", "4096", 4096), ("8192", "8192", 8192)]);
         let resize_algorithm = Self::convert_to_combobox_items(&[
             ("lanczos3", "Lanczos3", FilterType::Lanczos3),
             ("gaussian", "Gaussian", FilterType::Gaussian),

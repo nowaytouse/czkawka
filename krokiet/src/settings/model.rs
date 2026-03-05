@@ -236,7 +236,7 @@ impl Default for SettingsCustom {
 
 pub struct ComboBoxItems {
     pub language: StringComboBoxItem<String>,
-    pub hash_size: StringComboBoxItem<u8>,
+    pub hash_size: StringComboBoxItem<u16>,
     pub resize_algorithm: StringComboBoxItem<FilterType>,
     pub image_hash_alg: StringComboBoxItem<HashAlg>,
     pub duplicates_hash_type: StringComboBoxItem<HashType>,

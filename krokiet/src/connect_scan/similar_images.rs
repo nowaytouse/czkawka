@@ -8,7 +8,7 @@ use czkawka_core::common::{format_time, split_path};
 use czkawka_core::tools::similar_images;
 use czkawka_core::tools::similar_images::core::get_string_from_similarity;
 use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters};
-use humansize::{BINARY, format_size};
+use czkawka_core::tools::similar_images::traits::format_size_exact;
 use rayon::prelude::*;
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
 
@@ -22,7 +22,7 @@ pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
         .spawn(move || {
             let hash_alg = sd.combo_box_items.image_hash_alg.value;
             let resize_algorithm = sd.combo_box_items.resize_algorithm.value;
-            let hash_size = sd
+            let hash_size: u16 = sd
                 .custom_settings
                 .similar_images_sub_hash_size
                 .parse()
@@ -34,6 +34,8 @@ pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
                 hash_alg,
                 resize_algorithm,
                 sd.custom_settings.similar_images_sub_ignore_same_size,
+                false,
+                0.0,
             );
             let mut tool = SimilarImages::new(params);
 
@@ -79,7 +81,7 @@ fn write_similar_images_results(
     info: similar_images::Info,
     sd: ScanData,
     stopped_search: bool,
-    hash_size: u8,
+    hash_size: u16,
     items_found: usize,
     groups: usize,
 ) {
@@ -111,11 +113,11 @@ fn write_similar_images_results(
     app.global::<GuiState>().set_info_text(messages_data.messages.into());
     reset_selection_at_end(app, ActiveTab::SimilarImages);
 }
-fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u8) -> (ModelRc<SharedString>, ModelRc<i32>) {
+fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelRc<SharedString>, ModelRc<i32>) {
     let (directory, file) = split_path(fe.get_path());
     let data_model_str_arr: [SharedString; MAX_STR_DATA_SIMILAR_IMAGES] = [
         get_string_from_similarity(fe.difference, hash_size).into(),
-        format_size(fe.size, BINARY).into(),
+        format_size_exact(fe.size).into(),
         format!("{}x{}", fe.width, fe.height).into(),
         file.into(),
         directory.into(),

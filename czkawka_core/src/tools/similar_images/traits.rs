@@ -5,7 +5,6 @@ use std::time::Instant;
 
 use crossbeam_channel::Sender;
 use fun_time::fun_time;
-use humansize::{BINARY, format_size};
 
 use crate::common::consts::{HEIC_EXTENSIONS, IMAGE_RS_SIMILAR_IMAGES_EXTENSIONS, RAW_IMAGE_EXTENSIONS};
 use crate::common::model::WorkContinueStatus;
@@ -14,6 +13,60 @@ use crate::common::tool_data::{CommonData, CommonToolData, DeleteMethod};
 use crate::common::traits::{AllTraits, DebugPrint, DeletingItems, PrintResults, Search};
 use crate::tools::similar_images::core::get_string_from_similarity;
 use crate::tools::similar_images::{Info, SimilarImages, SimilarImagesParameters};
+
+pub fn format_size_exact(size: u64) -> String {
+    if size < 1_000 {
+        format!("{} B", size)
+    } else if size < 1_000_000 {
+        let whole = size / 1_000;
+        let frac = size % 1_000;
+        if frac == 0 {
+            format!("{} KB", whole)
+        } else {
+            format!("{}.{:03} KB", whole, frac)
+        }
+    } else if size < 1_000_000_000 {
+        let whole = size / 1_000_000;
+        let frac = size % 1_000_000;
+        if frac == 0 {
+            format!("{} MB", whole)
+        } else {
+            let frac_kb = frac / 1_000;
+            let frac_b = frac % 1_000;
+            if frac_b == 0 {
+                format!("{}.{:03} MB", whole, frac_kb)
+            } else {
+                format!("{}.{:03}{:03} MB", whole, frac_kb, frac_b)
+            }
+        }
+    } else if size < 1_000_000_000_000 {
+        let whole = size / 1_000_000_000;
+        let frac = size % 1_000_000_000;
+        if frac == 0 {
+            format!("{} GB", whole)
+        } else {
+            let frac_mb = frac / 1_000_000;
+            let frac_kb = (frac % 1_000_000) / 1_000;
+            let frac_b = frac % 1_000;
+            if frac_kb == 0 && frac_b == 0 {
+                format!("{}.{:03} GB", whole, frac_mb)
+            } else if frac_b == 0 {
+                format!("{}.{:03}{:03} GB", whole, frac_mb, frac_kb)
+            } else {
+                format!("{}.{:03}{:03}{:03} GB", whole, frac_mb, frac_kb, frac_b)
+            }
+        }
+    } else {
+        let whole = size / 1_000_000_000_000;
+        let frac = size % 1_000_000_000_000;
+        if frac == 0 {
+            format!("{} TB", whole)
+        } else {
+            let frac_gb = frac / 1_000_000_000;
+            format!("{}.{:03} TB", whole, frac_gb)
+        }
+    }
+}
 
 impl AllTraits for SimilarImages {}
 
@@ -86,7 +139,7 @@ impl PrintResults for SimilarImages {
                         file_entry.path.to_string_lossy(),
                         file_entry.width,
                         file_entry.height,
-                        format_size(file_entry.size, BINARY),
+                        format_size_exact(file_entry.size),
                         get_string_from_similarity(file_entry.difference, self.get_params().hash_size)
                     )?;
                 }
@@ -104,7 +157,7 @@ impl PrintResults for SimilarImages {
                     file_entry.path.to_string_lossy(),
                     file_entry.width,
                     file_entry.height,
-                    format_size(file_entry.size, BINARY),
+                    format_size_exact(file_entry.size),
                     get_string_from_similarity(file_entry.difference, self.get_params().hash_size)
                 )?;
                 for file_entry in vec_file_entry {
@@ -114,7 +167,7 @@ impl PrintResults for SimilarImages {
                         file_entry.path.to_string_lossy(),
                         file_entry.width,
                         file_entry.height,
-                        format_size(file_entry.size, BINARY),
+                        format_size_exact(file_entry.size),
                         get_string_from_similarity(file_entry.difference, self.get_params().hash_size)
                     )?;
                 }

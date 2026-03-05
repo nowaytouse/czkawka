@@ -142,4 +142,4 @@ pub const IMAGES_HASH_TYPE_COMBO_BOX: &[ImageHashTypeStruct] = &[
     },
 ];
 
-pub const IMAGES_HASH_SIZE_COMBO_BOX: [i32; 4] = [8, 16, 32, 64];
+pub const IMAGES_HASH_SIZE_COMBO_BOX: [i32; 10] = [8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192];

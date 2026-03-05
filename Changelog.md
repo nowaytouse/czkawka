@@ -1,3 +1,19 @@
+## Fork Modifications (nowaytouse/czkawka)
+
+### Similar Images - Enhanced Features
+- **Hash size expanded**: Supported hash sizes now include 256, 512, 1024, 2048, 4096, and 8192 in addition to the original 8, 16, 32, 64. Internal type changed from `u8` to `u16` to accommodate larger values.
+- **File size ratio filter**: Added `size_ratio_enabled` and `size_ratio` parameters to `SimilarImagesParameters`. When enabled, groups where the ratio of max/min file size exceeds the configured threshold are excluded from results.
+- **Ignore same size improved**: Changed behavior from removing individual duplicate-sized files within a group to discarding the entire group when all files have identical sizes.
+- **Precise file size display**: Similar images results now show exact file sizes (e.g., `1.234567 MB`) instead of binary-formatted sizes (e.g., `1.18 MiB`). Uses a custom `format_size_exact()` function with KB/MB/GB/TB units.
+
+### Changes Applied To
+- Core library (`czkawka_core`)
+- CLI (`czkawka_cli`)
+- GTK GUI (`czkawka_gui`)
+- Krokiet/Slint GUI (`krokiet`)
+
+---
+
 ## Version 11.0.1 - 20.02.2026r
 ### Core
 - Fixed issue with excluded folders not working on Windows - [#1808](https://github.com/qarmin/czkawka/pull/1808)

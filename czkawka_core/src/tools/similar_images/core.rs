@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -464,15 +464,25 @@ impl SimilarImages {
     fn exclude_items_with_same_size(&mut self) {
         if self.get_params().exclude_images_with_same_size {
             for vec_file_entry in mem::take(&mut self.similar_vectors) {
-                let mut bt_sizes: BTreeSet<u64> = Default::default();
-                let mut vec_values = Vec::new();
-                for file_entry in vec_file_entry {
-                    if bt_sizes.insert(file_entry.size) {
-                        vec_values.push(file_entry);
-                    }
+                let first_size = vec_file_entry[0].size;
+                let all_same_size = vec_file_entry.iter().all(|e| e.size == first_size);
+                if !all_same_size {
+                    self.similar_vectors.push(vec_file_entry);
                 }
-                if vec_values.len() > 1 {
-                    self.similar_vectors.push(vec_values);
+            }
+        }
+        if self.get_params().size_ratio_enabled {
+            let ratio = self.get_params().size_ratio;
+            for vec_file_entry in mem::take(&mut self.similar_vectors) {
+                let min_size = vec_file_entry.iter().map(|e| e.size).min().unwrap_or(0);
+                let max_size = vec_file_entry.iter().map(|e| e.size).max().unwrap_or(0);
+                if min_size == 0 || max_size == 0 {
+                    self.similar_vectors.push(vec_file_entry);
+                    continue;
+                }
+                let actual_ratio = max_size as f64 / min_size as f64;
+                if actual_ratio <= ratio {
+                    self.similar_vectors.push(vec_file_entry);
                 }
             }
         }
@@ -537,12 +547,18 @@ fn is_in_reference_folder(reference_directories: &[PathBuf], path: &Path) -> boo
 }
 
 #[expect(clippy::indexing_slicing)] // Because hash size is validated before
-pub fn get_string_from_similarity(similarity: u32, hash_size: u8) -> String {
+pub fn get_string_from_similarity(similarity: u32, hash_size: u16) -> String {
     let index_preset = match hash_size {
         8 => 0,
         16 => 1,
         32 => 2,
         64 => 3,
+        256 => 4,
+        512 => 5,
+        1024 => 6,
+        2048 => 7,
+        4096 => 8,
+        8192 => 9,
         _ => panic!("Invalid hash size {hash_size} (caller is responsible for validating this)"),
     };
 
@@ -566,12 +582,18 @@ pub fn get_string_from_similarity(similarity: u32, hash_size: u8) -> String {
 }
 
 #[expect(clippy::indexing_slicing)] // Because hash size is validated before
-pub fn return_similarity_from_similarity_preset(similarity_preset: SimilarityPreset, hash_size: u8) -> u32 {
+pub fn return_similarity_from_similarity_preset(similarity_preset: SimilarityPreset, hash_size: u16) -> u32 {
     let index_preset = match hash_size {
         8 => 0,
         16 => 1,
         32 => 2,
         64 => 3,
+        256 => 4,
+        512 => 5,
+        1024 => 6,
+        2048 => 7,
+        4096 => 8,
+        8192 => 9,
         _ => panic!("Invalid hash size {hash_size} (caller is responsible for validating this)"),
     };
     match similarity_preset {
@@ -673,7 +695,7 @@ fn debug_check_for_duplicated_things(
     assert!(!found_broken_thing);
 }
 
-pub fn get_similar_images_cache_file(hash_size: u8, hash_alg: HashAlg, image_filter: FilterType) -> String {
+pub fn get_similar_images_cache_file(hash_size: u16, hash_alg: HashAlg, image_filter: FilterType) -> String {
     format!(
         "cache_similar_images_{hash_size}_{}_{}_{CACHE_IMAGE_VERSION}.bin",
         convert_algorithm_to_string(hash_alg),
@@ -701,6 +723,8 @@ mod tests {
             max_difference: 0,
             image_filter: FilterType::Lanczos3,
             exclude_images_with_same_size: false,
+            size_ratio_enabled: false,
+            size_ratio: 0.0,
         }
     }
 
@@ -1146,7 +1170,7 @@ mod connect_results_tests {
 
     #[test]
     fn test_connect_results_real_case() {
-        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false);
+        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, 0.0);
         let _finder = SimilarImages::new(params);
 
         let hash1: ImHash = vec![59, 41, 53, 27, 19, 143, 228, 228];

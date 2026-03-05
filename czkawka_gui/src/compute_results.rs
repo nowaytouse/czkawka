@@ -27,6 +27,7 @@ use fun_time::fun_time;
 use gtk4::prelude::*;
 use gtk4::{Entry, ListStore, TextView};
 use humansize::{BINARY, format_size};
+use czkawka_core::tools::similar_images::traits::format_size_exact;
 use rayon::prelude::*;
 
 use crate::flg;
@@ -79,7 +80,7 @@ fn format_size_and_date(size: u64, modified_date: u64, is_header: bool, is_refer
     if is_header && !is_reference_folder {
         (String::new(), String::new())
     } else {
-        (format_size(size, BINARY), get_dt_timestamp_string(modified_date))
+        (format_size_exact(size), get_dt_timestamp_string(modified_date))
     }
 }
 
@@ -121,7 +122,7 @@ pub(crate) fn connect_compute_results(gui_data: &GuiData, result_receiver: Recei
                 taskbar_state.borrow().hide();
 
                 let hash_size_index = combo_box_image_hash_size.active().expect("Failed to get active item") as usize;
-                let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u8;
+                let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u16;
 
                 let msg_type = msg.get_message_type();
                 let subview = common_tree_views.get_subview(msg_type);
@@ -506,7 +507,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
 }
 
 #[fun_time(message = "compute_similar_images", level = "debug")]
-fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_errors: &TextView, subview: &SubView, hash_size: u8) -> Option<bool> {
+fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_errors: &TextView, subview: &SubView, hash_size: u16) -> Option<bool> {
     if handle_stopped_search(&sf, entry_info) {
         return None;
     }
@@ -982,7 +983,7 @@ fn similar_images_add_to_list_store(
     modified_date: u64,
     dimensions: &str,
     similarity: u32,
-    hash_size: u8,
+    hash_size: u16,
     is_header: bool,
     is_reference_folder: bool,
 ) {

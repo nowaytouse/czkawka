@@ -21,11 +21,17 @@ use crate::common::traits::ResultEntry;
 type ImHash = Vec<u8>;
 
 // 40 is a little useless in 8 similarity - but this value is kept to simplify harder Krokiet max value calculations
-pub const SIMILAR_VALUES: [[u32; 6]; 4] = [
-    [1, 2, 5, 7, 14, 40],    // 8
-    [2, 5, 15, 30, 40, 40],  // 16
-    [4, 10, 20, 40, 40, 40], // 32
-    [6, 20, 40, 40, 40, 40], // 64
+pub const SIMILAR_VALUES: [[u32; 6]; 10] = [
+    [1, 2, 5, 7, 14, 40],       // 8
+    [2, 5, 15, 30, 40, 40],     // 16
+    [4, 10, 20, 40, 40, 40],    // 32
+    [6, 20, 40, 40, 40, 40],    // 64
+    [10, 40, 80, 120, 160, 200],    // 256
+    [20, 80, 160, 240, 320, 400],   // 512
+    [40, 160, 320, 480, 640, 800],  // 1024
+    [80, 320, 640, 960, 1280, 1600], // 2048
+    [160, 640, 1280, 1920, 2560, 3200], // 4096
+    [320, 1280, 2560, 3840, 5120, 6400], // 8192
 ];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -92,21 +98,33 @@ impl bk_tree::Metric<ImHash> for Hamming {
 #[derive(Clone)]
 pub struct SimilarImagesParameters {
     pub max_difference: u32,
-    pub hash_size: u8,
+    pub hash_size: u16,
     pub hash_alg: HashAlg,
     pub image_filter: FilterType,
     pub exclude_images_with_same_size: bool,
+    pub size_ratio_enabled: bool,
+    pub size_ratio: f64,
 }
 
 impl SimilarImagesParameters {
-    pub fn new(max_difference: u32, hash_size: u8, hash_alg: HashAlg, image_filter: FilterType, exclude_images_with_same_size: bool) -> Self {
-        assert!([8, 16, 32, 64].contains(&hash_size));
+    pub fn new(
+        max_difference: u32,
+        hash_size: u16,
+        hash_alg: HashAlg,
+        image_filter: FilterType,
+        exclude_images_with_same_size: bool,
+        size_ratio_enabled: bool,
+        size_ratio: f64,
+    ) -> Self {
+        assert!([8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192].contains(&hash_size));
         Self {
             max_difference,
             hash_size,
             hash_alg,
             image_filter,
             exclude_images_with_same_size,
+            size_ratio_enabled,
+            size_ratio,
         }
     }
 }

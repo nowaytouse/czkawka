@@ -24,7 +24,7 @@ pub(crate) fn decode_normal_image(path: &str) -> Result<DynamicImage, String> {
     let file = File::open(path).map_err(|e| e.to_string())?;
     let mut reader = ImageReader::new(std::io::BufReader::new(file)).with_guessed_format().map_err(|e| e.to_string())?;
     let mut limits = image::Limits::default();
-    limits.max_alloc = Some(14 * 1024 * 1024 * 1024); // 14 GB
+    limits.max_alloc = Some(50 * 1024 * 1024 * 1024); // 50 GB
     reader.limits(limits);
     let img = reader.decode().map_err(|e| e.to_string())?;
 

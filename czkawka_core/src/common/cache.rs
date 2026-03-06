@@ -31,7 +31,7 @@ pub(crate) const CACHE_VIDEO_VERSION: u8 = 110;
 pub(crate) const CACHE_BROKEN_FILES_VERSION: u8 = 110;
 pub(crate) const CACHE_VIDEO_OPTIMIZE_VERSION: u8 = 110;
 
-pub(crate) const MEMORY_LIMIT: u64 = 14 * 1024 * 1024 * 1024; // 14 GB
+pub(crate) const MEMORY_LIMIT: u64 = 50 * 1024 * 1024 * 1024; // 50 GB
 
 const CLEANING_TIMESTAMPS_FILE: &str = "cleaning_timestamps.json";
 

@@ -89,6 +89,8 @@ impl GuiData {
         //// Windows
         let window_main: gtk4::Window = builder.object("window_main").expect("Cambalache");
         window_main.set_title(Some(&flg!("window_main_title")));
+        window_main.set_default_size(1100, 800);
+        window_main.set_size_request(800, 600);
         window_main.set_visible(true);
 
         let pixbuf = Pixbuf::from_read(BufReader::new(ICON_ABOUT))

@@ -55,24 +55,38 @@ where
         let hashmap_to_save = hashmap.values().filter(|t| t.get_size() >= minimum_file_size).collect::<Vec<_>>();
 
         {
-            let writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
+            let mut writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
             let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-            if let Err(e) = options.serialize_into(writer, &hashmap_to_save) {
+            if let Err(e) = options.serialize_into(&mut writer, &hashmap_to_save) {
                 text_messages
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to save cache to file \"{}\" - {e}", cache_file.to_string_lossy());
                 return text_messages;
             }
+            if let Err(e) = writer.flush() {
+                text_messages
+                    .warnings
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
+                debug!("Failed to flush cache to file \"{}\" - {e}", cache_file.to_string_lossy());
+                return text_messages;
+            }
             debug!("Saved cache to binary file \"{}\" with size {}", cache_file.to_string_lossy(), get_cache_size(&cache_file));
         }
         if save_also_as_json && let Some(file_handler_json) = file_handler_json {
-            let writer = BufWriter::new(file_handler_json);
-            if let Err(e) = serde_json::to_writer(writer, &hashmap_to_save) {
+            let mut writer = BufWriter::new(file_handler_json);
+            if let Err(e) = serde_json::to_writer(&mut writer, &hashmap_to_save) {
                 text_messages
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to save cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
+                return text_messages;
+            }
+            if let Err(e) = writer.flush() {
+                text_messages
+                    .warnings
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
+                debug!("Failed to flush cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
                 return text_messages;
             }
             debug!(

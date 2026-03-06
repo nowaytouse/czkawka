@@ -137,8 +137,8 @@ impl GuiBottomButtons {
         self.buttons_hardlink.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_hardlink_button"));
         self.buttons_compare.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_compare_button"));
         self.label_buttons_sort.set_text(&flg!("bottom_sort_button"));
-        self.buttons_protect.get_widget_of_type::<Label>(true).set_text("Protect");
-        self.buttons_unprotect.get_widget_of_type::<Label>(true).set_text("Unprotect");
+        self.buttons_protect.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_protect_button"));
+        self.buttons_unprotect.get_widget_of_type::<Label>(true).set_text(&flg!("bottom_unprotect_button"));
 
         self.buttons_search.set_tooltip_text(Some(&flg!("bottom_search_button_tooltip")));
         self.buttons_select.set_tooltip_text(Some(&flg!("bottom_select_button_tooltip")));
@@ -148,8 +148,8 @@ impl GuiBottomButtons {
         self.buttons_move.set_tooltip_text(Some(&flg!("bottom_move_button_tooltip")));
         self.buttons_sort.set_tooltip_text(Some(&flg!("bottom_sort_button_tooltip")));
         self.buttons_compare.set_tooltip_text(Some(&flg!("bottom_compare_button_tooltip")));
-        self.buttons_protect.set_tooltip_text(Some("Protect selected files from deletion/moving"));
-        self.buttons_unprotect.set_tooltip_text(Some("Remove protection from selected files"));
+        self.buttons_protect.set_tooltip_text(Some(&flg!("bottom_protect_button_tooltip")));
+        self.buttons_unprotect.set_tooltip_text(Some(&flg!("bottom_unprotect_button_tooltip")));
         if self.buttons_hardlink.is_sensitive() {
             self.buttons_hardlink.set_tooltip_text(Some(&flg!("bottom_hardlink_button_tooltip")));
         } else {

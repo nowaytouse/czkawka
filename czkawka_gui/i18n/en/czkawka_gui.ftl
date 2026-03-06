@@ -606,3 +606,17 @@ preview_image_opening_failure = Failed to open image {$name}, reason {$reason}
 compare_groups_number = Group { $current_group }/{ $all_groups } ({ $images_in_group } images)
 compare_move_left_button = L
 compare_move_right_button = R
+
+# File protection
+bottom_protect_button = Protect
+bottom_unprotect_button = Unprotect
+bottom_protect_button_tooltip = Protect selected files from deletion/moving
+bottom_unprotect_button_tooltip = Remove protection from selected files
+settings_clear_protected_files_button = Clear Protected Files ({$count})
+
+# Size ratio filter
+check_button_image_size_ratio = Size Ratio Filter
+entry_image_size_ratio_tooltip = Max file size ratio within a group (1.0 = exact same size, 1.05 = within 5% difference, 1.5 = within 50%)
+
+# Highest quality selection
+popover_select_all_except_highest_quality = Select all except highest quality

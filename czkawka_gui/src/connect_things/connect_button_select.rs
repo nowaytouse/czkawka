@@ -29,6 +29,7 @@ fn show_required_popovers(popovers_select: &GuiSelectPopovers, sv: &SubView) {
     let buttons_popover_unselect_custom = popovers_select.buttons_popover_unselect_custom.clone();
     let buttons_popover_select_all_images_except_biggest = popovers_select.buttons_popover_select_all_images_except_biggest.clone();
     let buttons_popover_select_all_images_except_smallest = popovers_select.buttons_popover_select_all_images_except_smallest.clone();
+    let buttons_popover_select_all_except_highest_quality = popovers_select.buttons_popover_select_all_except_highest_quality.clone();
 
     let separator_select_shortest_path = popovers_select.separator_select_shortest_path.clone();
     let separator_select_custom = popovers_select.separator_select_custom.clone();
@@ -49,10 +50,12 @@ fn show_required_popovers(popovers_select: &GuiSelectPopovers, sv: &SubView) {
     if arr.contains(&PopoverTypes::Size) {
         buttons_popover_select_all_images_except_biggest.set_visible(true);
         buttons_popover_select_all_images_except_smallest.set_visible(true);
+        buttons_popover_select_all_except_highest_quality.set_visible(true);
         separator_select_image_size.set_visible(true);
     } else {
         buttons_popover_select_all_images_except_biggest.set_visible(false);
         buttons_popover_select_all_images_except_smallest.set_visible(false);
+        buttons_popover_select_all_except_highest_quality.set_visible(false);
         separator_select_image_size.set_visible(false);
     }
 

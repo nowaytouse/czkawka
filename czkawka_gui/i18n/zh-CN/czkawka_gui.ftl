@@ -530,3 +530,17 @@ preview_image_opening_failure = 打开镜像 { $name } 失败，原因 { $reason
 compare_groups_number = 组 { $current_group }/{ $all_groups } ({ $images_in_group } 图像)
 compare_move_left_button = L
 compare_move_right_button = R
+
+# 文件保护
+bottom_protect_button = 保护
+bottom_unprotect_button = 取消保护
+bottom_protect_button_tooltip = 保护选中的文件，使其不被删除或移动
+bottom_unprotect_button_tooltip = 取消选中文件的保护
+settings_clear_protected_files_button = 清除所有受保护文件 ({$count})
+
+# 文件大小比率过滤
+check_button_image_size_ratio = 文件大小比率过滤
+entry_image_size_ratio_tooltip = 组内文件最大大小比率（1.0 = 完全相同大小，1.05 = 5%以内差异，1.5 = 50%以内差异）
+
+# 最高质量选择
+popover_select_all_except_highest_quality = 选择除最高质量外的所有文件

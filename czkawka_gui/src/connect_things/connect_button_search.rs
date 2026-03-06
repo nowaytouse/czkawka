@@ -592,7 +592,7 @@ fn similar_image_search(
     let ignore_same_size = check_button_image_ignore_same_size.is_active();
 
     let size_ratio_enabled = check_button_image_size_ratio.is_active();
-    let size_ratio: f64 = entry_image_size_ratio.text().parse().unwrap_or(2.0);
+    let size_ratio: f64 = entry_image_size_ratio.text().parse().unwrap_or(1.05);
 
     let similarity = scale_similarity_similar_images.value() as u32;
 

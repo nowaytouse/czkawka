@@ -565,6 +565,89 @@ fn popover_custom_select_unselect(
     }
 }
 
+/// Select all except the highest quality file in each group.
+/// "Highest quality" = largest resolution (pixels), then largest file size as tiebreaker.
+/// When all metrics are equal, the first file (by path+name lexicographic order) is kept (stable).
+fn popover_all_except_highest_quality(
+    popover: &gtk4::Popover,
+    sv: &SubView,
+) {
+    let model = sv.get_model();
+    let column_header = sv.nb_object.column_header.expect("Highest quality can't be used without headers");
+    let column_size_as_bytes = sv.nb_object.column_size_as_bytes.expect("Highest quality needs size as bytes column");
+
+    if let Some(mut iter) = model.iter_first() {
+        let mut end: bool = false;
+        loop {
+            let mut tree_iter_array: Vec<TreeIter> = Vec::new();
+            let mut best_index: usize = 0;
+            let mut best_pixels: u64 = 0;
+            let mut best_size: u64 = 0;
+            let mut best_name: String = String::new();
+            let mut current_index: usize = 0;
+
+            loop {
+                if model.get::<bool>(&iter, column_header) {
+                    if !model.iter_next(&mut iter) {
+                        end = true;
+                    }
+                    break;
+                }
+                tree_iter_array.push(iter);
+
+                let size_as_bytes = model.get::<u64>(&iter, column_size_as_bytes);
+                let number_of_pixels = if let Some(column_dimensions) = sv.nb_object.column_dimensions {
+                    let dimensions_string = model.get::<String>(&iter, column_dimensions);
+                    let dimensions = change_dimension_to_krotka(&dimensions_string);
+                    dimensions.0 * dimensions.1
+                } else {
+                    0
+                };
+                let name = model.get::<String>(&iter, sv.nb_object.column_name);
+                let path = model.get::<String>(&iter, sv.nb_object.column_path);
+                let full_name = get_full_name_from_path_name(&path, &name);
+
+                // Compare: higher pixels wins, then higher size, then lower path (stable)
+                let is_better = if number_of_pixels != best_pixels {
+                    number_of_pixels > best_pixels
+                } else if size_as_bytes != best_size {
+                    size_as_bytes > best_size
+                } else {
+                    full_name < best_name
+                };
+
+                if current_index == 0 || is_better {
+                    best_pixels = number_of_pixels;
+                    best_size = size_as_bytes;
+                    best_name = full_name;
+                    best_index = current_index;
+                }
+
+                current_index += 1;
+
+                if !model.iter_next(&mut iter) {
+                    end = true;
+                    break;
+                }
+            }
+
+            for (index, tree_iter) in tree_iter_array.iter().enumerate() {
+                if index != best_index {
+                    model.set_value(tree_iter, sv.nb_object.column_selection as u32, &true.to_value());
+                } else {
+                    model.set_value(tree_iter, sv.nb_object.column_selection as u32, &false.to_value());
+                }
+            }
+
+            if end {
+                break;
+            }
+        }
+    }
+
+    popover.popdown();
+}
+
 fn popover_all_except_biggest_smallest(
     popover: &gtk4::Popover,
     sv: &SubView,
@@ -814,5 +897,15 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         let sv = common_tree_views.get_current_subview();
 
         popover_all_except_biggest_smallest(&popover_select, sv, false);
+    });
+
+    let popover_select = gui_data.popovers_select.popover_select.clone();
+    let buttons_popover_select_all_except_highest_quality = gui_data.popovers_select.buttons_popover_select_all_except_highest_quality.clone();
+
+    let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
+    buttons_popover_select_all_except_highest_quality.connect_clicked(move |_| {
+        let sv = common_tree_views.get_current_subview();
+
+        popover_all_except_highest_quality(&popover_select, sv);
     });
 }

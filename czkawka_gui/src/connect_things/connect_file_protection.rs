@@ -4,6 +4,7 @@ use gtk4::prelude::*;
 use log::info;
 
 use crate::file_protection::PROTECTED_FILES;
+use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::get_full_name_from_path_name;
@@ -133,7 +134,7 @@ fn update_clear_button_label_inner(gui_data: &GuiData, count: usize) {
     gui_data
         .settings
         .button_settings_clear_protected_files
-        .set_label(&format!("Clear Protected Files ({})", count));
+        .set_label(&flg!("settings_clear_protected_files_button", count = count));
 }
 
 /// Filter protected files from model after scan results are populated.

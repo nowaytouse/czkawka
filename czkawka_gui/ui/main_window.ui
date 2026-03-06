@@ -604,8 +604,8 @@
                                         <property name="focusable">1</property>
                                         <property name="max-width-chars">6</property>
                                         <property name="width-chars">6</property>
-                                        <property name="text">2.0</property>
-                                        <property name="tooltip-text">Maximum file size ratio between two images in a group (e.g. 2.0 means the larger file can be at most 2x the smaller)</property>
+                                        <property name="text">1.05</property>
+                                        <property name="tooltip-text">Max file size ratio within a group (1.0 = exact same size, 1.05 = within 5% difference, 1.5 = within 50%)</property>
                                       </object>
                                     </child>
                                   </object>

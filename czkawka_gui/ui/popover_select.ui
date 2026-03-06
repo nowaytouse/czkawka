@@ -59,6 +59,13 @@
           <object class="GtkSeparator" id="separator_select_image_size"/>
         </child>
         <child>
+          <object class="GtkButton" id="buttons_popover_select_all_except_highest_quality">
+            <property name="focusable">1</property>
+            <property name="label" translatable="yes">Select all except highest quality</property>
+            <property name="receives-default">1</property>
+          </object>
+        </child>
+        <child>
           <object class="GtkButton" id="buttons_popover_select_all_except_oldest">
             <property name="focusable">1</property>
             <property name="label" translatable="yes">Select all except oldest</property>

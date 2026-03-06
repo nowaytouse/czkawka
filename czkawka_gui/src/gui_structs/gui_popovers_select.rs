@@ -18,6 +18,7 @@ pub struct GuiSelectPopovers {
     pub buttons_popover_unselect_custom: gtk4::Button,
     pub buttons_popover_select_all_images_except_biggest: gtk4::Button,
     pub buttons_popover_select_all_images_except_smallest: gtk4::Button,
+    pub buttons_popover_select_all_except_highest_quality: gtk4::Button,
 
     pub separator_select_image_size: gtk4::Separator,
     pub separator_select_reverse: gtk4::Separator,
@@ -53,6 +54,7 @@ impl GuiSelectPopovers {
         let buttons_popover_unselect_custom: gtk4::Button = builder.object("buttons_popover_unselect_custom").expect("Cambalache");
         let buttons_popover_select_all_images_except_biggest: gtk4::Button = builder.object("buttons_popover_select_all_images_except_biggest").expect("Cambalache");
         let buttons_popover_select_all_images_except_smallest: gtk4::Button = builder.object("buttons_popover_select_all_images_except_smallest").expect("Cambalache");
+        let buttons_popover_select_all_except_highest_quality: gtk4::Button = builder.object("buttons_popover_select_all_except_highest_quality").expect("Cambalache");
 
         let separator_select_image_size: gtk4::Separator = builder.object("separator_select_image_size").expect("Cambalache");
         let separator_select_reverse: gtk4::Separator = builder.object("separator_select_reverse").expect("Cambalache");
@@ -85,6 +87,7 @@ impl GuiSelectPopovers {
             buttons_popover_unselect_custom,
             buttons_popover_select_all_images_except_biggest,
             buttons_popover_select_all_images_except_smallest,
+            buttons_popover_select_all_except_highest_quality,
             separator_select_image_size,
             separator_select_reverse,
             separator_select_date,
@@ -114,5 +117,7 @@ impl GuiSelectPopovers {
             .set_label(&flg!("popover_select_all_images_except_biggest"));
         self.buttons_popover_select_all_images_except_smallest
             .set_label(&flg!("popover_select_all_images_except_smallest"));
+        self.buttons_popover_select_all_except_highest_quality
+            .set_label(&flg!("popover_select_all_except_highest_quality"));
     }
 }

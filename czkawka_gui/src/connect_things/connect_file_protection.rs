@@ -24,27 +24,41 @@ fn connect_protect(gui_data: &GuiData) {
 
     buttons_protect.connect_clicked(move |_| {
         let sv = gui_data.main_notebook.common_tree_views.get_current_subview();
-        let model = sv.get_model();
 
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let mut protected_count = 0;
 
-        // Protect selected items but keep them in the list so user can later select and unprotect
-        iter_list(&model, |m, i| {
-            if m.get::<bool>(i, sv.nb_object.column_selection) {
-                if let Some(column_header) = sv.nb_object.column_header {
-                    if m.get::<bool>(i, column_header) {
-                        return; // Skip header rows
-                    }
+        if let Some(store) = sv.get_duplicate_model() {
+            let n = store.n_items();
+            for pos in 0..n {
+                let Some(item) = store.item(pos) else { continue };
+                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+                if row.is_header() || !row.selection_button() {
+                    continue;
                 }
-                let name = m.get::<String>(i, sv.nb_object.column_name);
-                let path = m.get::<String>(i, sv.nb_object.column_path);
-                let full_path = get_full_name_from_path_name(&path, &name);
+                let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.insert(PathBuf::from(&full_path)) {
                     protected_count += 1;
                 }
             }
-        });
+        } else {
+            let model = sv.get_model();
+            iter_list(&model, |m, i| {
+                if m.get::<bool>(i, sv.nb_object.column_selection) {
+                    if let Some(column_header) = sv.nb_object.column_header {
+                        if m.get::<bool>(i, column_header) {
+                            return;
+                        }
+                    }
+                    let name = m.get::<String>(i, sv.nb_object.column_name);
+                    let path = m.get::<String>(i, sv.nb_object.column_path);
+                    let full_path = get_full_name_from_path_name(&path, &name);
+                    if pf.files.insert(PathBuf::from(&full_path)) {
+                        protected_count += 1;
+                    }
+                }
+            });
+        }
 
         if protected_count > 0 {
             pf.save();
@@ -63,26 +77,41 @@ fn connect_unprotect(gui_data: &GuiData) {
 
     buttons_unprotect.connect_clicked(move |_| {
         let sv = gui_data.main_notebook.common_tree_views.get_current_subview();
-        let model = sv.get_model();
 
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let mut unprotected_count = 0;
 
-        iter_list(&model, |m, i| {
-            if m.get::<bool>(i, sv.nb_object.column_selection) {
-                if let Some(column_header) = sv.nb_object.column_header {
-                    if m.get::<bool>(i, column_header) {
-                        return;
-                    }
+        if let Some(store) = sv.get_duplicate_model() {
+            let n = store.n_items();
+            for pos in 0..n {
+                let Some(item) = store.item(pos) else { continue };
+                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+                if row.is_header() || !row.selection_button() {
+                    continue;
                 }
-                let name = m.get::<String>(i, sv.nb_object.column_name);
-                let path = m.get::<String>(i, sv.nb_object.column_path);
-                let full_path = get_full_name_from_path_name(&path, &name);
+                let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.remove(&PathBuf::from(&full_path)) {
                     unprotected_count += 1;
                 }
             }
-        });
+        } else {
+            let model = sv.get_model();
+            iter_list(&model, |m, i| {
+                if m.get::<bool>(i, sv.nb_object.column_selection) {
+                    if let Some(column_header) = sv.nb_object.column_header {
+                        if m.get::<bool>(i, column_header) {
+                            return;
+                        }
+                    }
+                    let name = m.get::<String>(i, sv.nb_object.column_name);
+                    let path = m.get::<String>(i, sv.nb_object.column_path);
+                    let full_path = get_full_name_from_path_name(&path, &name);
+                    if pf.files.remove(&PathBuf::from(&full_path)) {
+                        unprotected_count += 1;
+                    }
+                }
+            });
+        }
 
         if unprotected_count > 0 {
             pf.save();
@@ -130,13 +159,34 @@ pub(crate) fn filter_protected_from_model(sv: &SubView) {
         return;
     }
 
+    if let Some(store) = sv.get_duplicate_model() {
+        let mut positions_to_remove = Vec::new();
+        let n = store.n_items();
+        for pos in 0..n {
+            let Some(item) = store.item(pos) else { continue };
+            let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+            if row.is_header() {
+                continue;
+            }
+            let full_path = get_full_name_from_path_name(&row.path(), &row.name());
+            if pf.files.contains(&PathBuf::from(&full_path)) {
+                positions_to_remove.push(pos);
+            }
+        }
+        positions_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+        for pos in positions_to_remove {
+            store.remove(pos);
+        }
+        return;
+    }
+
     let model = sv.get_model();
 
     let mut rows_to_remove = Vec::new();
     iter_list(&model, |m, i| {
         if let Some(column_header) = sv.nb_object.column_header {
             if m.get::<bool>(i, column_header) {
-                return; // Skip header rows
+                return;
             }
         }
         let name = m.get::<String>(i, sv.nb_object.column_name);

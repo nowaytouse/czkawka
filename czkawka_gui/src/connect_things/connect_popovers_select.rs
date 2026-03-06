@@ -222,6 +222,10 @@ fn popover_one_oldest_newest(
     // column_button_selection: u32,
     check_oldest: bool,
 ) {
+    if sv.get_duplicate_model().is_some() {
+        popover.popdown();
+        return;
+    }
     let model = sv.get_model();
     let column_header = sv.nb_object.column_header.expect("OO/ON can't be used without headers");
     let column_modification_as_secs = sv.nb_object.column_modification_as_secs.expect("OO/ON needs modification as secs column");
@@ -459,6 +463,10 @@ fn popover_custom_select_unselect(
                         Regex::new("").expect("Empty regex should compile properly.")
                     };
 
+                    if sv.get_duplicate_model().is_some() {
+                        confirmation_dialog_select_unselect.close();
+                        return;
+                    }
                     let model = sv.get_model();
 
                     let Some(mut iter) = model.iter_first() else {
@@ -572,6 +580,10 @@ fn popover_all_except_highest_quality(
     popover: &gtk4::Popover,
     sv: &SubView,
 ) {
+    if sv.get_duplicate_model().is_some() {
+        popover.popdown();
+        return;
+    }
     let model = sv.get_model();
     let column_header = sv.nb_object.column_header.expect("Highest quality can't be used without headers");
     let column_size_as_bytes = sv.nb_object.column_size_as_bytes.expect("Highest quality needs size as bytes column");
@@ -658,6 +670,10 @@ fn popover_all_except_biggest_smallest(
     // column_button_selection: u32,
     except_biggest: bool,
 ) {
+    if sv.get_duplicate_model().is_some() {
+        popover.popdown();
+        return;
+    }
     let model = sv.get_model();
     let column_header = sv.nb_object.column_header.expect("AEB/AES can't be used without headers");
     let column_size_as_bytes = sv.nb_object.column_size_as_bytes.expect("AEB/AES needs size as bytes column");

@@ -50,6 +50,9 @@ pub(crate) fn connect_button_compare(gui_data: &GuiData) {
 
     button_compare.connect_clicked(move |_| {
         let subview = common_tree_views.get_current_subview();
+        if subview.get_duplicate_model().is_some() {
+            return;
+        }
         let model = subview.tree_view.model().expect("Missing tree_view model");
 
         let group_number = count_number_of_groups(subview);

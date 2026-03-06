@@ -7,6 +7,7 @@ use log::debug;
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::{add_text_to_text_view, get_full_name_from_path_name, reset_text_view};
 use crate::helpers::list_store_operations::{check_how_much_elements_is_selected, clean_invalid_headers};
@@ -34,7 +35,9 @@ pub(crate) fn connect_button_move(gui_data: &GuiData) {
             if let Ok(file) = result {
                 if let Some(folder) = file.path() {
                     let sv = common_tree_views.get_current_subview();
-                    if sv.nb_object.column_header.is_some() {
+                    if sv.get_duplicate_model().is_some() {
+                        move_with_duplicate(sv, &folder, &entry_info, &text_view_errors);
+                    } else if sv.nb_object.column_header.is_some() {
                         move_with_tree(sv, &folder, &entry_info, &text_view_errors);
                     } else {
                         move_with_list(sv, &folder, &entry_info, &text_view_errors);
@@ -79,6 +82,52 @@ fn move_with_tree(sv: &SubView, destination_folder: &Path, entry_info: &gtk4::En
     );
 
     clean_invalid_headers(&model, column_header, sv.nb_object.column_path);
+}
+
+fn move_with_duplicate(sv: &SubView, destination_folder: &Path, entry_info: &gtk4::Entry, text_view_errors: &gtk4::TextView) {
+    let Some(store) = sv.get_duplicate_model() else { return };
+    let n = store.n_items();
+    let mut to_move: Vec<(u32, String)> = Vec::new();
+    for pos in 0..n {
+        let Some(item) = store.item(pos) else { continue };
+        let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
+        if row.is_header() || !row.selection_button() {
+            continue;
+        }
+        let full = get_full_name_from_path_name(&row.path(), &row.name());
+        to_move.push((pos, full));
+    }
+    if to_move.is_empty() {
+        return;
+    }
+    let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
+    let mut messages = String::new();
+    let mut moved_files = 0u32;
+    let mut positions_to_remove: Vec<u32> = Vec::new();
+    for (pos, thing) in &to_move {
+        if pf.is_protected(thing) {
+            messages += &format!("File is protected: {thing}\n");
+            continue;
+        }
+        let file_name = Path::new(thing).file_name().and_then(|p| p.to_str()).unwrap_or("");
+        let destination_file = destination_folder.join(file_name);
+        let ok = if Path::new(thing).is_dir() {
+            fs_extra::dir::move_dir(thing, &destination_file, &CopyOptions::new()).is_ok()
+        } else {
+            fs_extra::file::move_file(thing, &destination_file, &fs_extra::file::CopyOptions::new()).is_ok()
+        };
+        if ok {
+            moved_files += 1;
+            positions_to_remove.push(*pos);
+        }
+    }
+    drop(pf);
+    positions_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+    for pos in positions_to_remove {
+        store.remove(pos);
+    }
+    entry_info.set_text(flg!("move_stats", num_files = moved_files, all_files = to_move.len()).as_str());
+    text_view_errors.buffer().set_text(messages.as_str());
 }
 
 fn move_with_list(sv: &SubView, destination_folder: &Path, entry_info: &gtk4::Entry, text_view_errors: &gtk4::TextView) {

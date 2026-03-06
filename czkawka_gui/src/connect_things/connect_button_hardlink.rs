@@ -75,6 +75,10 @@ async fn sym_hard_link_things(gui_data: GuiData, hardlinking: TypeOfTool) {
 fn hardlink_symlink(sv: &SubView, hardlinking: TypeOfTool, text_view_errors: &TextView) {
     reset_text_view(text_view_errors);
 
+    if sv.get_duplicate_model().is_some() {
+        return;
+    }
+
     let column_header = sv.nb_object.column_header.expect("Linking can be only used for tree views with grouped results");
     let model = sv.get_model();
 

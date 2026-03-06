@@ -209,17 +209,16 @@ where
         let mut vec_loaded_entries: Vec<T>;
         if let Some(file_handler) = file_handler {
             cache_full_name = cache_file.clone();
-            let mut reader = BufReader::new(file_handler);
+            let reader = BufReader::new(file_handler);
 
             let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-            vec_loaded_entries = match options.deserialize_from(&mut reader) {
+            vec_loaded_entries = match options.deserialize_from(reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
                     log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file.to_string_lossy(), e);
-                    drop(reader); // Ensure file is closed before removal
                     if let Err(remove_err) = fs::remove_file(&cache_file) {
                         log::error!("Failed to delete corrupt cache file {}: {}", cache_file.to_string_lossy(), remove_err);
                     }
@@ -229,8 +228,7 @@ where
         } else {
             cache_full_name = cache_file_json.clone();
             let reader = BufReader::new(file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None"));
-            let mut reader = reader;
-            vec_loaded_entries = match serde_json::from_reader(&mut reader) {
+            vec_loaded_entries = match serde_json::from_reader(reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages.warnings.push(flc!(
@@ -239,7 +237,6 @@ where
                         reason = e.to_string()
                     ));
                     log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
-                    drop(reader);
                     if let Err(remove_err) = fs::remove_file(&cache_file_json) {
                         log::error!("Failed to delete corrupt cache file {}: {}", cache_file_json.to_string_lossy(), remove_err);
                     }

@@ -3,7 +3,7 @@
 mod cleaning;
 
 use std::collections::BTreeMap;
-use std::io::{BufReader, BufWriter};
+use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 use std::{fs, mem};
 

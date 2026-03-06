@@ -29,8 +29,7 @@ fn connect_protect(gui_data: &GuiData) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let mut protected_count = 0;
 
-        // Collect selected items and protect them
-        let mut rows_to_remove = Vec::new();
+        // Protect selected items but keep them in the list so user can later select and unprotect
         iter_list(&model, |m, i| {
             if m.get::<bool>(i, sv.nb_object.column_selection) {
                 if let Some(column_header) = sv.nb_object.column_header {
@@ -44,25 +43,12 @@ fn connect_protect(gui_data: &GuiData) {
                 if pf.files.insert(PathBuf::from(&full_path)) {
                     protected_count += 1;
                 }
-                rows_to_remove.push(m.path(i));
             }
         });
 
         if protected_count > 0 {
             pf.save();
             info!("Protected {} files, total: {}", protected_count, pf.count());
-        }
-
-        // Remove protected items from model (reverse order)
-        for tree_path in rows_to_remove.iter().rev() {
-            if let Some(iter) = model.iter(tree_path) {
-                model.remove(&iter);
-            }
-        }
-
-        // Clean up orphan headers
-        if let Some(column_header) = sv.nb_object.column_header {
-            clean_invalid_headers(&model, column_header, sv.nb_object.column_path);
         }
 
         let info_text = format!("Protected {} files (total protected: {})", protected_count, pf.count());

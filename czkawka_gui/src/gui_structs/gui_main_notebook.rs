@@ -297,6 +297,9 @@ impl GuiMainNotebook {
         self.check_button_image_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
         self.check_button_video_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
 
+        self.check_button_image_size_ratio.set_label(Some(&flg!("check_button_image_size_ratio")));
+        self.entry_image_size_ratio.set_tooltip_text(Some(&flg!("entry_image_size_ratio_tooltip")));
+
         self.check_button_broken_files_audio.set_label(Some(&flg!("main_check_box_broken_files_audio")));
         self.check_button_broken_files_archive.set_label(Some(&flg!("main_check_box_broken_files_archive")));
         self.check_button_broken_files_image.set_label(Some(&flg!("main_check_box_broken_files_image")));

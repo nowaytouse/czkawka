@@ -1,10 +1,12 @@
 use czkawka_core::common::{make_file_symlink, make_hard_link};
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{Align, CheckButton, Dialog, Orientation, ResponseType, TextView, TreeIter, TreePath};
 use rayon::prelude::*;
 
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::{add_text_to_text_view, get_full_name_from_path_name, reset_text_view};
 use crate::helpers::list_store_operations::clean_invalid_headers;
@@ -75,7 +77,8 @@ async fn sym_hard_link_things(gui_data: GuiData, hardlinking: TypeOfTool) {
 fn hardlink_symlink(sv: &SubView, hardlinking: TypeOfTool, text_view_errors: &TextView) {
     reset_text_view(text_view_errors);
 
-    if sv.get_duplicate_model().is_some() {
+    if let Some(store) = sv.get_duplicate_model() {
+        hardlink_symlink_duplicate(store, hardlinking, text_view_errors);
         return;
     }
 
@@ -199,6 +202,92 @@ fn hardlink_symlink(sv: &SubView, hardlinking: TypeOfTool, text_view_errors: &Te
     clean_invalid_headers(&model, column_header, sv.nb_object.column_path);
 }
 
+fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, text_view_errors: &TextView) {
+    // Collect groups: for each group the first selected item is the original,
+    // subsequent selected items are the targets (to be replaced with links).
+    struct GroupData {
+        original: String,
+        targets: Vec<(u32, String)>, // (position_in_store, full_path)
+    }
+
+    let n = store.n_items();
+    let mut groups: Vec<GroupData> = Vec::new();
+    let mut current_original: Option<String> = None;
+    let mut current_targets: Vec<(u32, String)> = Vec::new();
+    let mut in_group = false;
+
+    for i in 0..n {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+            if row.is_header() {
+                if let Some(orig) = current_original.take() {
+                    if !current_targets.is_empty() {
+                        groups.push(GroupData { original: orig, targets: std::mem::take(&mut current_targets) });
+                    }
+                }
+                current_targets.clear();
+                in_group = true;
+                continue;
+            }
+            if !in_group {
+                continue;
+            }
+            if row.selection_button() {
+                let full = get_full_name_from_path_name(&row.path(), &row.name());
+                if current_original.is_none() {
+                    current_original = Some(full);
+                } else {
+                    current_targets.push((i, full));
+                }
+            }
+        }
+    }
+    if let Some(orig) = current_original.take() {
+        if !current_targets.is_empty() {
+            groups.push(GroupData { original: orig, targets: current_targets });
+        }
+    }
+
+    if groups.is_empty() {
+        return;
+    }
+
+    // Perform operations in parallel, collecting (positions_to_remove, errors).
+    let results: Vec<(Vec<u32>, Vec<String>)> = groups
+        .into_par_iter()
+        .map(|g| {
+            let mut positions = Vec::new();
+            let mut errors = Vec::new();
+            for (pos, target) in g.targets {
+                let result = if hardlinking == TypeOfTool::Symlinking {
+                    make_file_symlink(&g.original, &target)
+                        .map_err(|e| flg!("symlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
+                } else {
+                    make_hard_link(&g.original, &target)
+                        .map_err(|e| flg!("hardlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
+                };
+                match result {
+                    Ok(()) => positions.push(pos),
+                    Err(msg) => errors.push(msg),
+                }
+            }
+            (positions, errors)
+        })
+        .collect();
+
+    let mut positions_to_remove: Vec<u32> = Vec::new();
+    for (mut pos, errors) in results {
+        positions_to_remove.append(&mut pos);
+        for e in errors {
+            add_text_to_text_view(text_view_errors, &e);
+        }
+    }
+
+    positions_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+    for pos in positions_to_remove {
+        store.remove(pos);
+    }
+}
+
 fn create_dialog_non_group(window_main: &gtk4::Window) -> Dialog {
     let dialog = Dialog::builder()
         .title(flg!("hard_sym_invalid_selection_title_dialog"))
@@ -225,33 +314,64 @@ fn create_dialog_non_group(window_main: &gtk4::Window) -> Dialog {
 }
 
 pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, window_main: &gtk4::Window) -> bool {
-    let model = sv.get_model();
-    let column_header = sv.nb_object.column_header.expect("Column header must exists for linking");
-
-    let mut selected_values_in_group = 0;
-
-    if let Some(mut iter) = model.iter_first() {
-        assert!(model.get::<bool>(&iter, column_header)); // First element should be header
-
-        loop {
-            if !model.iter_next(&mut iter) {
-                break;
-            }
-
-            if model.get::<bool>(&iter, column_header) {
-                if selected_values_in_group == 1 {
-                    break;
+    let only_one_in_group = if let Some(store) = sv.get_duplicate_model() {
+        // Check groups in GioListStore
+        let n = store.n_items();
+        let mut found_only_one = false;
+        let mut selected_in_group = 0u32;
+        let mut in_group = false;
+        for i in 0..n {
+            if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+                if row.is_header() {
+                    if in_group && selected_in_group == 1 {
+                        found_only_one = true;
+                        break;
+                    }
+                    selected_in_group = 0;
+                    in_group = true;
+                } else if in_group && row.selection_button() {
+                    selected_in_group += 1;
                 }
-                selected_values_in_group = 0;
-            } else if model.get::<bool>(&iter, sv.nb_object.column_selection) {
-                selected_values_in_group += 1;
             }
         }
+        if in_group && selected_in_group == 1 {
+            found_only_one = true;
+        }
+        if store.n_items() == 0 {
+            return false;
+        }
+        found_only_one
     } else {
-        return false; // No available records
-    }
+        let model = sv.get_model();
+        let column_header = sv.nb_object.column_header.expect("Column header must exists for linking");
 
-    if selected_values_in_group == 1 {
+        let mut selected_values_in_group = 0;
+        let mut found = false;
+
+        if let Some(mut iter) = model.iter_first() {
+            assert!(model.get::<bool>(&iter, column_header));
+
+            loop {
+                if !model.iter_next(&mut iter) {
+                    break;
+                }
+                if model.get::<bool>(&iter, column_header) {
+                    if selected_values_in_group == 1 {
+                        found = true;
+                        break;
+                    }
+                    selected_values_in_group = 0;
+                } else if model.get::<bool>(&iter, sv.nb_object.column_selection) {
+                    selected_values_in_group += 1;
+                }
+            }
+        } else {
+            return false;
+        }
+        found
+    };
+
+    if only_one_in_group {
         let confirmation_dialog = create_dialog_non_group(window_main);
 
         let response_type = confirmation_dialog.run_future().await;
@@ -268,6 +388,17 @@ pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, wind
 }
 
 pub(crate) fn check_if_anything_is_selected_async(sv: &SubView) -> bool {
+    if let Some(store) = sv.get_duplicate_model() {
+        for i in 0..store.n_items() {
+            if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+                if !row.is_header() && row.selection_button() {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     let model = sv.get_model();
 
     let column_header = sv.nb_object.column_header.expect("Column header must exists for linking");

@@ -1,5 +1,6 @@
 use czkawka_core::common::items::new_excluded_item;
 use czkawka_core::common::regex_check;
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{ResponseType, TreeIter, Window};
 use log::error;
@@ -8,9 +9,236 @@ use regex::Regex;
 use crate::flg;
 use crate::gtk_traits::DialogTraits;
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::{change_dimension_to_krotka, get_full_name_from_path_name};
 use crate::helpers::model_iter::iter_list;
+
+// ── Duplicate model helpers ──────────────────────────────────────────────────
+
+fn dup_select_all(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+            if !row.is_header() {
+                row.set_selection_button(true);
+            }
+        }
+    }
+}
+
+fn dup_unselect_all(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+            if !row.is_header() {
+                row.set_selection_button(false);
+            }
+        }
+    }
+}
+
+fn dup_reverse(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
+            if !row.is_header() {
+                row.set_selection_button(!row.selection_button());
+            }
+        }
+    }
+}
+
+/// Iterate groups in GioListStore, calling `f` for each group's slice of positions.
+fn dup_for_each_group(store: &GioListStore, mut f: impl FnMut(&GioListStore, u32, u32)) {
+    let n = store.n_items();
+    let mut group_start: Option<u32> = None;
+    let mut i = 0u32;
+    while i <= n {
+        let is_boundary = i == n || store.item(i).and_downcast::<DuplicateRow>().map_or(false, |r| r.is_header());
+        if is_boundary {
+            if let Some(start) = group_start {
+                if start < i {
+                    f(store, start, i);
+                }
+            }
+            group_start = if i < n { Some(i + 1) } else { None };
+        }
+        i += 1;
+    }
+}
+
+fn dup_one_oldest_newest(store: &GioListStore, check_oldest: bool) {
+    dup_for_each_group(store, |store, start, end| {
+        let mut best_idx = start;
+        let mut best_val: u64 = if check_oldest { u64::MAX } else { 0 };
+        let mut best_len: usize = 0;
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                let mod_secs = row.modification_as_secs();
+                let name_len = row.name().len();
+                let is_better = if check_oldest {
+                    mod_secs < best_val || (mod_secs == best_val && name_len > best_len)
+                } else {
+                    mod_secs > best_val || (mod_secs == best_val && name_len > best_len)
+                };
+                if j == start || is_better {
+                    best_val = mod_secs;
+                    best_len = name_len;
+                    best_idx = j;
+                }
+            }
+        }
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                row.set_selection_button(j == best_idx);
+            }
+        }
+    });
+}
+
+fn dup_all_except_oldest_newest(store: &GioListStore, except_oldest: bool) {
+    dup_for_each_group(store, |store, start, end| {
+        let mut keep_idx = start;
+        let mut keep_val: u64 = if except_oldest { u64::MAX } else { 0 };
+        let mut keep_len: usize = 0;
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                let mod_secs = row.modification_as_secs();
+                let name_len = row.name().len();
+                let is_better = if except_oldest {
+                    mod_secs < keep_val || (mod_secs == keep_val && name_len < keep_len)
+                } else {
+                    mod_secs > keep_val || (mod_secs == keep_val && name_len < keep_len)
+                };
+                if j == start || is_better {
+                    keep_val = mod_secs;
+                    keep_len = name_len;
+                    keep_idx = j;
+                }
+            }
+        }
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                row.set_selection_button(j != keep_idx);
+            }
+        }
+    });
+}
+
+fn dup_all_except_biggest_smallest(store: &GioListStore, except_biggest: bool) {
+    dup_for_each_group(store, |store, start, end| {
+        let mut keep_idx = start;
+        let mut keep_bytes: u64 = if except_biggest { 0 } else { u64::MAX };
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                let bytes = row.size_as_bytes();
+                let is_better = if except_biggest { bytes > keep_bytes } else { bytes < keep_bytes };
+                if j == start || is_better {
+                    keep_bytes = bytes;
+                    keep_idx = j;
+                }
+            }
+        }
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                row.set_selection_button(j != keep_idx);
+            }
+        }
+    });
+}
+
+fn dup_all_except_longest_shortest_path(store: &GioListStore, except_longest: bool) {
+    dup_for_each_group(store, |store, start, end| {
+        let mut keep_idx = start;
+        let mut keep_len: usize = if except_longest { usize::MAX } else { 0 };
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                let path_len = row.path().len();
+                let is_better = if except_longest { path_len < keep_len } else { path_len > keep_len };
+                if j == start || is_better {
+                    keep_len = path_len;
+                    keep_idx = j;
+                }
+            }
+        }
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                row.set_selection_button(j != keep_idx);
+            }
+        }
+    });
+}
+
+fn dup_custom_select_unselect(
+    store: &GioListStore,
+    check_name: bool,
+    check_path: bool,
+    check_regex: bool,
+    case_sensitive: bool,
+    check_all_selected: bool,
+    name_wc: &czkawka_core::common::items::SingleExcludedItem,
+    name_wc_lower: &czkawka_core::common::items::SingleExcludedItem,
+    path_wc: &czkawka_core::common::items::SingleExcludedItem,
+    path_wc_lower: &czkawka_core::common::items::SingleExcludedItem,
+    compiled_regex: &Regex,
+    select_things: bool,
+) {
+    dup_for_each_group(store, |store, start, end| {
+        let group_size = (end - start) as usize;
+        let mut matched: Vec<u32> = Vec::new();
+        let mut already_selected: usize = 0;
+
+        for j in start..end {
+            if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                let name = row.name();
+                let path = row.path();
+                let full = get_full_name_from_path_name(&path, &name);
+
+                if select_things && row.selection_button() {
+                    already_selected += 1;
+                }
+
+                let mut matches = false;
+                if check_regex && compiled_regex.find(&full).is_some() {
+                    matches = true;
+                } else {
+                    if check_name {
+                        if case_sensitive {
+                            if regex_check(name_wc, &name) { matches = true; }
+                        } else if regex_check(name_wc_lower, &name.to_lowercase()) {
+                            matches = true;
+                        }
+                    }
+                    if check_path {
+                        if case_sensitive {
+                            if regex_check(path_wc, &path) { matches = true; }
+                        } else if regex_check(path_wc_lower, &path.to_lowercase()) {
+                            matches = true;
+                        }
+                    }
+                }
+                if matches {
+                    matched.push(j);
+                }
+            }
+        }
+
+        if select_things {
+            if check_all_selected && (group_size - already_selected == matched.len()) {
+                matched.pop(); // keep at least one unselected per group
+            }
+            for j in matched {
+                if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                    row.set_selection_button(true);
+                }
+            }
+        } else {
+            for j in matched {
+                if let Some(row) = store.item(j).and_downcast::<DuplicateRow>() {
+                    row.set_selection_button(false);
+                }
+            }
+        }
+    });
+}
 
 // File length variable allows users to choose duplicates which have shorter file name
 // e.g. 'tar.gz' will be selected instead 'tar.gz (copy)' etc.
@@ -215,14 +443,10 @@ fn popover_all_except_oldest_newest(
 fn popover_one_oldest_newest(
     popover: &gtk4::Popover,
     sv: &SubView,
-    // tree_view: &gtk4::TreeView,
-    // column_header: i32,
-    // column_modification_as_secs: i32,
-    // column_file_name: i32,
-    // column_button_selection: u32,
     check_oldest: bool,
 ) {
-    if sv.get_duplicate_model().is_some() {
+    if let Some(store) = sv.get_duplicate_model() {
+        dup_one_oldest_newest(store, check_oldest);
         popover.popdown();
         return;
     }
@@ -463,7 +687,21 @@ fn popover_custom_select_unselect(
                         Regex::new("").expect("Empty regex should compile properly.")
                     };
 
-                    if sv.get_duplicate_model().is_some() {
+                    if let Some(store) = sv.get_duplicate_model() {
+                        dup_custom_select_unselect(
+                            store,
+                            check_name,
+                            check_path,
+                            check_regex,
+                            case_sensitive,
+                            check_all_selected,
+                            &name_wildcard_excluded,
+                            &name_wildcard_lowercase_excluded,
+                            &path_wildcard_excluded,
+                            &path_wildcard_lowercase_excluded,
+                            &compiled_regex,
+                            select_things,
+                        );
                         confirmation_dialog_select_unselect.close();
                         return;
                     }
@@ -576,11 +814,14 @@ fn popover_custom_select_unselect(
 /// Select all except the highest quality file in each group.
 /// "Highest quality" = largest resolution (pixels), then largest file size as tiebreaker.
 /// When all metrics are equal, the first file (by path+name lexicographic order) is kept (stable).
+/// For Duplicate tab (no dimensions): falls back to biggest-file logic.
 fn popover_all_except_highest_quality(
     popover: &gtk4::Popover,
     sv: &SubView,
 ) {
-    if sv.get_duplicate_model().is_some() {
+    if let Some(store) = sv.get_duplicate_model() {
+        // Duplicates don't have dimensions – keep the biggest file.
+        dup_all_except_biggest_smallest(store, true);
         popover.popdown();
         return;
     }
@@ -663,14 +904,10 @@ fn popover_all_except_highest_quality(
 fn popover_all_except_biggest_smallest(
     popover: &gtk4::Popover,
     sv: &SubView,
-    // tree_view: &gtk4::TreeView,
-    // column_header: i32,
-    // column_size_as_bytes: i32,
-    // column_dimensions: Option<i32>,
-    // column_button_selection: u32,
     except_biggest: bool,
 ) {
-    if sv.get_duplicate_model().is_some() {
+    if let Some(store) = sv.get_duplicate_model() {
+        dup_all_except_biggest_smallest(store, except_biggest);
         popover.popdown();
         return;
     }
@@ -759,8 +996,12 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_select_all.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_select_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_select_all(store);
+            popover_select.popdown();
+        } else {
+            popover_select_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -769,8 +1010,12 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_unselect_all.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_unselect_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32);
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_unselect_all(store);
+            popover_select.popdown();
+        } else {
+            popover_unselect_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32);
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -779,8 +1024,12 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_reverse.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_reverse(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_reverse(store);
+            popover_select.popdown();
+        } else {
+            popover_reverse(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -789,16 +1038,20 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_select_all_except_oldest.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_all_except_oldest_newest(
-            &popover_select,
-            &sv.tree_view,
-            sv.nb_object.column_header.expect("AEO can't be used without headers"),
-            sv.nb_object.column_modification_as_secs.expect("AEO needs modification as secs column"),
-            sv.nb_object.column_name,
-            sv.nb_object.column_selection as u32,
-            true,
-        );
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_all_except_oldest_newest(store, true);
+            popover_select.popdown();
+        } else {
+            popover_all_except_oldest_newest(
+                &popover_select,
+                &sv.tree_view,
+                sv.nb_object.column_header.expect("AEO can't be used without headers"),
+                sv.nb_object.column_modification_as_secs.expect("AEO needs modification as secs column"),
+                sv.nb_object.column_name,
+                sv.nb_object.column_selection as u32,
+                true,
+            );
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -807,16 +1060,20 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_select_all_except_newest.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_all_except_oldest_newest(
-            &popover_select,
-            &sv.tree_view,
-            sv.nb_object.column_header.expect("AEN can't be used without headers"),
-            sv.nb_object.column_modification_as_secs.expect("AEN needs modification as secs column"),
-            sv.nb_object.column_name,
-            sv.nb_object.column_selection as u32,
-            false,
-        );
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_all_except_oldest_newest(store, false);
+            popover_select.popdown();
+        } else {
+            popover_all_except_oldest_newest(
+                &popover_select,
+                &sv.tree_view,
+                sv.nb_object.column_header.expect("AEN can't be used without headers"),
+                sv.nb_object.column_modification_as_secs.expect("AEN needs modification as secs column"),
+                sv.nb_object.column_name,
+                sv.nb_object.column_selection as u32,
+                false,
+            );
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -825,15 +1082,19 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_select_all_except_shortest.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_all_except_longest_shortest_path(
-            &popover_select,
-            &sv.tree_view,
-            sv.nb_object.column_header.expect("AES can't be used without headers"),
-            sv.nb_object.column_path,
-            sv.nb_object.column_selection as u32,
-            true,
-        );
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_all_except_longest_shortest_path(store, true);
+            popover_select.popdown();
+        } else {
+            popover_all_except_longest_shortest_path(
+                &popover_select,
+                &sv.tree_view,
+                sv.nb_object.column_header.expect("AES can't be used without headers"),
+                sv.nb_object.column_path,
+                sv.nb_object.column_selection as u32,
+                true,
+            );
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();
@@ -842,15 +1103,19 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
     buttons_popover_select_all_except_longest.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
-        popover_all_except_longest_shortest_path(
-            &popover_select,
-            &sv.tree_view,
-            sv.nb_object.column_header.expect("AES can't be used without headers"),
-            sv.nb_object.column_path,
-            sv.nb_object.column_selection as u32,
-            false,
-        );
+        if let Some(store) = sv.get_duplicate_model() {
+            dup_all_except_longest_shortest_path(store, false);
+            popover_select.popdown();
+        } else {
+            popover_all_except_longest_shortest_path(
+                &popover_select,
+                &sv.tree_view,
+                sv.nb_object.column_header.expect("AES can't be used without headers"),
+                sv.nb_object.column_path,
+                sv.nb_object.column_selection as u32,
+                false,
+            );
+        }
     });
 
     let popover_select = gui_data.popovers_select.popover_select.clone();

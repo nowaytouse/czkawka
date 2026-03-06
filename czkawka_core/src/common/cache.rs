@@ -56,7 +56,7 @@ where
 
         {
             let writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
-            let options = bincode::DefaultOptions::new().with_no_limit();
+            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
             if let Err(e) = options.serialize_into(writer, &hashmap_to_save) {
                 text_messages
                     .warnings
@@ -211,7 +211,7 @@ where
             cache_full_name = cache_file.clone();
             let mut reader = BufReader::new(file_handler);
 
-            let options = bincode::DefaultOptions::new().with_no_limit();
+            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
             vec_loaded_entries = match options.deserialize_from(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {

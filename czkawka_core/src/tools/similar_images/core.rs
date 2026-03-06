@@ -253,11 +253,15 @@ impl SimilarImages {
         stop_flag: &Arc<AtomicBool>,
         tolerance: u32,
     ) -> WorkContinueStatus {
+        let progress_handler = prepare_thread_handler_common(progress_sender, CurrentStage::SimilarImagesComparingHashes, all_hashed_images.len(), self.get_test_type(), 0);
+
         // Don't use hashes with multiple images in bktree, because they will always be master of group and cannot be find by other hashes
         let (base_hashes, hashes_with_multiple_images) = self.split_hashes(all_hashed_images);
 
-        let progress_handler = prepare_thread_handler_common(progress_sender, CurrentStage::SimilarImagesComparingHashes, base_hashes.len(), self.get_test_type(), 0);
-
+        // Important: Update the total items to check if split_hashes changed the count
+        // but prepare_thread_handler_common doesn't support updating max_items easily once started.
+        // However, base_hashes.len() is the actual number of iterations in the loop below.
+        
         let mut hashes_parents: IndexMap<ImHash, u32> = Default::default(); // Hashes used as parent (hash, children_number_of_hash)
         let mut hashes_similarity: IndexMap<ImHash, (ImHash, u32)> = Default::default(); // Hashes used as child, (parent_hash, similarity)
 

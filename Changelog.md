@@ -1,5 +1,44 @@
 ## Fork Modifications (nowaytouse/czkawka)
 
+### GTK4 API Migration — Deprecated API Removal (ongoing)
+
+Progress towards removing all deprecated GTK4 usages in `czkawka_gui`.
+
+#### Completed migrations
+
+**Dialogs (`gtk4::Dialog` → `gtk4::Window` / `gtk4::AlertDialog`)**
+- `progress.ui`: migrated `GtkDialog` to `GtkWindow`.
+- All modal confirmation dialogs (delete, hardlink, selection, settings cache-clear, directory input, krokiet info) are now implemented with `gtk4::Window` + manual button layout or `gtk4::AlertDialog`, removing all `Dialog::run_future().await` and `Dialog::connect_response` usage.
+- Added `async_dialog.rs` helper module providing `confirm_window_with_checkbox` and `alert_confirm` for reusable async modal dialogs using `futures-channel/oneshot`.
+
+**Widget visibility (`show()`/`hide()` → `set_visible()`)**
+- Replaced all deprecated `WidgetExt::show()` and `WidgetExt::hide()` calls with `widget.set_visible(true/false)`.
+
+**Dead code and deprecated trait cleanup**
+- Removed deprecated `ComboBoxTraits` and `DialogTraits` from `gtk_traits.rs` along with all associated `ComboBoxText` and `Dialog` usages.
+- Removed unused constants (`CZK_ICON_HIDE_DOWN/UP`), unused function (`to_notebook_upper_enum`), and stale `#[expect(unused)]` attributes.
+
+**Results list: `TreeView`/`ListStore` → `ColumnView`/`GioListStore` (partial)**
+
+All result-list tabs have been migrated from the deprecated `gtk4::TreeView` + `gtk4::ListStore` pair to the modern `gtk4::ColumnView` + `gio::ListStore<GObject>` pair:
+
+- **Duplicates tab**: migrated with `DuplicateRow` GObject (supports header rows, color coding, grouped selection logic).
+- **7 flat-list tabs** (no grouped results): migrated with a shared `SimpleRow` GObject.
+  - Empty Folders
+  - Big Files
+  - Empty Files
+  - Temporary Files
+  - Invalid Symlinks
+  - Broken Files
+  - Bad Extensions
+- All file operations (delete, move, protect/unprotect, select/unselect/reverse, custom regex selection, path-length selection, double-click/Enter to open) updated for the new model.
+- Fixed a pre-existing panic: "Select all except shortest/longest path" buttons would panic on flat-list tabs due to an unconditional `column_header.expect(...)` call; now handled correctly.
+
+**Remaining deprecated usages (suppressed by `#![allow(deprecated)]`)**
+- `SimilarImages`, `SimilarVideos`, and `SameMusic` tabs still use `TreeView`/`ListStore` — these require grouped-result row types and will be migrated in a future step.
+
+---
+
 ### Similar Images - Enhanced Features
 - **Hash size expanded**: Supported hash sizes now include 256, 512, 1024, 2048, 4096, and 8192 in addition to the original 8, 16, 32, 64. Internal type changed from `u8` to `u16` to accommodate larger values.
 - **File size ratio filter**: Added `size_ratio_enabled` and `size_ratio` parameters to `SimilarImagesParameters`. When enabled, groups where the ratio of max/min file size exceeds the configured threshold are excluded from results.

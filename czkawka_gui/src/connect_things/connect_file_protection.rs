@@ -7,6 +7,7 @@ use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::gui_data::GuiData;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::get_full_name_from_path_name;
 use crate::helpers::list_store_operations::clean_invalid_headers;
 use crate::helpers::model_iter::iter_list;
@@ -34,6 +35,19 @@ fn connect_protect(gui_data: &GuiData) {
                 let Some(item) = store.item(pos) else { continue };
                 let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
                 if row.is_header() || !row.selection_button() {
+                    continue;
+                }
+                let full_path = get_full_name_from_path_name(&row.path(), &row.name());
+                if pf.files.insert(PathBuf::from(&full_path)) {
+                    protected_count += 1;
+                }
+            }
+        } else if let Some(store) = sv.get_simple_model() {
+            let n = store.n_items();
+            for pos in 0..n {
+                let Some(item) = store.item(pos) else { continue };
+                let Ok(row) = item.downcast::<SimpleRow>() else { continue };
+                if !row.selection_button() {
                     continue;
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
@@ -87,6 +101,19 @@ fn connect_unprotect(gui_data: &GuiData) {
                 let Some(item) = store.item(pos) else { continue };
                 let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
                 if row.is_header() || !row.selection_button() {
+                    continue;
+                }
+                let full_path = get_full_name_from_path_name(&row.path(), &row.name());
+                if pf.files.remove(&PathBuf::from(&full_path)) {
+                    unprotected_count += 1;
+                }
+            }
+        } else if let Some(store) = sv.get_simple_model() {
+            let n = store.n_items();
+            for pos in 0..n {
+                let Some(item) = store.item(pos) else { continue };
+                let Ok(row) = item.downcast::<SimpleRow>() else { continue };
+                if !row.selection_button() {
                     continue;
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
@@ -168,6 +195,24 @@ pub(crate) fn filter_protected_from_model(sv: &SubView) {
             if row.is_header() {
                 continue;
             }
+            let full_path = get_full_name_from_path_name(&row.path(), &row.name());
+            if pf.files.contains(&PathBuf::from(&full_path)) {
+                positions_to_remove.push(pos);
+            }
+        }
+        positions_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+        for pos in positions_to_remove {
+            store.remove(pos);
+        }
+        return;
+    }
+
+    if let Some(store) = sv.get_simple_model() {
+        let mut positions_to_remove = Vec::new();
+        let n = store.n_items();
+        for pos in 0..n {
+            let Some(item) = store.item(pos) else { continue };
+            let Ok(row) = item.downcast::<SimpleRow>() else { continue };
             let full_path = get_full_name_from_path_name(&row.path(), &row.name());
             if pf.files.contains(&PathBuf::from(&full_path)) {
                 positions_to_remove.push(pos);

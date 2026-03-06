@@ -5,6 +5,7 @@ use log::{debug, error};
 
 use crate::gui_structs::common_tree_view::{GetTreeViewTrait, TreeViewListStoreTrait};
 use crate::gui_structs::duplicate_row::DuplicateRow;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::{KEY_ENTER, KEY_SPACE, get_full_name_from_path_name, get_notebook_object_from_tree_view, get_notebook_upper_enum_from_tree_view};
 use crate::helpers::enums::{ColumnsDuplicates, ColumnsExcludedDirectory, ColumnsIncludedDirectory, ColumnsSameMusic, ColumnsSimilarImages, ColumnsSimilarVideos};
 use crate::notebook_enums::NotebookUpperEnum;
@@ -177,9 +178,13 @@ fn common_open_function_column_view(column_view: &ColumnView, opening_mode: &Ope
             continue;
         }
         let Some(item) = store.item(pos) else { continue };
-        let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
-        let path = row.path();
-        let name = row.name();
+        let (path, name) = if let Ok(row) = item.clone().downcast::<DuplicateRow>() {
+            (row.path(), row.name())
+        } else if let Ok(row) = item.downcast::<SimpleRow>() {
+            (row.path(), row.name())
+        } else {
+            continue;
+        };
         let end_path = match opening_mode {
             OpenMode::OnlyPath => path.clone(),
             OpenMode::PathAndName => get_full_name_from_path_name(&path, &name),

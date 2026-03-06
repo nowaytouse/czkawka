@@ -34,6 +34,7 @@ use crate::helpers::enums::{
 use crate::helpers::image_operations::{get_pixbuf_from_dynamic_image, resize_pixbuf_dimension};
 use crate::notebook_enums::NotebookMainEnum;
 use crate::gui_structs::duplicate_row::DuplicateRow;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::notebook_info::{NOTEBOOKS_INFO, NotebookObject};
 use crate::opening_selecting_records::{opening_double_click_function, opening_enter_function_ported, opening_middle_mouse_function, select_function_header};
 
@@ -112,6 +113,41 @@ impl GetTreeViewTrait for &GestureClick {
     }
 }
 
+/// 不含分组行的简单 Tab（EmptyFolders/BigFiles/EmptyFiles/Temporary/Symlinks/BrokenFiles/BadExtensions）
+pub fn is_simple_tab(v: NotebookMainEnum) -> bool {
+    matches!(
+        v,
+        NotebookMainEnum::EmptyDirectories
+            | NotebookMainEnum::BigFiles
+            | NotebookMainEnum::EmptyFiles
+            | NotebookMainEnum::Temporary
+            | NotebookMainEnum::Symlinks
+            | NotebookMainEnum::BrokenFiles
+            | NotebookMainEnum::BadExtensions
+    )
+}
+
+/// 返回每个简单 Tab 的 ColumnView 文本列配置：(初始标题, SimpleRow 属性名)
+/// 不含第一列（勾选框）
+fn simple_column_config(v: NotebookMainEnum) -> &'static [(&'static str, &'static str)] {
+    match v {
+        NotebookMainEnum::EmptyDirectories | NotebookMainEnum::EmptyFiles | NotebookMainEnum::Temporary => {
+            &[("Name", "name"), ("Path", "path"), ("Modification", "modification")]
+        }
+        NotebookMainEnum::BigFiles => &[("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")],
+        NotebookMainEnum::Symlinks => &[
+            ("Name", "name"),
+            ("Path", "path"),
+            ("Destination Path", "extra1"),
+            ("Error Type", "extra2"),
+            ("Modification", "modification"),
+        ],
+        NotebookMainEnum::BrokenFiles => &[("Name", "name"), ("Path", "path"), ("Error Type", "extra1"), ("Modification", "modification")],
+        NotebookMainEnum::BadExtensions => &[("Name", "name"), ("Path", "path"), ("Extension", "extra1"), ("Valid Extensions", "extra2")],
+        _ => unreachable!("Not a simple tab"),
+    }
+}
+
 #[derive(Clone)]
 pub struct SubView {
     pub scrolled_window: ScrolledWindow,
@@ -120,6 +156,10 @@ pub struct SubView {
     pub duplicate_column_view: Option<ColumnView>,
     pub duplicate_list_store: Option<GioListStore>,
     pub duplicate_selection: Option<MultiSelection>,
+    /// 简单 Tab（无分组行）使用 ColumnView 时的视图与模型
+    pub simple_column_view: Option<ColumnView>,
+    pub simple_list_store: Option<GioListStore>,
+    pub simple_selection: Option<MultiSelection>,
     pub gesture_click: GestureClick,
     pub event_controller_key: EventControllerKey,
     pub nb_object: NotebookObject,
@@ -225,6 +265,93 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     (column_view, list_store, selection)
 }
 
+/// 为简单 Tab 创建 ColumnView + GioListStore\<SimpleRow\> + MultiSelection，并设为 scrolled 子控件。
+fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: NotebookMainEnum) -> (ColumnView, GioListStore, MultiSelection) {
+    let list_store = GioListStore::builder().item_type(SimpleRow::static_type()).build();
+    let selection = MultiSelection::new(Some(list_store.clone().upcast::<gtk4::gio::ListModel>()));
+    let column_view = ColumnView::new(Some(selection.clone().upcast::<gtk4::SelectionModel>()));
+
+    // 勾选框列
+    let factory_select = SignalListItemFactory::new();
+    let store_sel = list_store.clone();
+    factory_select.connect_setup(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        let check = CheckButton::new();
+        list_item.set_child(Some(&check));
+    });
+    factory_select.connect_bind(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        let Some(item) = list_item.item() else { return };
+        let Ok(row) = item.downcast::<SimpleRow>() else { return };
+        let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
+        child.set_active(row.selection_button());
+        let row_clone = row.clone();
+        let store_clone = store_sel.clone();
+        let id = child.connect_toggled(move |check| {
+            let active = check.is_active();
+            if let Some(pos) = store_clone.find(&row_clone) {
+                if let Some(it) = store_clone.item(pos) {
+                    if let Ok(r) = it.downcast::<SimpleRow>() {
+                        r.set_selection_button(active);
+                    }
+                }
+            }
+        });
+        unsafe { list_item.set_data("toggled_id", id) };
+    });
+    factory_select.connect_unbind(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        if let Some(child) = list_item.child().and_downcast::<CheckButton>() {
+            let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("toggled_id") };
+            if let Some(id) = id_opt {
+                let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
+                child.disconnect(handler_id);
+            }
+        }
+    });
+    let col_select = ColumnViewColumn::new(Some(""), Some(factory_select));
+    col_select.set_fixed_width(30);
+    col_select.set_resizable(false);
+    column_view.insert_column(0, &col_select);
+
+    // 文本列：根据 Tab 类型配置
+    let mut col_idx = 1u32;
+    for (title, prop_name) in simple_column_config(enum_value) {
+        let factory = SignalListItemFactory::new();
+        factory.connect_setup(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            let label = Label::new(None);
+            label.set_xalign(0.0);
+            list_item.set_child(Some(&label));
+        });
+        factory.connect_bind(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            let Some(item) = list_item.item() else { return };
+            let Ok(row) = item.downcast::<SimpleRow>() else { return };
+            let child = list_item.child().and_downcast::<Label>().expect("child is Label");
+            let text = match *prop_name {
+                "name" => row.name(),
+                "path" => row.path(),
+                "modification" => row.modification(),
+                "size" => row.size(),
+                "extra1" => row.extra1(),
+                "extra2" => row.extra2(),
+                _ => String::new(),
+            };
+            child.set_text(&text);
+        });
+        let col = ColumnViewColumn::new(Some(*title), Some(factory));
+        col.set_resizable(true);
+        col.set_fixed_width(120);
+        column_view.insert_column(col_idx, &col);
+        col_idx += 1;
+    }
+
+    column_view.set_vexpand(true);
+    scrolled_window.set_child(Some(&column_view));
+    (column_view, list_store, selection)
+}
+
 impl SubView {
     pub fn get_model(&self) -> ListStore {
         self.tree_view.get_model()
@@ -240,6 +367,12 @@ impl SubView {
     }
     pub fn get_duplicate_selection(&self) -> Option<&MultiSelection> {
         self.duplicate_selection.as_ref()
+    }
+    pub fn get_simple_model(&self) -> Option<&GioListStore> {
+        self.simple_list_store.as_ref()
+    }
+    pub fn get_simple_selection(&self) -> Option<&MultiSelection> {
+        self.simple_selection.as_ref()
     }
     pub fn new(
         builder: &Builder,
@@ -269,16 +402,22 @@ impl SubView {
 
         let scrolled_window: ScrolledWindow = builder.object(scrolled_name).unwrap_or_else(|| panic!("Cannot find scrolled window {scrolled_name}"));
 
-        let (duplicate_column_view, duplicate_list_store, duplicate_selection) = if enum_value == NotebookMainEnum::Duplicate {
-            let (cv, store, sel) = create_duplicate_column_view(&scrolled_window);
-            cv.add_controller(event_controller_key.clone());
-            cv.add_controller(gesture_click.clone());
-            (Some(cv), Some(store), Some(sel))
-        } else {
-            tree_view.add_controller(event_controller_key.clone());
-            tree_view.add_controller(gesture_click.clone());
-            (None, None, None)
-        };
+        let (duplicate_column_view, duplicate_list_store, duplicate_selection, simple_column_view, simple_list_store, simple_selection) =
+            if enum_value == NotebookMainEnum::Duplicate {
+                let (cv, store, sel) = create_duplicate_column_view(&scrolled_window);
+                cv.add_controller(event_controller_key.clone());
+                cv.add_controller(gesture_click.clone());
+                (Some(cv), Some(store), Some(sel), None, None, None)
+            } else if is_simple_tab(enum_value) {
+                let (cv, store, sel) = create_simple_column_view(&scrolled_window, enum_value);
+                cv.add_controller(event_controller_key.clone());
+                cv.add_controller(gesture_click.clone());
+                (None, None, None, Some(cv), Some(store), Some(sel))
+            } else {
+                tree_view.add_controller(event_controller_key.clone());
+                tree_view.add_controller(gesture_click.clone());
+                (None, None, None, None, None, None)
+            };
 
         Self {
             scrolled_window,
@@ -286,6 +425,9 @@ impl SubView {
             duplicate_column_view,
             duplicate_list_store,
             duplicate_selection,
+            simple_column_view,
+            simple_list_store,
+            simple_selection,
             gesture_click,
             event_controller_key,
             nb_object,
@@ -296,7 +438,7 @@ impl SubView {
     }
 
     fn _setup_tree_view(&self) {
-        if self.duplicate_column_view.is_some() {
+        if self.duplicate_column_view.is_some() || self.simple_column_view.is_some() {
             return;
         }
         self.tree_view.set_model(Some(&ListStore::new(self.nb_object.columns_types)));

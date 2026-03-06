@@ -506,17 +506,21 @@ impl GuiMainNotebook {
         for (key_enum, columns_names) in names_of_columns {
             let s = &self.common_tree_views.get_subview(key_enum);
 
-            if key_enum == NotebookMainEnum::Duplicate {
-                if let Some(ref cv) = s.duplicate_column_view {
-                    let cols = cv.columns();
-                    let n = cols.n_items();
-                    for (i, name) in columns_names.iter().enumerate() {
-                        let idx = (i + 1) as u32;
-                        if idx < n {
-                            if let Some(col) = cols.item(idx) {
-                                if let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
-                                    column.set_title(Some(name.as_str()));
-                                }
+            // 更新 ColumnView 列头（Duplicate + 简单 Tab）
+            let cv_opt = if key_enum == NotebookMainEnum::Duplicate {
+                s.duplicate_column_view.as_ref()
+            } else {
+                s.simple_column_view.as_ref()
+            };
+            if let Some(cv) = cv_opt {
+                let cols = cv.columns();
+                let n = cols.n_items();
+                for (i, name) in columns_names.iter().enumerate() {
+                    let idx = (i + 1) as u32;
+                    if idx < n {
+                        if let Some(col) = cols.item(idx) {
+                            if let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
+                                column.set_title(Some(name.as_str()));
                             }
                         }
                     }
@@ -524,7 +528,7 @@ impl GuiMainNotebook {
                 continue;
             }
 
-            // Skipping first column because it is selection button
+            // 仍使用 TreeView 的 Tab（SimilarImages / SimilarVideos / SameMusic）
             assert_eq!(
                 columns_names.len() + 1,
                 s.tree_view.columns().len(),

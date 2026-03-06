@@ -9,6 +9,7 @@ use regex::Regex;
 use crate::flg;
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
 use crate::gui_structs::duplicate_row::DuplicateRow;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::{change_dimension_to_krotka, get_full_name_from_path_name};
 use crate::helpers::model_iter::iter_list;
@@ -237,6 +238,110 @@ fn dup_custom_select_unselect(
             }
         }
     });
+}
+
+// ── SimpleRow (flat list, no groups) helpers ────────────────────────────────
+
+fn simple_select_all(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<SimpleRow>() {
+            row.set_selection_button(true);
+        }
+    }
+}
+
+fn simple_unselect_all(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<SimpleRow>() {
+            row.set_selection_button(false);
+        }
+    }
+}
+
+fn simple_reverse(store: &GioListStore) {
+    for i in 0..store.n_items() {
+        if let Some(row) = store.item(i).and_downcast::<SimpleRow>() {
+            row.set_selection_button(!row.selection_button());
+        }
+    }
+}
+
+/// 从平铺列表中选择所有条目，除了路径最短/最长的那个（无分组版本）
+fn simple_all_except_longest_shortest_path(store: &GioListStore, except_shortest: bool) {
+    let n = store.n_items();
+    if n == 0 {
+        return;
+    }
+    let mut extremal_len: Option<usize> = None;
+    let mut extremal_pos: u32 = 0;
+    for i in 0..n {
+        let Some(row) = store.item(i).and_downcast::<SimpleRow>() else { continue };
+        let full = get_full_name_from_path_name(&row.path(), &row.name());
+        let len = full.len();
+        let is_better = match extremal_len {
+            None => true,
+            Some(cur) => if except_shortest { len < cur } else { len > cur },
+        };
+        if is_better {
+            extremal_len = Some(len);
+            extremal_pos = i;
+        }
+    }
+    for i in 0..n {
+        if let Some(row) = store.item(i).and_downcast::<SimpleRow>() {
+            row.set_selection_button(i != extremal_pos);
+        }
+    }
+}
+
+/// 自定义选择（正则/通配符），无分组版本
+fn simple_custom_select_unselect(
+    store: &GioListStore,
+    check_name: bool,
+    check_path: bool,
+    check_regex: bool,
+    case_sensitive: bool,
+    name_wc: &czkawka_core::common::items::SingleExcludedItem,
+    name_wc_lower: &czkawka_core::common::items::SingleExcludedItem,
+    path_wc: &czkawka_core::common::items::SingleExcludedItem,
+    path_wc_lower: &czkawka_core::common::items::SingleExcludedItem,
+    compiled_regex: &Regex,
+    select_things: bool,
+) {
+    let n = store.n_items();
+    for i in 0..n {
+        let Some(row) = store.item(i).and_downcast::<SimpleRow>() else { continue };
+        let name = row.name();
+        let path = row.path();
+        let full = get_full_name_from_path_name(&path, &name);
+
+        let mut matches = false;
+        if check_regex && compiled_regex.find(&full).is_some() {
+            matches = true;
+        } else {
+            if check_name {
+                if case_sensitive {
+                    if regex_check(name_wc, &name) { matches = true; }
+                } else if regex_check(name_wc_lower, &name.to_lowercase()) {
+                    matches = true;
+                }
+            }
+            if check_path {
+                if case_sensitive {
+                    if regex_check(path_wc, &path) { matches = true; }
+                } else if regex_check(path_wc_lower, &path.to_lowercase()) {
+                    matches = true;
+                }
+            }
+        }
+        if matches {
+            if select_things {
+                row.set_selection_button(true);
+            } else {
+                row.set_selection_button(false);
+            }
+        }
+    }
 }
 
 // File length variable allows users to choose duplicates which have shorter file name
@@ -720,6 +825,23 @@ fn popover_custom_select_unselect(
                         dialog.close();
                         return;
                     }
+                    if let Some(store) = sv.get_simple_model() {
+                        simple_custom_select_unselect(
+                            store,
+                            check_name,
+                            check_path,
+                            check_regex,
+                            case_sensitive,
+                            &name_wildcard_excluded,
+                            &name_wildcard_lowercase_excluded,
+                            &path_wildcard_excluded,
+                            &path_wildcard_lowercase_excluded,
+                            &compiled_regex,
+                            select_things,
+                        );
+                        dialog.close();
+                        return;
+                    }
                     let model = sv.get_model();
 
                     let Some(mut iter) = model.iter_first() else {
@@ -1014,6 +1136,9 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         if let Some(store) = sv.get_duplicate_model() {
             dup_select_all(store);
             popover_select.popdown();
+        } else if let Some(store) = sv.get_simple_model() {
+            simple_select_all(store);
+            popover_select.popdown();
         } else {
             popover_select_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
         }
@@ -1028,6 +1153,9 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         if let Some(store) = sv.get_duplicate_model() {
             dup_unselect_all(store);
             popover_select.popdown();
+        } else if let Some(store) = sv.get_simple_model() {
+            simple_unselect_all(store);
+            popover_select.popdown();
         } else {
             popover_unselect_all(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32);
         }
@@ -1041,6 +1169,9 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         let sv = common_tree_views.get_current_subview();
         if let Some(store) = sv.get_duplicate_model() {
             dup_reverse(store);
+            popover_select.popdown();
+        } else if let Some(store) = sv.get_simple_model() {
+            simple_reverse(store);
             popover_select.popdown();
         } else {
             popover_reverse(&popover_select, &sv.tree_view, sv.nb_object.column_selection as u32, sv.nb_object.column_header);
@@ -1100,6 +1231,9 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         if let Some(store) = sv.get_duplicate_model() {
             dup_all_except_longest_shortest_path(store, true);
             popover_select.popdown();
+        } else if let Some(store) = sv.get_simple_model() {
+            simple_all_except_longest_shortest_path(store, true);
+            popover_select.popdown();
         } else {
             popover_all_except_longest_shortest_path(
                 &popover_select,
@@ -1121,11 +1255,14 @@ pub(crate) fn connect_popover_select(gui_data: &GuiData) {
         if let Some(store) = sv.get_duplicate_model() {
             dup_all_except_longest_shortest_path(store, false);
             popover_select.popdown();
+        } else if let Some(store) = sv.get_simple_model() {
+            simple_all_except_longest_shortest_path(store, false);
+            popover_select.popdown();
         } else {
             popover_all_except_longest_shortest_path(
                 &popover_select,
                 &sv.tree_view,
-                sv.nb_object.column_header.expect("AES can't be used without headers"),
+                sv.nb_object.column_header.expect("AEL can't be used without headers"),
                 sv.nb_object.column_path,
                 sv.nb_object.column_selection as u32,
                 false,

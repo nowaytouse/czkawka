@@ -35,6 +35,7 @@ use crate::connect_things::connect_file_protection::filter_protected_from_model;
 use crate::flg;
 use crate::gui_structs::common_tree_view::{SharedModelEnum, SubView, TreeViewListStoreTrait};
 use crate::gui_structs::duplicate_row::DuplicateRow;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_combo_box::IMAGES_HASH_SIZE_COMBO_BOX;
 use crate::help_functions::{HEADER_ROW_COLOR, MAIN_ROW_COLOR, ROW_GROUP_COLORS, TEXT_COLOR, print_text_messages_to_text_view, set_buttons};
@@ -188,22 +189,39 @@ fn compute_bad_extensions(be: BadExtensions, entry_info: &Entry, text_view_error
         entry_info.set_text(flg!("compute_found_bad_extensions", number_files = bad_extensions_number, time = scanning_time_str).as_str());
     }
 
-    let list_store = subview.tree_view.get_model();
     let mut vector = be.get_bad_extensions_files().clone();
     vector.par_sort_unstable_by(|a, b| split_path_compare(a.path.as_path(), b.path.as_path()));
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let values: [(u32, &dyn ToValue); 7] = [
-            (ColumnsBadExtensions::SelectionButton as u32, &false),
-            (ColumnsBadExtensions::Name as u32, &file),
-            (ColumnsBadExtensions::Path as u32, &directory),
-            (ColumnsBadExtensions::CurrentExtension as u32, &file_entry.current_extension),
-            (ColumnsBadExtensions::ValidExtensions as u32, &file_entry.proper_extensions_group),
-            (ColumnsBadExtensions::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsBadExtensions::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                String::new(),
+                0,
+                file_entry.current_extension.clone(),
+                file_entry.proper_extensions_group.clone(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let values: [(u32, &dyn ToValue); 7] = [
+                (ColumnsBadExtensions::SelectionButton as u32, &false),
+                (ColumnsBadExtensions::Name as u32, &file),
+                (ColumnsBadExtensions::Path as u32, &directory),
+                (ColumnsBadExtensions::CurrentExtension as u32, &file_entry.current_extension),
+                (ColumnsBadExtensions::ValidExtensions as u32, &file_entry.proper_extensions_group),
+                (ColumnsBadExtensions::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsBadExtensions::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, be, bad_extensions_number)
@@ -225,21 +243,38 @@ fn compute_broken_files(br: BrokenFiles, entry_info: &Entry, text_view_errors: &
         entry_info.set_text(flg!("compute_found_broken_files", number_files = broken_files_number, time = scanning_time_str).as_str());
     }
 
-    let list_store = subview.tree_view.get_model();
     let mut vector = br.get_broken_files().clone();
     vector.par_sort_unstable_by(|a, b| split_path_compare(a.path.as_path(), b.path.as_path()));
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let values: [(u32, &dyn ToValue); 6] = [
-            (ColumnsBrokenFiles::SelectionButton as u32, &false),
-            (ColumnsBrokenFiles::Name as u32, &file),
-            (ColumnsBrokenFiles::Path as u32, &directory),
-            (ColumnsBrokenFiles::ErrorType as u32, &file_entry.error_string),
-            (ColumnsBrokenFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsBrokenFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                String::new(),
+                0,
+                file_entry.error_string.clone(),
+                String::new(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let values: [(u32, &dyn ToValue); 6] = [
+                (ColumnsBrokenFiles::SelectionButton as u32, &false),
+                (ColumnsBrokenFiles::Name as u32, &file),
+                (ColumnsBrokenFiles::Path as u32, &directory),
+                (ColumnsBrokenFiles::ErrorType as u32, &file_entry.error_string),
+                (ColumnsBrokenFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsBrokenFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, br, broken_files_number)
@@ -261,22 +296,40 @@ fn compute_invalid_symlinks(ifs: InvalidSymlinks, entry_info: &Entry, text_view_
         entry_info.set_text(&flg!("compute_found_invalid_symlinks", number_files = invalid_symlinks, time = scanning_time_str));
     }
 
-    let list_store = subview.tree_view.get_model();
     let vector = conditional_sort_vector(ifs.get_invalid_symlinks());
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let symlink_info = file_entry.symlink_info;
-        let values: [(u32, &dyn ToValue); 7] = [
-            (ColumnsInvalidSymlinks::SelectionButton as u32, &false),
-            (ColumnsInvalidSymlinks::Name as u32, &file),
-            (ColumnsInvalidSymlinks::Path as u32, &directory),
-            (ColumnsInvalidSymlinks::DestinationPath as u32, &symlink_info.destination_path.to_string_lossy().to_string()),
-            (ColumnsInvalidSymlinks::TypeOfError as u32, &symlink_info.type_of_error.translate()),
-            (ColumnsInvalidSymlinks::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsInvalidSymlinks::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let symlink_info = file_entry.symlink_info;
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                String::new(),
+                0,
+                symlink_info.destination_path.to_string_lossy().to_string(),
+                symlink_info.type_of_error.translate(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let symlink_info = file_entry.symlink_info;
+            let values: [(u32, &dyn ToValue); 7] = [
+                (ColumnsInvalidSymlinks::SelectionButton as u32, &false),
+                (ColumnsInvalidSymlinks::Name as u32, &file),
+                (ColumnsInvalidSymlinks::Path as u32, &directory),
+                (ColumnsInvalidSymlinks::DestinationPath as u32, &symlink_info.destination_path.to_string_lossy().to_string()),
+                (ColumnsInvalidSymlinks::TypeOfError as u32, &symlink_info.type_of_error.translate()),
+                (ColumnsInvalidSymlinks::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsInvalidSymlinks::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, ifs, invalid_symlinks)
@@ -640,20 +693,37 @@ fn compute_temporary_files(tf: Temporary, entry_info: &Entry, text_view_errors: 
         entry_info.set_text(&flg!("compute_found_temporary_files", number_files = temporary_files_number, time = scanning_time_str));
     }
 
-    let list_store = subview.tree_view.get_model();
     let mut vector = tf.get_temporary_files().clone();
     vector.par_sort_unstable_by(|a, b| split_path_compare(a.path.as_path(), b.path.as_path()));
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let values: [(u32, &dyn ToValue); 5] = [
-            (ColumnsTemporaryFiles::SelectionButton as u32, &false),
-            (ColumnsTemporaryFiles::Name as u32, &file),
-            (ColumnsTemporaryFiles::Path as u32, &directory),
-            (ColumnsTemporaryFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsTemporaryFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                String::new(),
+                0,
+                String::new(),
+                String::new(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let values: [(u32, &dyn ToValue); 5] = [
+                (ColumnsTemporaryFiles::SelectionButton as u32, &false),
+                (ColumnsTemporaryFiles::Name as u32, &file),
+                (ColumnsTemporaryFiles::Path as u32, &directory),
+                (ColumnsTemporaryFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsTemporaryFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, tf, temporary_files_number)
@@ -675,21 +745,38 @@ fn compute_big_files(bf: BigFile, entry_info: &Entry, text_view_errors: &TextVie
         entry_info.set_text(&flg!("compute_found_big_files", number_files = biggest_files_number, time = scanning_time_str));
     }
 
-    let list_store = subview.tree_view.get_model();
     let vector = bf.get_big_files();
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let values: [(u32, &dyn ToValue); 7] = [
-            (ColumnsBigFiles::SelectionButton as u32, &false),
-            (ColumnsBigFiles::Size as u32, &(format_size(file_entry.size, BINARY))),
-            (ColumnsBigFiles::Name as u32, &file),
-            (ColumnsBigFiles::Path as u32, &directory),
-            (ColumnsBigFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsBigFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-            (ColumnsBigFiles::SizeAsBytes as u32, &(file_entry.size)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                format_size(file_entry.size, BINARY),
+                file_entry.size,
+                String::new(),
+                String::new(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let values: [(u32, &dyn ToValue); 7] = [
+                (ColumnsBigFiles::SelectionButton as u32, &false),
+                (ColumnsBigFiles::Size as u32, &(format_size(file_entry.size, BINARY))),
+                (ColumnsBigFiles::Name as u32, &file),
+                (ColumnsBigFiles::Path as u32, &directory),
+                (ColumnsBigFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsBigFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+                (ColumnsBigFiles::SizeAsBytes as u32, &(file_entry.size)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, bf, biggest_files_number)
@@ -711,19 +798,36 @@ fn compute_empty_files(vf: EmptyFiles, entry_info: &Entry, text_view_errors: &Te
         entry_info.set_text(&flg!("compute_found_empty_files", number_files = empty_files_number, time = scanning_time_str));
     }
 
-    let list_store = subview.tree_view.get_model();
     let vector = conditional_sort_vector(vf.get_empty_files());
 
-    for file_entry in vector {
-        let (directory, file) = split_path(&file_entry.path);
-        let values: [(u32, &dyn ToValue); 5] = [
-            (ColumnsEmptyFiles::SelectionButton as u32, &false),
-            (ColumnsEmptyFiles::Name as u32, &file),
-            (ColumnsEmptyFiles::Path as u32, &directory),
-            (ColumnsEmptyFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
-            (ColumnsEmptyFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(file_entry.modified_date),
+                file_entry.modified_date,
+                String::new(),
+                0,
+                String::new(),
+                String::new(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for file_entry in vector {
+            let (directory, file) = split_path(&file_entry.path);
+            let values: [(u32, &dyn ToValue); 5] = [
+                (ColumnsEmptyFiles::SelectionButton as u32, &false),
+                (ColumnsEmptyFiles::Name as u32, &file),
+                (ColumnsEmptyFiles::Path as u32, &directory),
+                (ColumnsEmptyFiles::Modification as u32, &(get_dt_timestamp_string(file_entry.modified_date))),
+                (ColumnsEmptyFiles::ModificationAsSecs as u32, &(file_entry.modified_date as i64)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, vf, empty_files_number)
@@ -745,21 +849,38 @@ fn compute_empty_folders(ef: EmptyFolder, entry_info: &Entry, text_view_errors: 
         entry_info.set_text(&flg!("compute_found_empty_folders", number_files = empty_folder_number, time = scanning_time_str));
     }
 
-    let list_store = subview.tree_view.get_model();
     let hashmap = ef.get_empty_folder_list();
     let mut vector = hashmap.values().collect::<Vec<_>>();
     vector.par_sort_unstable_by(|a, b| split_path_compare(a.path.as_path(), b.path.as_path()));
 
-    for fe in vector {
-        let (directory, file) = split_path(&fe.path);
-        let values: [(u32, &dyn ToValue); 5] = [
-            (ColumnsEmptyFolders::SelectionButton as u32, &false),
-            (ColumnsEmptyFolders::Name as u32, &file),
-            (ColumnsEmptyFolders::Path as u32, &directory),
-            (ColumnsEmptyFolders::Modification as u32, &(get_dt_timestamp_string(fe.modified_date))),
-            (ColumnsEmptyFolders::ModificationAsSecs as u32, &(fe.modified_date)),
-        ];
-        append_row_to_list_store(&list_store, &values);
+    if let Some(store) = subview.get_simple_model() {
+        for fe in vector {
+            let (directory, file) = split_path(&fe.path);
+            store.append(&SimpleRow::new(
+                false,
+                file,
+                directory,
+                get_dt_timestamp_string(fe.modified_date),
+                fe.modified_date,
+                String::new(),
+                0,
+                String::new(),
+                String::new(),
+            ));
+        }
+    } else {
+        let list_store = subview.tree_view.get_model();
+        for fe in vector {
+            let (directory, file) = split_path(&fe.path);
+            let values: [(u32, &dyn ToValue); 5] = [
+                (ColumnsEmptyFolders::SelectionButton as u32, &false),
+                (ColumnsEmptyFolders::Name as u32, &file),
+                (ColumnsEmptyFolders::Path as u32, &directory),
+                (ColumnsEmptyFolders::Modification as u32, &(get_dt_timestamp_string(fe.modified_date))),
+                (ColumnsEmptyFolders::ModificationAsSecs as u32, &(fe.modified_date)),
+            ];
+            append_row_to_list_store(&list_store, &values);
+        }
     }
     print_text_messages_to_text_view(text_messages, text_view_errors);
     finalize_compute(subview, ef, empty_folder_number)

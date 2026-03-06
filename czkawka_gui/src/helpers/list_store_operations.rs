@@ -4,6 +4,7 @@ use gtk4::prelude::*;
 use gtk4::{ListStore, TreeView};
 
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::helpers::model_iter::{iter_list, iter_list_with_break, iter_list_with_break_init};
 
@@ -165,6 +166,13 @@ pub(crate) fn clean_invalid_headers(model: &ListStore, column_header: i32, colum
 pub(crate) fn check_how_much_elements_is_selected(sv: &SubView) -> (u64, u64) {
     if let Some(store) = sv.get_duplicate_model() {
         return check_how_much_elements_is_selected_duplicate(store);
+    }
+    if let Some(store) = sv.get_simple_model() {
+        let selected = (0..store.n_items())
+            .filter_map(|i| store.item(i)?.downcast::<SimpleRow>().ok())
+            .filter(|r| r.selection_button())
+            .count() as u64;
+        return (selected, 0);
     }
 
     let mut number_of_selected_items: u64 = 0;

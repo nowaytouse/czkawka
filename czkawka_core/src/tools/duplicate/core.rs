@@ -336,7 +336,7 @@ impl DuplicateFinder {
         // - Load data from cache
         // - Convert from BT<u64,Vec<DuplicateEntry>> to BT<String,DuplicateEntry>
         // - Save to proper values
-        let loaded_hash_map;
+        let loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>;
         let mut records_already_cached: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
         let mut non_cached_files_to_check: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
 
@@ -474,9 +474,13 @@ impl DuplicateFinder {
         // Saving into cache
         let progress_handler = prepare_thread_handler_common(progress_sender, CurrentStage::DuplicatePreHashCacheSaving, 0, self.get_test_type(), 0);
 
-        // Add data from cache
-        for (size, mut vec_file_entry) in records_already_cached {
-            pre_checked_map.entry(size).or_default().append(&mut vec_file_entry);
+        // Add data from cache and combine with pre_hash_results
+        let mut combined_hash_map: BTreeMap<u64, BTreeMap<String, Vec<DuplicateEntry>>> = Default::default();
+
+        for (size, vec_file_entry) in records_already_cached {
+            for file_entry in vec_file_entry {
+                combined_hash_map.entry(size).or_default().entry(file_entry.hash.clone()).or_default().push(file_entry);
+            }
         }
 
         // Check results
@@ -484,9 +488,16 @@ impl DuplicateFinder {
             if !errors.is_empty() {
                 self.common_data.text_messages.warnings.append(&mut errors.clone());
             }
-            for vec_file_entry in hash_map.values() {
+            for (hash, vec_file_entry) in hash_map {
+                combined_hash_map.entry(*size).or_default().entry(hash.clone()).or_default().extend(vec_file_entry.clone());
+            }
+        }
+
+        // Only pass to full hashing if multiple files share the prehash
+        for (size, hash_map) in combined_hash_map {
+            for vec_file_entry in hash_map.into_values() {
                 if vec_file_entry.len() > 1 {
-                    pre_checked_map.entry(*size).or_default().append(&mut vec_file_entry.clone());
+                    pre_checked_map.entry(size).or_default().extend(vec_file_entry);
                 }
             }
         }
@@ -543,7 +554,7 @@ impl DuplicateFinder {
         &mut self,
         mut pre_checked_map: BTreeMap<u64, Vec<DuplicateEntry>>,
     ) -> (BTreeMap<u64, Vec<DuplicateEntry>>, BTreeMap<u64, Vec<DuplicateEntry>>, BTreeMap<u64, Vec<DuplicateEntry>>) {
-        let loaded_hash_map;
+        let loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>;
         let mut records_already_cached: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
         let mut non_cached_files_to_check: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
 

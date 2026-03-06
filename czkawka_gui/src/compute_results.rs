@@ -197,8 +197,9 @@ fn compute_bad_extensions(be: BadExtensions, entry_info: &Entry, text_view_error
             let (directory, file) = split_path(&file_entry.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 String::new(),
@@ -251,8 +252,9 @@ fn compute_broken_files(br: BrokenFiles, entry_info: &Entry, text_view_errors: &
             let (directory, file) = split_path(&file_entry.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 String::new(),
@@ -304,8 +306,9 @@ fn compute_invalid_symlinks(ifs: InvalidSymlinks, entry_info: &Entry, text_view_
             let symlink_info = file_entry.symlink_info;
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 String::new(),
@@ -701,8 +704,9 @@ fn compute_temporary_files(tf: Temporary, entry_info: &Entry, text_view_errors: 
             let (directory, file) = split_path(&file_entry.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 String::new(),
@@ -752,8 +756,9 @@ fn compute_big_files(bf: BigFile, entry_info: &Entry, text_view_errors: &TextVie
             let (directory, file) = split_path(&file_entry.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 format_size(file_entry.size, BINARY),
@@ -805,8 +810,9 @@ fn compute_empty_files(vf: EmptyFiles, entry_info: &Entry, text_view_errors: &Te
             let (directory, file) = split_path(&file_entry.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
                 file_entry.modified_date,
                 String::new(),
@@ -858,8 +864,9 @@ fn compute_empty_folders(ef: EmptyFolder, entry_info: &Entry, text_view_errors: 
             let (directory, file) = split_path(&fe.path);
             store.append(&SimpleRow::new(
                 false,
-                file,
-                directory,
+                false,
+                file.clone(),
+                directory.clone(),
                 get_dt_timestamp_string(fe.modified_date),
                 fe.modified_date,
                 String::new(),
@@ -1229,6 +1236,7 @@ fn duplicates_add_to_duplicate_store(
     let color = get_row_color(is_header).to_string();
     let row = DuplicateRow::new(
         !is_header,
+        false,
         false,
         size_str,
         size,

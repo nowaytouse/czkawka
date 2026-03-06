@@ -117,6 +117,50 @@ fn main() {
 }
 
 fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_open_dialog_about_krokiet: bool) {
+    let provider = gtk4::CssProvider::new();
+    provider.load_from_string(
+        "
+        button {
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+            padding: 6px 12px;
+        }
+        button:hover {
+            opacity: 0.85;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        notebook tab {
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            padding: 8px 16px;
+            transition: background-color 0.2s ease;
+        }
+        notebook tab:checked {
+            box-shadow: inset 0 -3px 0 0 #3584e4;
+        }
+        listview row, columnview row, treeview row {
+            border-radius: 4px;
+            margin: 2px;
+            transition: background-color 0.15s ease;
+        }
+        listview row:hover, columnview row:hover, treeview row:hover {
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+        .protected-file {
+            text-decoration-line: line-through;
+            color: #d32f2f;
+            opacity: 0.7;
+        }
+        ",
+    );
+    if let Some(display) = gtk4::gdk::Display::default() {
+        gtk4::style_context_add_provider_for_display(
+            &display,
+            &provider,
+            gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    }
+
     let gui_data: GuiData = GuiData::new_with_application(application);
     gui_data.setup();
 

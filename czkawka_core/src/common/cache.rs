@@ -12,7 +12,7 @@ pub use cleaning::{CacheCleaningStatistics, CacheProgressCleaning, clean_all_cac
 use fun_time::fun_time;
 use humansize::{BINARY, format_size};
 use indexmap::IndexMap;
-use log::{debug, error};
+use log::debug;
 use once_cell::sync::Lazy;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -217,7 +217,7 @@ where
                     text_messages
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                    error!("Failed to load cache from file {} - {e}", cache_file.to_string_lossy());
+                    log::warn!("Failed to load cache from file {} - {e}", cache_file.to_string_lossy());
                     return (text_messages, None);
                 }
             };

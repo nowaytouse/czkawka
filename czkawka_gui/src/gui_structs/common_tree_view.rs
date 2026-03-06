@@ -252,6 +252,32 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
                 _ => String::new(),
             };
             child.set_text(&text);
+
+            if row.protected() {
+                child.add_css_class("protected-file");
+            } else {
+                child.remove_css_class("protected-file");
+            }
+
+            let child_clone = child.clone();
+            let id = row.connect_protected_notify(move |r| {
+                if r.protected() {
+                    child_clone.add_css_class("protected-file");
+                } else {
+                    child_clone.remove_css_class("protected-file");
+                }
+            });
+            unsafe { list_item.set_data("protected_id", id) };
+        });
+        factory.connect_unbind(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            if let Some(item) = list_item.item() {
+                let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("protected_id") };
+                if let Some(id) = id_opt {
+                    let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
+                    item.disconnect(handler_id);
+                }
+            }
         });
         let col = ColumnViewColumn::new(Some(title), Some(factory));
         col.set_resizable(true);
@@ -349,6 +375,32 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
                 _ => String::new(),
             };
             child.set_text(&text);
+
+            if row.protected() {
+                child.add_css_class("protected-file");
+            } else {
+                child.remove_css_class("protected-file");
+            }
+
+            let child_clone = child.clone();
+            let id = row.connect_protected_notify(move |r| {
+                if r.protected() {
+                    child_clone.add_css_class("protected-file");
+                } else {
+                    child_clone.remove_css_class("protected-file");
+                }
+            });
+            unsafe { list_item.set_data("protected_id", id) };
+        });
+        factory.connect_unbind(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            if let Some(item) = list_item.item() {
+                let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("protected_id") };
+                if let Some(id) = id_opt {
+                    let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
+                    item.disconnect(handler_id);
+                }
+            }
         });
         let col = ColumnViewColumn::new(Some(*title), Some(factory));
         col.set_resizable(true);

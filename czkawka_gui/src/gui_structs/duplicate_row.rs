@@ -16,6 +16,8 @@ mod imp {
         #[property(get, set)]
         pub(super) selection_button: RefCell<bool>,
         #[property(get, set)]
+        pub(super) protected: RefCell<bool>,
+        #[property(get, set)]
         pub(super) size: RefCell<String>,
         #[property(get, set)]
         pub(super) size_as_bytes: RefCell<u64>,
@@ -53,6 +55,7 @@ impl DuplicateRow {
     pub fn new(
         activatable_select_button: bool,
         selection_button: bool,
+        protected: bool,
         size: String,
         size_as_bytes: u64,
         name: String,
@@ -66,6 +69,7 @@ impl DuplicateRow {
         glib::Object::builder()
             .property("activatable-select-button", activatable_select_button)
             .property("selection-button", selection_button)
+            .property("protected", protected)
             .property("size", size)
             .property("size-as-bytes", size_as_bytes)
             .property("name", name)

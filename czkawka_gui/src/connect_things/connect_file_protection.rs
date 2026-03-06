@@ -39,6 +39,7 @@ fn connect_protect(gui_data: &GuiData) {
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.insert(PathBuf::from(&full_path)) {
+                    row.set_protected(true);
                     protected_count += 1;
                 }
             }
@@ -52,6 +53,7 @@ fn connect_protect(gui_data: &GuiData) {
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.insert(PathBuf::from(&full_path)) {
+                    row.set_protected(true);
                     protected_count += 1;
                 }
             }
@@ -105,6 +107,7 @@ fn connect_unprotect(gui_data: &GuiData) {
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.remove(&PathBuf::from(&full_path)) {
+                    row.set_protected(false);
                     unprotected_count += 1;
                 }
             }
@@ -118,6 +121,7 @@ fn connect_unprotect(gui_data: &GuiData) {
                 }
                 let full_path = get_full_name_from_path_name(&row.path(), &row.name());
                 if pf.files.remove(&PathBuf::from(&full_path)) {
+                    row.set_protected(false);
                     unprotected_count += 1;
                 }
             }

@@ -20,6 +20,9 @@ mod imp {
         pub selection_button: Cell<bool>,
 
         #[property(get, set)]
+        pub protected: Cell<bool>,
+
+        #[property(get, set)]
         pub name: RefCell<String>,
 
         #[property(get, set)]
@@ -81,6 +84,7 @@ glib::wrapper! {
 impl SimpleRow {
     pub fn new(
         selection_button: bool,
+        protected: bool,
         name: String,
         path: String,
         modification: String,
@@ -92,6 +96,7 @@ impl SimpleRow {
     ) -> Self {
         Object::builder()
             .property("selection-button", selection_button)
+            .property("protected", protected)
             .property("name", name)
             .property("path", path)
             .property("modification", modification)

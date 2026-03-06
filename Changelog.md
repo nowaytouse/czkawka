@@ -1,5 +1,14 @@
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Duplicate Performance Optimization (Cache Logic Fix)
+- **Fixed critical performance regression in Duplicate Finder**: Optimized the Prehash (`8192` bytes) merging logic. Previously, cached files were appended to the "potential duplicates" list without validating prehash uniqueness, causing redundant Full Hashing of unique files upon repeated searches.
+- **Implemented `combined_hash_map` grouping**: Both cached and newly computed prehashes are now grouped by `size` and `hash` string. Files are only promoted to the Full Hashing stage if they belong to a group with more than one entry, drastically reducing unnecessary I/O for 99% of unique files.
+
+### GUI Modernization and Visual Polish
+- **Modernized App Aesthetics**: Injected a global `CssProvider` with rounded buttons, hover transitions, shadows, and improved Notebook tab styling to replace the legacy "retro" look.
+- **Improved File Protection Feedback**: Protected files now visually display with a strikethrough decoration and dimmed red color using dynamic CSS class binding (`.protected-file`).
+- **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) to prevent GTK measurement warnings, and fixed ColumnView path truncation.
+
 ### GTK4 API Migration — Deprecated API Removal (ongoing)
 
 Progress towards removing all deprecated GTK4 usages in `czkawka_gui`.

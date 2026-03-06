@@ -90,6 +90,9 @@ where
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to save cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
+                drop(writer);
+                let _ = fs::remove_file(&cache_file);
+                let _ = fs::remove_file(&cache_file_json);
                 return text_messages;
             }
             if let Err(e) = writer.flush() {
@@ -97,6 +100,9 @@ where
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to flush cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
+                drop(writer);
+                let _ = fs::remove_file(&cache_file);
+                let _ = fs::remove_file(&cache_file_json);
                 return text_messages;
             }
             debug!(
@@ -251,8 +257,19 @@ where
             };
         } else {
             cache_full_name = cache_file_json.clone();
-            let reader = BufReader::new(file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None"));
-            vec_loaded_entries = match serde_json::from_reader(reader) {
+            
+            // Check if file is empty to avoid "EOF" errors
+            if let Ok(metadata) = fs::metadata(&cache_file_json) {
+                if metadata.len() == 0 {
+                    log::warn!("Cache file {} is empty. Deleting it.", cache_file_json.to_string_lossy());
+                    let _ = fs::remove_file(&cache_file_json);
+                    return (text_messages, None);
+                }
+            }
+
+            let file = file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None");
+            let mut reader = BufReader::new(file);
+            vec_loaded_entries = match serde_json::from_reader(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages.warnings.push(flc!(
@@ -261,6 +278,7 @@ where
                         reason = e.to_string()
                     ));
                     log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
+                    drop(reader);
                     if let Err(remove_err) = fs::remove_file(&cache_file_json) {
                         log::error!("Failed to delete corrupt cache file {}: {}", cache_file_json.to_string_lossy(), remove_err);
                     }

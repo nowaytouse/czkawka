@@ -218,7 +218,8 @@ where
                     text_messages
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                    log::warn!("Failed to load cache from file {} - {e}", cache_file.to_string_lossy());
+                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file.to_string_lossy(), e);
+                    let _ = fs::remove_file(&cache_file);
                     return (text_messages, None);
                 }
             };
@@ -233,7 +234,8 @@ where
                         file = cache_file_json.to_string_lossy(),
                         reason = e.to_string()
                     ));
-                    debug!("Failed to load cache from file {} - {e}", cache_file_json.to_string_lossy());
+                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
+                    let _ = fs::remove_file(&cache_file_json);
                     return (text_messages, None);
                 }
             };

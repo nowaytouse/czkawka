@@ -3,15 +3,14 @@
 //! InvalidSymlinks, BrokenFiles, BadExtensions
 
 use glib::Object;
-use glib::prelude::*;
 use gtk4::glib;
 
 mod imp {
     use std::cell::{Cell, RefCell};
 
     use glib::Properties;
+    use glib::object::ObjectExt;
     use gtk4::glib;
-    use gtk4::prelude::*;
     use gtk4::subclass::prelude::*;
 
     #[derive(Properties, Default)]

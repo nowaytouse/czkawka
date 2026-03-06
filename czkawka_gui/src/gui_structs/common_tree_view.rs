@@ -159,7 +159,6 @@ pub struct SubView {
     /// 简单 Tab（无分组行）使用 ColumnView 时的视图与模型
     pub simple_column_view: Option<ColumnView>,
     pub simple_list_store: Option<GioListStore>,
-    pub simple_selection: Option<MultiSelection>,
     pub gesture_click: GestureClick,
     pub event_controller_key: EventControllerKey,
     pub nb_object: NotebookObject,
@@ -237,6 +236,7 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
             let label = Label::new(None);
             label.set_xalign(0.0);
+            label.set_ellipsize(gtk4::pango::EllipsizeMode::End);
             list_item.set_child(Some(&label));
         });
         factory.connect_bind(move |_f, obj| {
@@ -255,7 +255,16 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
         });
         let col = ColumnViewColumn::new(Some(title), Some(factory));
         col.set_resizable(true);
-        col.set_fixed_width(120);
+        match prop_name {
+            "size" => col.set_fixed_width(100),
+            "name" => col.set_fixed_width(200),
+            "path" => {
+                col.set_fixed_width(-1);
+                col.set_expand(true);
+            }
+            "modification" => col.set_fixed_width(180),
+            _ => col.set_fixed_width(120),
+        }
         column_view.insert_column(col_idx, &col);
         col_idx += 1;
     }
@@ -322,6 +331,7 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
             let label = Label::new(None);
             label.set_xalign(0.0);
+            label.set_ellipsize(gtk4::pango::EllipsizeMode::End);
             list_item.set_child(Some(&label));
         });
         factory.connect_bind(move |_f, obj| {
@@ -342,7 +352,16 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
         });
         let col = ColumnViewColumn::new(Some(*title), Some(factory));
         col.set_resizable(true);
-        col.set_fixed_width(120);
+        match *prop_name {
+            "size" => col.set_fixed_width(100),
+            "name" => col.set_fixed_width(200),
+            "path" => {
+                col.set_fixed_width(-1);
+                col.set_expand(true);
+            }
+            "modification" => col.set_fixed_width(180),
+            _ => col.set_fixed_width(150),
+        }
         column_view.insert_column(col_idx, &col);
         col_idx += 1;
     }
@@ -370,9 +389,6 @@ impl SubView {
     }
     pub fn get_simple_model(&self) -> Option<&GioListStore> {
         self.simple_list_store.as_ref()
-    }
-    pub fn get_simple_selection(&self) -> Option<&MultiSelection> {
-        self.simple_selection.as_ref()
     }
     pub fn new(
         builder: &Builder,
@@ -402,7 +418,7 @@ impl SubView {
 
         let scrolled_window: ScrolledWindow = builder.object(scrolled_name).unwrap_or_else(|| panic!("Cannot find scrolled window {scrolled_name}"));
 
-        let (duplicate_column_view, duplicate_list_store, duplicate_selection, simple_column_view, simple_list_store, simple_selection) =
+        let (duplicate_column_view, duplicate_list_store, duplicate_selection, simple_column_view, simple_list_store, _simple_selection) =
             if enum_value == NotebookMainEnum::Duplicate {
                 let (cv, store, sel) = create_duplicate_column_view(&scrolled_window);
                 cv.add_controller(event_controller_key.clone());
@@ -427,7 +443,6 @@ impl SubView {
             duplicate_selection,
             simple_column_view,
             simple_list_store,
-            simple_selection,
             gesture_click,
             event_controller_key,
             nb_object,
@@ -528,12 +543,65 @@ impl SubView {
             });
     }
 
+    /// Connect preview for Duplicate tab's ColumnView.
+    /// Uses MultiSelection's selection-changed signal to show preview when a row is clicked.
+    fn _connect_show_duplicate_column_view_preview(&self, gui_data: &GuiData, preview_path: &Rc<RefCell<String>>) {
+        let Some(preview_struct) = self.preview_struct.clone() else { return };
+        let Some(selection) = self.duplicate_selection.clone() else { return };
+        let Some(store) = self.duplicate_list_store.clone() else { return };
+
+        let text_view_errors = gui_data.text_view_errors.clone();
+        let use_rust_preview = gui_data.settings.check_button_settings_use_rust_preview.clone();
+        let preview_path = preview_path.clone();
+
+        selection.connect_selection_changed(move |sel, _pos, _n_items| {
+            // Find the first selected non-header item
+            let bitset = sel.selection();
+            let mut file_name = String::new();
+
+            if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset) {
+                if let Some(item) = store.item(first_pos) {
+                    if let Ok(row) = item.downcast::<DuplicateRow>() {
+                        if !row.is_header() {
+                            let path = row.path();
+                            let name = row.name();
+                            file_name = get_full_name_from_path_name(&path, &name);
+                        }
+                    }
+                }
+            }
+
+            if file_name.is_empty() {
+                preview_struct.image_preview.set_visible(false);
+                *preview_path.borrow_mut() = String::new();
+                return;
+            }
+
+            show_preview_for_file(
+                &file_name,
+                &text_view_errors,
+                &preview_struct.settings_show_preview,
+                &preview_struct.image_preview,
+                &preview_path,
+                use_rust_preview.is_active(),
+            );
+        });
+    }
+
     fn setup(&self, preview_path: &Rc<RefCell<String>>, gui_data: &GuiData) {
         if let Some(preview_struct) = &self.preview_struct {
             preview_struct.image_preview.set_visible(false);
         }
         self._setup_tree_view();
         self._setup_gesture_click();
+
+        // Duplicate ColumnView has its own preview connection
+        if self.duplicate_column_view.is_some() {
+            self._connect_show_duplicate_column_view_preview(gui_data, preview_path);
+            self._setup_evk(gui_data);
+            return;
+        }
+
         self._connect_show_mouse_preview(gui_data, preview_path);
 
         // Items with image preview, are differently handled
@@ -869,6 +937,67 @@ pub(crate) fn show_preview(
         {
             let mut preview_path = preview_path.borrow_mut();
             *preview_path = String::new();
+        }
+    }
+}
+
+/// Show preview for a file given its full path directly (not TreeView-dependent).
+pub(crate) fn show_preview_for_file(
+    file_name: &str,
+    text_view_errors: &TextView,
+    check_button_settings_show_preview: &CheckButton,
+    image_preview: &Picture,
+    preview_path: &Rc<RefCell<String>>,
+    use_rust_preview: bool,
+) {
+    if !check_button_settings_show_preview.is_active() {
+        image_preview.set_visible(false);
+        *preview_path.borrow_mut() = String::new();
+        return;
+    }
+
+    if file_name.is_empty() || !check_if_can_display_image(file_name) {
+        image_preview.set_visible(false);
+        *preview_path.borrow_mut() = String::new();
+        return;
+    }
+
+    if file_name == preview_path.borrow().as_str() {
+        return; // Preview is already created
+    }
+
+    let pixbuf = if use_rust_preview {
+        match get_dynamic_image_from_path(file_name).and_then(get_pixbuf_from_dynamic_image) {
+            Ok(p) => p,
+            Err(e) => {
+                add_text_to_text_view(text_view_errors, &flg!("preview_image_opening_failure", name = file_name.to_string(), reason = e));
+                image_preview.set_visible(false);
+                *preview_path.borrow_mut() = String::new();
+                return;
+            }
+        }
+    } else {
+        match Pixbuf::from_file(file_name) {
+            Ok(p) => p,
+            Err(e) => {
+                add_text_to_text_view(text_view_errors, &flg!("preview_image_opening_failure", name = file_name.to_string(), reason = e.to_string()));
+                image_preview.set_visible(false);
+                *preview_path.borrow_mut() = String::new();
+                return;
+            }
+        }
+    };
+
+    match resize_pixbuf_dimension(&pixbuf, (800, 800), InterpType::Bilinear) {
+        Some(resized) => {
+            image_preview.set_paintable(Some(&Texture::for_pixbuf(&resized)));
+            *preview_path.borrow_mut() = file_name.to_string();
+            image_preview.set_visible(true);
+        }
+        None => {
+            add_text_to_text_view(text_view_errors, &flg!("preview_image_resize_failure", name = file_name.to_string()));
+            image_preview.set_visible(false);
+            *preview_path.borrow_mut() = String::new();
         }
     }
 }

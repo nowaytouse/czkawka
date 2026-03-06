@@ -32,7 +32,13 @@ All result-list tabs have been migrated from the deprecated `gtk4::TreeView` + `
   - Broken Files
   - Bad Extensions
 - All file operations (delete, move, protect/unprotect, select/unselect/reverse, custom regex selection, path-length selection, double-click/Enter to open) updated for the new model.
-- Fixed a pre-existing panic: "Select all except shortest/longest path" buttons would panic on flat-list tabs due to an unconditional `column_header.expect(...)` call; now handled correctly.
+- **Stability and UI Improvements (Recent)**:
+  - Fixed a critical panic in `clean_tree_view` by introducing `clean_subview`, which correctly handles `GioListStore::remove_all()` for ColumnView tabs.
+  - Implemented image preview for the Duplicates tab's ColumnView using `MultiSelection::selection-changed` signal.
+  - Resolved ColumnView UI truncation issues: assigned proper widths per column and enabled horizontal expansion for the "Path" column.
+  - Added `pango::EllipsizeMode::End` to ColumnView labels for graceful overflow handling.
+  - Guarded legacy sorting popovers to prevent panics on migrated ColumnView tabs.
+  - Cleaned up compiler warnings related to unused imports and deprecated field usages.
 
 **Remaining deprecated usages (suppressed by `#![allow(deprecated)]`)**
 - `SimilarImages`, `SimilarVideos`, and `SameMusic` tabs still use `TreeView`/`ListStore` — these require grouped-result row types and will be migrated in a future step.

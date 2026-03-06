@@ -10,6 +10,12 @@ fn popover_sort_general_abs<T>(popover: &gtk4::Popover, sv: &SubView)
 where
     T: Ord + for<'b> glib::value::FromValue<'b> + 'static + Debug,
 {
+    // Sort is not supported for ColumnView tabs (Duplicate, simple tabs)
+    if sv.get_duplicate_model().is_some() || sv.get_simple_model().is_some() {
+        log::warn!("Sort not supported for ColumnView tabs, skipping");
+        popover.popdown();
+        return;
+    }
     popover_sort_general::<T>(
         popover,
         &sv.tree_view,

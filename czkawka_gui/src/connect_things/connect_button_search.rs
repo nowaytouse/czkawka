@@ -24,7 +24,7 @@ use fun_time::fun_time;
 use gtk4::Grid;
 use gtk4::prelude::*;
 
-use crate::gui_structs::common_tree_view::TreeViewListStoreTrait;
+use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
 use crate::gui_structs::common_upper_tree_view::UpperTreeViewEnum;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_combo_box::{
@@ -240,7 +240,7 @@ fn duplicate_search(
     let image_preview_duplicates = gui_data.main_notebook.image_preview_duplicates.clone();
 
     image_preview_duplicates.set_visible(false);
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     let check_method_index = combo_box_duplicate_check_method.selected() as usize;
     let check_method = DUPLICATES_CHECK_METHOD_COMBO_BOX[check_method_index].check_method;
@@ -287,7 +287,7 @@ fn empty_files_search(
 ) {
     grid_progress.set_visible(false);
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
     // Find empty files
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
@@ -311,7 +311,7 @@ fn empty_dirs_search(
 ) {
     grid_progress.set_visible(false);
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
@@ -337,7 +337,7 @@ fn big_files_search(
 
     let combo_box_big_files_mode = gui_data.main_notebook.combo_box_big_files_mode.clone();
     let entry_big_files_number = gui_data.main_notebook.entry_big_files_number.clone();
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     let big_files_mode_index = combo_box_big_files_mode.selected() as usize;
     let big_files_mode = BIG_FILES_CHECK_METHOD_COMBO_BOX[big_files_mode_index].check_method;
@@ -367,7 +367,7 @@ fn temporary_files_search(
 ) {
     grid_progress.set_visible(false);
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
@@ -404,7 +404,7 @@ fn same_music_search(
     let scale_seconds_same_music = gui_data.main_notebook.scale_seconds_same_music.clone();
     let scale_similarity_same_music = gui_data.main_notebook.scale_similarity_same_music.clone();
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     let approximate_comparison = check_button_music_approximate_comparison.is_active();
     let comparison_only_in_title_group = check_button_music_compare_only_in_title_group.is_active();
@@ -497,7 +497,7 @@ fn broken_files_search(
     let check_button_broken_files_image: gtk4::CheckButton = gui_data.main_notebook.check_button_broken_files_image.clone();
     let check_button_broken_files_video: gtk4::CheckButton = gui_data.main_notebook.check_button_broken_files_video.clone();
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     let mut checked_types: CheckedTypes = CheckedTypes::NONE;
 
@@ -577,7 +577,7 @@ fn similar_image_search(
     let image_preview_similar_images = gui_data.main_notebook.image_preview_similar_images.clone();
     let scale_similarity_similar_images = gui_data.main_notebook.scale_similarity_similar_images.clone();
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
     image_preview_similar_images.set_visible(false);
 
     let hash_size_index = combo_box_image_hash_size.selected() as usize;
@@ -625,7 +625,7 @@ fn similar_video_search(
     let check_button_video_ignore_same_size = gui_data.main_notebook.check_button_video_ignore_same_size.clone();
     let check_button_settings_similar_videos_delete_outdated_cache = gui_data.settings.check_button_settings_similar_videos_delete_outdated_cache.clone();
     let scale_similarity_similar_videos = gui_data.main_notebook.scale_similarity_similar_videos.clone();
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     let tolerance = scale_similarity_similar_videos.value() as i32;
 
@@ -667,7 +667,7 @@ fn bad_symlinks_search(
 ) {
     grid_progress.set_visible(false);
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
@@ -691,7 +691,7 @@ fn bad_extensions_search(
 ) {
     grid_progress.set_visible(true);
 
-    clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
+    clean_subview(gui_data.main_notebook.common_tree_views.get_current_subview());
 
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
@@ -725,9 +725,20 @@ where
     component.set_hide_hard_links(loaded_commons.hide_hard_links);
 }
 
-#[fun_time(message = "clean_tree_view", level = "debug")]
-fn clean_tree_view(tree_view: &gtk4::TreeView) {
-    let list_store = tree_view.get_model();
+#[fun_time(message = "clean_subview", level = "debug")]
+fn clean_subview(subview: &SubView) {
+    // ColumnView (Duplicate tab)
+    if let Some(store) = subview.get_duplicate_model() {
+        store.remove_all();
+        return;
+    }
+    // ColumnView (simple tabs: EmptyFolders, BigFiles, etc.)
+    if let Some(store) = subview.get_simple_model() {
+        store.remove_all();
+        return;
+    }
+    // Legacy TreeView path (SimilarImages, SimilarVideos, SameMusic)
+    let list_store = subview.tree_view.get_model();
     let mut all_iters: Vec<gtk4::TreeIter> = Vec::new();
     iter_list(&list_store, |_m, i| {
         all_iters.push(*i);

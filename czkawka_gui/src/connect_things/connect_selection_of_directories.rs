@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use czkawka_core::common::normalize_windows_path;
 use gdk4::{DragAction, FileList};
 use gtk4::prelude::*;
-use gtk4::{DropTarget, Orientation, ResponseType, TreeView, Window};
+use gtk4::{Align, DropTarget, Orientation, TreeView, Window};
 
 use crate::connect_things::file_chooser_helpers::paths_from_list_model;
 use crate::flg;
@@ -151,52 +151,62 @@ fn add_directories(tree_view: &TreeView, folders: &Vec<PathBuf>, excluded_items:
 }
 
 fn add_manually_directories(window_main: &Window, tree_view: &TreeView, excluded_items: bool) {
-    let dialog = gtk4::Dialog::builder()
+    let window = gtk4::Window::builder()
         .title(flg!("include_manually_directories_dialog_title"))
         .transient_for(window_main)
         .modal(true)
+        .destroy_with_parent(true)
+        .resizable(false)
+        .default_width(300)
         .build();
 
-    dialog.set_default_size(300, 0);
-
     let entry: gtk4::Entry = gtk4::Entry::new();
+    let ok_btn = gtk4::Button::with_label(&flg!("general_ok_button"));
+    let cancel_btn = gtk4::Button::with_label(&flg!("general_close_button"));
+    ok_btn.add_css_class("suggested-action");
 
-    let added_button = dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
+    let btn_box = gtk4::Box::builder().orientation(Orientation::Horizontal).halign(Align::Center).spacing(8).build();
+    btn_box.append(&cancel_btn);
+    btn_box.append(&ok_btn);
 
-    let parent = added_button.parent().expect("Hack 1").parent().expect("Hack 2").downcast::<gtk4::Box>().expect("Hack 3"); // TODO Hack, but not so ugly as before
-    parent.set_orientation(Orientation::Vertical);
-    parent.insert_child_after(&entry, None::<&gtk4::Widget>);
+    let main_box = gtk4::Box::builder().orientation(Orientation::Vertical).spacing(8).margin_top(10).margin_bottom(10).margin_start(10).margin_end(10).build();
+    main_box.append(&entry);
+    main_box.append(&btn_box);
 
-    dialog.set_visible(true);
+    window.set_child(Some(&main_box));
+    window.present();
 
+    let win_cancel = window.clone();
+    cancel_btn.connect_clicked(move |_| {
+        win_cancel.close();
+    });
+
+    let win_ok = window.clone();
     let tree_view = tree_view.clone();
-    dialog.connect_response(move |dialog, response_type| {
-        if response_type == ResponseType::Ok {
-            for text in entry.text().split(';') {
-                let text = text.trim().to_string();
-                #[cfg(target_family = "windows")]
-                let text = normalize_windows_path(text).to_string_lossy().to_string();
-                let mut text = text;
+    ok_btn.connect_clicked(move |_| {
+        for text in entry.text().split(';') {
+            let text = text.trim().to_string();
+            #[cfg(target_family = "windows")]
+            let text = normalize_windows_path(text).to_string_lossy().to_string();
+            let mut text = text;
 
-                remove_ending_slashes(&mut text);
+            remove_ending_slashes(&mut text);
 
-                if !text.is_empty() {
-                    let list_store = tree_view.get_model();
+            if !text.is_empty() {
+                let list_store = tree_view.get_model();
 
-                    if excluded_items {
-                        if !check_if_value_is_in_list_store(&list_store, ColumnsExcludedDirectory::Path as i32, &text) {
-                            let values: [(u32, &dyn ToValue); 1] = [(ColumnsExcludedDirectory::Path as u32, &text)];
-                            append_row_to_list_store(&list_store, &values);
-                        }
-                    } else if !check_if_value_is_in_list_store(&list_store, ColumnsIncludedDirectory::Path as i32, &text) {
-                        let values: [(u32, &dyn ToValue); 2] = [(ColumnsIncludedDirectory::Path as u32, &text), (ColumnsIncludedDirectory::ReferenceButton as u32, &false)];
+                if excluded_items {
+                    if !check_if_value_is_in_list_store(&list_store, ColumnsExcludedDirectory::Path as i32, &text) {
+                        let values: [(u32, &dyn ToValue); 1] = [(ColumnsExcludedDirectory::Path as u32, &text)];
                         append_row_to_list_store(&list_store, &values);
                     }
+                } else if !check_if_value_is_in_list_store(&list_store, ColumnsIncludedDirectory::Path as i32, &text) {
+                    let values: [(u32, &dyn ToValue); 2] = [(ColumnsIncludedDirectory::Path as u32, &text), (ColumnsIncludedDirectory::ReferenceButton as u32, &false)];
+                    append_row_to_list_store(&list_store, &values);
                 }
             }
         }
-        dialog.close();
+        win_ok.close();
     });
 }
 

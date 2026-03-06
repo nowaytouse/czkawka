@@ -1,7 +1,7 @@
 // Remove console window in Windows OS
 #![windows_subsystem = "windows"]
 #![allow(clippy::indexing_slicing)] // Too much used, to be able to ignore it in every place
-// TreeView/ListStore/Dialog 等仍为 GTK 4.10 弃用 API，待后续迁移到 ColumnView/ListView/AlertDialog
+// TreeView/ListStore/CellRenderer 等仍为 GTK 4.10 弃用 API，后续将逐步迁移到 ColumnView/ListView
 #![allow(deprecated)]
 use std::env;
 
@@ -38,8 +38,8 @@ use gtk4::Application;
 use gtk4::gio::ApplicationFlags;
 use gtk4::prelude::*;
 use gui_structs::gui_data::{
-    CZK_ICON_ADD, CZK_ICON_COMPARE, CZK_ICON_DELETE, CZK_ICON_HARDLINK, CZK_ICON_HIDE_DOWN, CZK_ICON_HIDE_UP, CZK_ICON_INFO, CZK_ICON_LEFT, CZK_ICON_MANUAL_ADD, CZK_ICON_MOVE,
-    CZK_ICON_RIGHT, CZK_ICON_SAVE, CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SETTINGS, CZK_ICON_STOP, CZK_ICON_SYMLINK, CZK_ICON_TRASH, GuiData,
+    CZK_ICON_ADD, CZK_ICON_COMPARE, CZK_ICON_DELETE, CZK_ICON_HARDLINK, CZK_ICON_INFO, CZK_ICON_LEFT, CZK_ICON_MANUAL_ADD, CZK_ICON_MOVE, CZK_ICON_RIGHT, CZK_ICON_SAVE,
+    CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SETTINGS, CZK_ICON_STOP, CZK_ICON_SYMLINK, CZK_ICON_TRASH, GuiData,
 };
 use log::info;
 

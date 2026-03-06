@@ -2,12 +2,11 @@ use czkawka_core::common::items::new_excluded_item;
 use czkawka_core::common::regex_check;
 use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
-use gtk4::{ResponseType, TreeIter, Window};
+use gtk4::{Align, Orientation, TreeIter, Window};
 use log::error;
 use regex::Regex;
 
 use crate::flg;
-use crate::gtk_traits::DialogTraits;
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
 use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
@@ -533,11 +532,12 @@ fn popover_custom_select_unselect(
         flg!("popover_custom_mode_unselect")
     };
 
-    // Dialog for select/unselect items
+    // Window for select/unselect items
     {
-        let dialog = gtk4::Dialog::builder().title(window_title).transient_for(window_main).modal(true).build();
-        dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-        dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
+        let dialog = gtk4::Window::builder().title(window_title).transient_for(window_main).modal(true).destroy_with_parent(true).resizable(false).build();
+        let ok_button = gtk4::Button::with_label(&flg!("general_ok_button"));
+        let cancel_button = gtk4::Button::with_label(&flg!("general_close_button"));
+        ok_button.add_css_class("suggested-action");
 
         let check_button_path = gtk4::CheckButton::builder()
             .label(flg!("popover_custom_regex_path_label"))
@@ -642,14 +642,29 @@ fn popover_custom_select_unselect(
                 grid.attach(&check_button_select_not_all_results, 0, 6, 2, 1);
             }
 
-            let box_widget = dialog.get_box_child();
-            box_widget.append(&grid);
+            let btn_box = gtk4::Box::builder().orientation(Orientation::Horizontal).halign(Align::Center).spacing(8).margin_top(8).build();
+            btn_box.append(&cancel_button);
+            btn_box.append(&ok_button);
 
-            dialog.set_visible(true);
+            let outer_box = gtk4::Box::builder().orientation(Orientation::Vertical).spacing(6).margin_top(10).margin_bottom(10).margin_start(10).margin_end(10).build();
+            outer_box.append(&grid);
+            outer_box.append(&btn_box);
+
+            dialog.set_child(Some(&outer_box));
+            dialog.present();
         }
 
         let sv = sv.clone();
-        dialog.connect_response(move |confirmation_dialog_select_unselect, response_type| {
+
+        // Cancel button: just close
+        let dialog_cancel = dialog.clone();
+        cancel_button.connect_clicked(move |_| {
+            dialog_cancel.close();
+        });
+
+        let dialog_ok = dialog.clone();
+        ok_button.connect_clicked(move |_| {
+            let dialog = &dialog_ok;
             let name_wildcard = entry_name.text().trim().to_string();
             let path_wildcard = entry_path.text().trim().to_string();
             let regex_wildcard = entry_rust_regex.text().trim().to_string();
@@ -664,7 +679,7 @@ fn popover_custom_select_unselect(
             let path_wildcard_excluded = new_excluded_item(&path_wildcard);
             let path_wildcard_lowercase_excluded = new_excluded_item(&path_wildcard.to_lowercase());
 
-            if response_type == ResponseType::Ok {
+            {
                 let check_path = check_button_path.is_active();
                 let check_name = check_button_name.is_active();
                 let check_regex = check_button_rust_regex.is_active();
@@ -678,7 +693,7 @@ fn popover_custom_select_unselect(
                             t
                         } else {
                             error!("What? Regex should compile properly.");
-                            confirmation_dialog_select_unselect.close();
+                            dialog.close();
                             return;
                         }
                     } else {
@@ -702,13 +717,13 @@ fn popover_custom_select_unselect(
                             &compiled_regex,
                             select_things,
                         );
-                        confirmation_dialog_select_unselect.close();
+                        dialog.close();
                         return;
                     }
                     let model = sv.get_model();
 
                     let Some(mut iter) = model.iter_first() else {
-                        confirmation_dialog_select_unselect.close();
+                        dialog.close();
                         return;
                     };
                     let using_reference_folders =
@@ -806,7 +821,7 @@ fn popover_custom_select_unselect(
                     }
                 }
             }
-            confirmation_dialog_select_unselect.close();
+            dialog.close();
         });
     }
 }

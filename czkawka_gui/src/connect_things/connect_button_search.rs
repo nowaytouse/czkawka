@@ -119,7 +119,7 @@ pub(crate) fn connect_button_search(gui_data: &GuiData, result_sender: Sender<Me
 
         // Show progress dialog
         if show_dialog.load(Ordering::Relaxed) {
-            window_progress.show();
+            window_progress.set_visible(true);
             taskbar_state.borrow().show();
             taskbar_state.borrow().set_progress_state(TBPF_NOPROGRESS);
         }

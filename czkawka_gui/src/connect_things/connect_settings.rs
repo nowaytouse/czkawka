@@ -12,12 +12,11 @@ use czkawka_core::tools::similar_images::core::get_similar_images_cache_file;
 use czkawka_core::tools::similar_videos::core::get_similar_videos_cache_file;
 use czkawka_core::tools::similar_videos::{DEFAULT_CROP_DETECT, DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION};
 use gtk4::prelude::*;
-use gtk4::{Label, ResponseType, Window};
 use image::imageops::FilterType;
 use log::error;
 
 use crate::flg;
-use crate::gtk_traits::DialogTraits;
+use crate::helpers::async_dialog::alert_confirm;
 use crate::gui_structs::gui_data::GuiData;
 use crate::saving_loading::{load_configuration, reset_configuration, save_configuration};
 
@@ -116,14 +115,14 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
             let entry_settings_cache_file_minimal_size = gui_data.settings.entry_settings_cache_file_minimal_size.clone();
 
             button_settings_duplicates_clear_cache.connect_clicked(move |_| {
-                let dialog = create_clear_cache_dialog(&flg!("cache_clear_duplicates_title"), &settings_window);
-                dialog.set_visible(true);
-
+                let title = flg!("cache_clear_duplicates_title");
+                let detail = cache_clear_detail();
+                let settings_window = settings_window.clone();
                 let text_view_errors = text_view_errors.clone();
                 let entry_settings_cache_file_minimal_size = entry_settings_cache_file_minimal_size.clone();
 
-                dialog.connect_response(move |dialog, response_type| {
-                    if response_type == ResponseType::Ok {
+                glib::MainContext::default().spawn_local(async move {
+                    if alert_confirm(&settings_window, &title, &detail).await {
                         let mut messages: Messages = Messages::new();
                         for use_prehash in [true, false] {
                             for type_of_hash in [HashType::Xxh3, HashType::Blake3, HashType::Crc32] {
@@ -149,7 +148,6 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                             text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                         }
                     }
-                    dialog.close();
                 });
             });
         }
@@ -159,30 +157,17 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
             let text_view_errors = gui_data.text_view_errors.clone();
 
             button_settings_similar_images_clear_cache.connect_clicked(move |_| {
-                let dialog = create_clear_cache_dialog(&flg!("cache_clear_similar_images_title"), &settings_window);
-                dialog.set_visible(true);
-
+                let title = flg!("cache_clear_similar_images_title");
+                let detail = cache_clear_detail();
+                let settings_window = settings_window.clone();
                 let text_view_errors = text_view_errors.clone();
 
-                dialog.connect_response(move |dialog, response_type| {
-                    if response_type == ResponseType::Ok {
+                glib::MainContext::default().spawn_local(async move {
+                    if alert_confirm(&settings_window, &title, &detail).await {
                         let mut messages: Messages = Messages::new();
                         for hash_size in [8, 16, 32, 64] {
-                            for image_filter in [
-                                FilterType::Lanczos3,
-                                FilterType::CatmullRom,
-                                FilterType::Gaussian,
-                                FilterType::Nearest,
-                                FilterType::Triangle,
-                            ] {
-                                for hash_alg in [
-                                    HashAlg::Blockhash,
-                                    HashAlg::Gradient,
-                                    HashAlg::DoubleGradient,
-                                    HashAlg::VertGradient,
-                                    HashAlg::Mean,
-                                    HashAlg::Median,
-                                ] {
+                            for image_filter in [FilterType::Lanczos3, FilterType::CatmullRom, FilterType::Gaussian, FilterType::Nearest, FilterType::Triangle] {
+                                for hash_alg in [HashAlg::Blockhash, HashAlg::Gradient, HashAlg::DoubleGradient, HashAlg::VertGradient, HashAlg::Mean, HashAlg::Median] {
                                     let file_name = get_similar_images_cache_file(hash_size, hash_alg, image_filter);
                                     let (mut messages, loaded_items) =
                                         load_cache_from_file_generalized_by_path::<czkawka_core::tools::similar_images::ImagesEntry>(&file_name, true, &Default::default());
@@ -198,7 +183,6 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                         messages.messages.push(flg!("cache_properly_cleared"));
                         text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                     }
-                    dialog.close();
                 });
             });
         }
@@ -208,46 +192,34 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
             let text_view_errors = gui_data.text_view_errors.clone();
 
             button_settings_similar_videos_clear_cache.connect_clicked(move |_| {
-                let dialog = create_clear_cache_dialog(&flg!("cache_clear_similar_videos_title"), &settings_window);
-                dialog.set_visible(true);
-
+                let title = flg!("cache_clear_similar_videos_title");
+                let detail = cache_clear_detail();
+                let settings_window = settings_window.clone();
                 let text_view_errors = text_view_errors.clone();
 
-                dialog.connect_response(move |dialog, response_type| {
-                    if response_type == ResponseType::Ok {
+                glib::MainContext::default().spawn_local(async move {
+                    if alert_confirm(&settings_window, &title, &detail).await {
                         let file_name = get_similar_videos_cache_file(DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, DEFAULT_CROP_DETECT);
                         let (mut messages, loaded_items) =
                             load_cache_from_file_generalized_by_path::<czkawka_core::tools::similar_videos::VideosEntry>(&file_name, true, &Default::default());
 
-                        if let Some(cache_entries) = loaded_items {
+                        let mut messages = if let Some(cache_entries) = loaded_items {
                             let save_messages = save_cache_to_file_generalized(&file_name, &cache_entries, false, 0);
                             messages.extend_with_another_messages(save_messages);
-                        }
+                            messages
+                        } else {
+                            messages
+                        };
 
                         messages.messages.push(flg!("cache_properly_cleared"));
                         text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                     }
-                    dialog.close();
                 });
             });
         }
     }
 }
 
-fn create_clear_cache_dialog(title_str: &str, window_settings: &Window) -> gtk4::Dialog {
-    let dialog = gtk4::Dialog::builder().title(title_str).modal(true).transient_for(window_settings).build();
-    dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
-
-    let label = Label::builder().label(flg!("cache_clear_message_label_1")).build();
-    let label2 = Label::builder().label(flg!("cache_clear_message_label_2")).build();
-    let label3 = Label::builder().label(flg!("cache_clear_message_label_3")).build();
-    let label4 = Label::builder().label(flg!("cache_clear_message_label_4")).build();
-
-    let internal_box = dialog.get_box_child();
-    internal_box.append(&label);
-    internal_box.append(&label2);
-    internal_box.append(&label3);
-    internal_box.append(&label4);
-    dialog
+fn cache_clear_detail() -> String {
+    format!("{}\n{}\n{}\n{}", flg!("cache_clear_message_label_1"), flg!("cache_clear_message_label_2"), flg!("cache_clear_message_label_3"), flg!("cache_clear_message_label_4"))
 }

@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name progress.ui -->
   <requires lib="gtk" version="4.20"/>
-  <object class="GtkDialog" id="window_progress">
+  <object class="GtkWindow" id="window_progress">
     <child>
       <object class="GtkBox">
         <property name="margin-bottom">10</property>

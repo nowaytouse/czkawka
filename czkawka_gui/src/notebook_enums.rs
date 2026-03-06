@@ -56,11 +56,3 @@ pub enum NotebookUpperEnum {
     ItemsConfiguration,
 }
 
-pub(crate) fn to_notebook_upper_enum(notebook_number: u32) -> NotebookUpperEnum {
-    match notebook_number {
-        0 => NotebookUpperEnum::IncludedDirectories,
-        1 => NotebookUpperEnum::ExcludedDirectories,
-        2 => NotebookUpperEnum::ItemsConfiguration,
-        _ => panic!("Invalid Upper Notebook Tab"),
-    }
-}

@@ -1,7 +1,7 @@
 use czkawka_core::common::{make_file_symlink, make_hard_link};
 use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
-use gtk4::{Align, CheckButton, Dialog, Orientation, ResponseType, TextView, TreeIter, TreePath};
+use gtk4::{CheckButton, TextView, TreeIter, TreePath};
 use rayon::prelude::*;
 
 use crate::flg;
@@ -9,6 +9,7 @@ use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::{add_text_to_text_view, get_full_name_from_path_name, reset_text_view};
+use crate::helpers::async_dialog::{alert_confirm, confirm_window_with_checkbox};
 use crate::helpers::list_store_operations::clean_invalid_headers;
 use crate::helpers::model_iter::{iter_list, iter_list_break_with_init};
 
@@ -288,30 +289,6 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
     }
 }
 
-fn create_dialog_non_group(window_main: &gtk4::Window) -> Dialog {
-    let dialog = Dialog::builder()
-        .title(flg!("hard_sym_invalid_selection_title_dialog"))
-        .transient_for(window_main)
-        .modal(true)
-        .build();
-    let button_ok = dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
-
-    let label: gtk4::Label = gtk4::Label::new(Some(&flg!("hard_sym_invalid_selection_label_1")));
-    let label2: gtk4::Label = gtk4::Label::new(Some(&flg!("hard_sym_invalid_selection_label_2")));
-    let label3: gtk4::Label = gtk4::Label::new(Some(&flg!("hard_sym_invalid_selection_label_3")));
-
-    button_ok.grab_focus();
-
-    let parent = button_ok.parent().expect("Hack 1").parent().expect("Hack 2").downcast::<gtk4::Box>().expect("Hack 3"); // TODO Hack, but not so ugly as before
-    parent.set_orientation(Orientation::Vertical);
-    parent.insert_child_after(&label, None::<&gtk4::Widget>);
-    parent.insert_child_after(&label2, Some(&label));
-    parent.insert_child_after(&label3, Some(&label2));
-
-    dialog.set_visible(true);
-    dialog
-}
 
 pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, window_main: &gtk4::Window) -> bool {
     let only_one_in_group = if let Some(store) = sv.get_duplicate_model() {
@@ -372,16 +349,10 @@ pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, wind
     };
 
     if only_one_in_group {
-        let confirmation_dialog = create_dialog_non_group(window_main);
-
-        let response_type = confirmation_dialog.run_future().await;
-        if response_type != ResponseType::Ok {
-            confirmation_dialog.set_visible(false);
-            confirmation_dialog.close();
+        let detail = format!("{}\n{}\n{}", flg!("hard_sym_invalid_selection_label_1"), flg!("hard_sym_invalid_selection_label_2"), flg!("hard_sym_invalid_selection_label_3"));
+        if !alert_confirm(window_main, &flg!("hard_sym_invalid_selection_title_dialog"), &detail).await {
             return false;
         }
-        confirmation_dialog.set_visible(false);
-        confirmation_dialog.close();
     }
 
     true
@@ -424,39 +395,22 @@ pub(crate) fn check_if_anything_is_selected_async(sv: &SubView) -> bool {
 
 pub async fn check_if_can_link_files(check_button_settings_confirm_link: &CheckButton, window_main: &gtk4::Window) -> bool {
     if check_button_settings_confirm_link.is_active() {
-        let (confirmation_dialog_link, check_button) = create_dialog_ask_for_linking(window_main);
-
-        let response_type = confirmation_dialog_link.run_future().await;
-        if response_type == ResponseType::Ok {
-            if !check_button.is_active() {
+        let (confirmed, ask_next) = confirm_window_with_checkbox(
+            window_main,
+            &flg!("hard_sym_link_title_dialog"),
+            &[flg!("hard_sym_link_label").as_str()],
+            &flg!("general_ok_button"),
+            &flg!("general_close_button"),
+            &flg!("dialogs_ask_next_time"),
+        )
+        .await;
+        if confirmed {
+            if !ask_next {
                 check_button_settings_confirm_link.set_active(false);
             }
-            confirmation_dialog_link.set_visible(false);
-            confirmation_dialog_link.close();
         } else {
-            confirmation_dialog_link.set_visible(false);
-            confirmation_dialog_link.close();
             return false;
         }
     }
     true
-}
-
-fn create_dialog_ask_for_linking(window_main: &gtk4::Window) -> (Dialog, CheckButton) {
-    let dialog = Dialog::builder().title(flg!("hard_sym_link_title_dialog")).transient_for(window_main).modal(true).build();
-    let button_ok = dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
-
-    let label: gtk4::Label = gtk4::Label::new(Some(&flg!("hard_sym_link_label")));
-    let check_button: CheckButton = CheckButton::builder().label(flg!("dialogs_ask_next_time")).active(true).halign(Align::Center).build();
-
-    button_ok.grab_focus();
-
-    let parent = button_ok.parent().expect("Hack 1").parent().expect("Hack 2").downcast::<gtk4::Box>().expect("Hack 3"); // TODO Hack, but not so ugly as before
-    parent.set_orientation(Orientation::Vertical);
-    parent.insert_child_after(&label, None::<&gtk4::Widget>);
-    parent.insert_child_after(&check_button, Some(&label));
-
-    dialog.set_visible(true);
-    (dialog, check_button)
 }

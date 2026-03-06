@@ -1,38 +1,8 @@
 use std::collections::VecDeque;
 use std::vec::Vec;
 
-use gtk4::prelude::{ComboBoxExtManual, *};
-use gtk4::{Box as GtkBox, ComboBoxText, Dialog, Widget};
-
-pub trait ComboBoxTraits {
-    fn set_model_and_first<I, S>(&self, models: I)
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<str>;
-}
-
-impl ComboBoxTraits for ComboBoxText {
-    fn set_model_and_first<I, S>(&self, models: I)
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<str>,
-    {
-        for item in models {
-            self.append_text(item.as_ref());
-        }
-        self.set_active(Some(0));
-    }
-}
-
-pub trait DialogTraits {
-    fn get_box_child(&self) -> GtkBox;
-}
-
-impl DialogTraits for Dialog {
-    fn get_box_child(&self) -> GtkBox {
-        self.child().expect("Dialog has no child").downcast::<GtkBox>().expect("Dialog child is not Box")
-    }
-}
+use gtk4::prelude::*;
+use gtk4::{Box as GtkBox, Widget};
 
 #[allow(clippy::allow_attributes)]
 #[allow(dead_code)]
@@ -152,6 +122,8 @@ mod test {
 
     use super::*;
 
+    // (ComboBoxText and Dialog tests removed — those GTK widgets are deprecated since 4.10)
+
     #[gtk4::test]
     fn test_get_all_direct_children() {
         let obj = gtk4::Box::new(Orientation::Horizontal, 0);
@@ -214,23 +186,6 @@ mod test {
         box1.append(&box2);
 
         assert_eq!(root.get_all_boxes().len(), 3);
-    }
-
-    #[gtk4::test]
-    fn test_combo_box_set_model_and_first() {
-        let combo = gtk4::ComboBoxText::new();
-        combo.set_model_and_first(["Option 1", "Option 2", "Option 3"]);
-
-        assert_eq!(combo.active(), Some(0));
-        assert_eq!(combo.active_text().unwrap(), "Option 1");
-    }
-
-    #[gtk4::test]
-    fn test_dialog_get_box_child() {
-        let dialog = gtk4::Dialog::new();
-
-        let result = dialog.get_box_child();
-        assert_eq!(result.spacing(), 0);
     }
 
     #[gtk4::test]

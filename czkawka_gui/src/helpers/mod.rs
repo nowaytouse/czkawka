@@ -1,3 +1,4 @@
+pub mod async_dialog;
 pub mod enums;
 pub mod image_operations;
 pub mod list_store_operations;

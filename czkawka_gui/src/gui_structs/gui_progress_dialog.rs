@@ -7,7 +7,7 @@ use crate::{CZK_ICON_STOP, flg};
 
 #[derive(Clone)]
 pub struct GuiProgressDialog {
-    pub window_progress: gtk4::Dialog,
+    pub window_progress: gtk4::Window,
 
     pub progress_bar_current_stage: gtk4::ProgressBar,
     pub progress_bar_all_stages: gtk4::ProgressBar,
@@ -27,7 +27,7 @@ impl GuiProgressDialog {
         let glade_src = include_str!("../../ui/progress.ui").to_string();
         let builder = Builder::from_string(glade_src.as_str());
 
-        let window_progress: gtk4::Dialog = builder.object("window_progress").expect("Cambalache");
+        let window_progress: gtk4::Window = builder.object("window_progress").expect("Cambalache");
         window_progress.set_title(Some(&flg!("window_progress_title")));
         window_progress.set_transient_for(Some(window_main));
         window_progress.set_modal(true);

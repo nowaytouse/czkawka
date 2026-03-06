@@ -1639,6 +1639,7 @@ dependencies = [
  "dunce",
  "fs_extra",
  "fun_time",
+ "futures-channel",
  "gdk4",
  "glib",
  "gtk4",

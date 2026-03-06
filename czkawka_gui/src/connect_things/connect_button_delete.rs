@@ -1,13 +1,14 @@
 use czkawka_core::common::{remove_folder_if_contains_only_empty_folders, remove_single_file};
 use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
-use gtk4::{Align, CheckButton, Dialog, MultiSelection, Orientation, ResponseType, TextView};
+use gtk4::{CheckButton, MultiSelection, TextView};
 use itertools::Itertools;
 use log::debug;
 use rayon::prelude::*;
 
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
+use crate::helpers::async_dialog::confirm_window_with_checkbox;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
@@ -72,84 +73,32 @@ pub async fn check_if_can_delete_files(
     number_of_selected_groups: u64,
 ) -> bool {
     if check_button_settings_confirm_deletion.is_active() {
-        let (confirmation_dialog_delete, check_button) = create_dialog_ask_for_deletion(window_main, number_of_selected_items, number_of_selected_groups);
-
-        let response_type = confirmation_dialog_delete.run_future().await;
-        if response_type == ResponseType::Ok {
-            if !check_button.is_active() {
+        let items_msg = match number_of_selected_groups {
+            0 => flg!("delete_items_label", items = number_of_selected_items),
+            _ => flg!("delete_items_groups_label", items = number_of_selected_items, groups = number_of_selected_groups),
+        };
+        let question_msg = flg!("delete_question_label");
+        let messages = [question_msg.as_str(), items_msg.as_str()];
+        let (confirmed, ask_next) = confirm_window_with_checkbox(
+            window_main,
+            &flg!("delete_title_dialog"),
+            &messages,
+            &flg!("general_ok_button"),
+            &flg!("general_close_button"),
+            &flg!("dialogs_ask_next_time"),
+        )
+        .await;
+        if confirmed {
+            if !ask_next {
                 check_button_settings_confirm_deletion.set_active(false);
             }
-            confirmation_dialog_delete.set_visible(false);
-            confirmation_dialog_delete.close();
         } else {
-            confirmation_dialog_delete.set_visible(false);
-            confirmation_dialog_delete.close();
             return false;
         }
     }
     true
 }
 
-fn create_dialog_ask_for_deletion(window_main: &gtk4::Window, number_of_selected_items: u64, number_of_selected_groups: u64) -> (Dialog, CheckButton) {
-    let dialog = Dialog::builder().title(flg!("delete_title_dialog")).transient_for(window_main).modal(true).build();
-    let button_ok = dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
-
-    dialog.set_default_size(300, 0);
-
-    let label: gtk4::Label = gtk4::Label::new(Some(&flg!("delete_question_label")));
-    let label2: gtk4::Label = match number_of_selected_groups {
-        0 => gtk4::Label::new(Some(&flg!("delete_items_label", items = number_of_selected_items))),
-        _ => gtk4::Label::new(Some(&flg!(
-            "delete_items_groups_label",
-            items = number_of_selected_items,
-            groups = number_of_selected_groups
-        ))),
-    };
-
-    let check_button: CheckButton = CheckButton::builder()
-        .label(flg!("dialogs_ask_next_time"))
-        .active(true)
-        .halign(Align::Center)
-        .margin_top(5)
-        .build();
-
-    button_ok.grab_focus();
-
-    let parent = button_ok.parent().expect("Hack 1").parent().expect("Hack 2").downcast::<gtk4::Box>().expect("Hack 3"); // TODO Hack, but not so ugly as before
-    parent.set_orientation(Orientation::Vertical);
-    parent.insert_child_after(&label, None::<&gtk4::Widget>);
-    parent.insert_child_after(&label2, Some(&label));
-    parent.insert_child_after(&check_button, Some(&label2));
-
-    dialog.set_visible(true);
-    (dialog, check_button)
-}
-
-fn create_dialog_group_deletion(window_main: &gtk4::Window) -> (Dialog, CheckButton) {
-    let dialog = Dialog::builder()
-        .title(flg!("delete_all_files_in_group_title"))
-        .transient_for(window_main)
-        .modal(true)
-        .build();
-    let button_ok = dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
-    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
-
-    let label: gtk4::Label = gtk4::Label::new(Some(&flg!("delete_all_files_in_group_label1")));
-    let label2: gtk4::Label = gtk4::Label::new(Some(&flg!("delete_all_files_in_group_label2")));
-    let check_button: CheckButton = CheckButton::builder().label(flg!("dialogs_ask_next_time")).active(true).halign(Align::Center).build();
-
-    button_ok.grab_focus();
-
-    let parent = button_ok.parent().expect("Hack 1").parent().expect("Hack 2").downcast::<gtk4::Box>().expect("Hack 3"); // TODO Hack, but not so ugly as before
-    parent.set_orientation(Orientation::Vertical);
-    parent.insert_child_after(&label, None::<&gtk4::Widget>);
-    parent.insert_child_after(&label2, Some(&label));
-    parent.insert_child_after(&check_button, Some(&label2));
-
-    dialog.set_visible(true);
-    (dialog, check_button)
-}
 
 pub async fn check_if_deleting_all_files_in_group(sv: &SubView, window_main: &gtk4::Window, check_button_settings_confirm_group_deletion: &CheckButton) -> bool {
     if sv.get_duplicate_model().is_some() {
@@ -190,22 +139,27 @@ pub async fn check_if_deleting_all_files_in_group(sv: &SubView, window_main: &gt
         return false;
     }
 
-    let (confirmation_dialog_group_delete, check_button) = create_dialog_group_deletion(window_main);
+    let label1 = flg!("delete_all_files_in_group_label1");
+    let label2 = flg!("delete_all_files_in_group_label2");
+    let messages = [label1.as_str(), label2.as_str()];
+    let (confirmed, ask_next) = confirm_window_with_checkbox(
+        window_main,
+        &flg!("delete_all_files_in_group_title"),
+        &messages,
+        &flg!("general_ok_button"),
+        &flg!("general_close_button"),
+        &flg!("dialogs_ask_next_time"),
+    )
+    .await;
 
-    let response_type = confirmation_dialog_group_delete.run_future().await;
-    if response_type == ResponseType::Ok {
-        if !check_button.is_active() {
+    if confirmed {
+        if !ask_next {
             check_button_settings_confirm_group_deletion.set_active(false);
         }
+        false // don't skip deletion
     } else {
-        confirmation_dialog_group_delete.set_visible(false);
-        confirmation_dialog_group_delete.close();
-        return true;
+        true // skip deletion
     }
-    confirmation_dialog_group_delete.set_visible(false);
-    confirmation_dialog_group_delete.close();
-
-    false
 }
 
 pub(crate) fn empty_folder_remover(sv: &SubView, check_button_settings_use_trash: &CheckButton, text_view_errors: &TextView) {

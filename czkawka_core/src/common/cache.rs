@@ -62,6 +62,11 @@ where
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to save cache to file \"{}\" - {e}", cache_file.to_string_lossy());
+                drop(writer);
+                let _ = fs::remove_file(&cache_file);
+                if save_also_as_json {
+                    let _ = fs::remove_file(&cache_file_json);
+                }
                 return text_messages;
             }
             if let Err(e) = writer.flush() {
@@ -69,6 +74,11 @@ where
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
                 debug!("Failed to flush cache to file \"{}\" - {e}", cache_file.to_string_lossy());
+                drop(writer);
+                let _ = fs::remove_file(&cache_file);
+                if save_also_as_json {
+                    let _ = fs::remove_file(&cache_file_json);
+                }
                 return text_messages;
             }
             debug!("Saved cache to binary file \"{}\" with size {}", cache_file.to_string_lossy(), get_cache_size(&cache_file));

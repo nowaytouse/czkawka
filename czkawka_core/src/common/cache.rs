@@ -56,7 +56,7 @@ where
 
         {
             let writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
-            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
+            let options = bincode::DefaultOptions::new().with_no_limit();
             if let Err(e) = options.serialize_into(writer, &hashmap_to_save) {
                 text_messages
                     .warnings
@@ -209,10 +209,10 @@ where
         let mut vec_loaded_entries: Vec<T>;
         if let Some(file_handler) = file_handler {
             cache_full_name = cache_file.clone();
-            let reader = BufReader::new(file_handler);
+            let mut reader = BufReader::new(file_handler);
 
-            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-            vec_loaded_entries = match options.deserialize_from(reader) {
+            let options = bincode::DefaultOptions::new().with_no_limit();
+            vec_loaded_entries = match options.deserialize_from(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages
@@ -229,7 +229,8 @@ where
         } else {
             cache_full_name = cache_file_json.clone();
             let reader = BufReader::new(file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None"));
-            vec_loaded_entries = match serde_json::from_reader(reader) {
+            let mut reader = reader;
+            vec_loaded_entries = match serde_json::from_reader(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages.warnings.push(flc!(

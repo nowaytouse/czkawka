@@ -11,10 +11,13 @@
 
 ### Infrastructure and Stability Improvements
 - **Increased Memory/Allocation Limits for Massive Hashes**: 
-  - Raised `MEMORY_LIMIT` for Bincode cache serialization to **14 GB** in `czkawka_core/src/common/cache.rs`.
-  - Raised image decoding allocation limit to **14 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
+  - Raised `MEMORY_LIMIT` for Bincode cache serialization to **50 GB** in `czkawka_core/src/common/cache.rs`.
+  - Raised image decoding allocation limit to **50 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
   - These changes prevent "failed to fill whole buffer" and "failed to allocate X bytes" errors when using massive perceptual hash sizes (up to 8192).
+- **Corrupt Cache Auto-Cleanup**: Implemented automatic deletion of truncated or corrupt cache files during loading to prevent persistent warnings after a failed scan.
+- **Save Failure Cleanup**: Added logic to remove partial binary and JSON files if a save operation fails (e.g., due to size limits), ensuring no "broken" cache states are left behind.
 - **Fixed Similar Images Hash Size Support**: Reverted accidental removal of 1024-8192 hash sizes in the UI and core logic.
+- **Task Management Scripts**: Added `scripts/build.sh` and `scripts/run.sh` to allow separate compilation and execution without redundant rebuilds.
 
 ### GTK4 API Migration — Deprecated API Removal (ongoing)
 

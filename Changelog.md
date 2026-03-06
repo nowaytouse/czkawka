@@ -6,8 +6,8 @@
 
 ### GUI Modernization and Visual Polish
 - **Modernized App Aesthetics**: Injected a global `CssProvider` with rounded buttons, hover transitions, shadows, and improved Notebook tab styling to replace the legacy "retro" look.
-- **Improved File Protection Feedback**: Protected files now visually display with a strikethrough decoration and dimmed red color using dynamic CSS class binding (`.protected-file`).
-- **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) to prevent GTK measurement warnings, and fixed ColumnView path truncation.
+- **Improved File Protection Feedback**: Protected files are now clearly marked in red (`#d32f2f`). In migrated ColumnView tabs, this is achieved via dynamic CSS class binding (`.protected-file`) which adds a strikethrough. In legacy TreeView tabs (Similar Images, Similar Videos, Same Music), the `TextColor` attribute is dynamically modified during search and protection toggles to provide immediate visual feedback.
+- **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) and wrapped dense Similar Images settings in stacked `GtkBox` layouts to prevent GTK `width-request` measurement warnings.
 
 ### GTK4 API Migration — Deprecated API Removal (ongoing)
 

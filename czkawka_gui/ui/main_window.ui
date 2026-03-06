@@ -520,34 +520,43 @@
                                 <property name="margin-end">5</property>
                                 <property name="margin-start">5</property>
                                 <property name="margin-top">2</property>
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">5</property>
                                 <child>
-                                  <object class="GtkLabel" id="label_image_resize_algorithm">
-                                    <property name="label" translatable="yes">Resize algorithm</property>
-                                    <property name="margin-end">2</property>
+                                  <object class="GtkBox">
+                                    <child>
+                                      <object class="GtkLabel" id="label_image_resize_algorithm">
+                                        <property name="label" translatable="yes">Resize algorithm</property>
+                                        <property name="margin-end">2</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDropDown" id="combo_box_image_resize_algorithm"/>
+                                    </child>
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkDropDown" id="combo_box_image_resize_algorithm"/>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="label_image_hash_size">
-                                    <property name="label" translatable="yes">Hash size:</property>
-                                    <property name="margin-end">2</property>
-                                    <property name="margin-start">5</property>
+                                  <object class="GtkBox">
+                                    <child>
+                                      <object class="GtkLabel" id="label_image_hash_size">
+                                        <property name="label" translatable="yes">Hash size:</property>
+                                        <property name="margin-end">2</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDropDown" id="combo_box_image_hash_size"/>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="label_image_hash_type">
+                                        <property name="label" translatable="yes">Hash type:</property>
+                                        <property name="margin-end">2</property>
+                                        <property name="margin-start">5</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDropDown" id="combo_box_image_hash_algorithm"/>
+                                    </child>
                                   </object>
-                                </child>
-                                <child>
-                                  <object class="GtkDropDown" id="combo_box_image_hash_size"/>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="label_image_hash_type">
-                                    <property name="label" translatable="yes">Hash type:</property>
-                                    <property name="margin-end">2</property>
-                                    <property name="margin-start">5</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkDropDown" id="combo_box_image_hash_algorithm"/>
                                 </child>
                               </object>
                             </child>

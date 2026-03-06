@@ -195,9 +195,13 @@ fn compute_bad_extensions(be: BadExtensions, entry_info: &Entry, text_view_error
     if let Some(store) = subview.get_simple_model() {
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -250,9 +254,13 @@ fn compute_broken_files(br: BrokenFiles, entry_info: &Entry, text_view_errors: &
     if let Some(store) = subview.get_simple_model() {
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -304,9 +312,13 @@ fn compute_invalid_symlinks(ifs: InvalidSymlinks, entry_info: &Entry, text_view_
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
             let symlink_info = file_entry.symlink_info;
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -702,9 +714,13 @@ fn compute_temporary_files(tf: Temporary, entry_info: &Entry, text_view_errors: 
     if let Some(store) = subview.get_simple_model() {
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -754,9 +770,13 @@ fn compute_big_files(bf: BigFile, entry_info: &Entry, text_view_errors: &TextVie
     if let Some(store) = subview.get_simple_model() {
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -808,9 +828,13 @@ fn compute_empty_files(vf: EmptyFiles, entry_info: &Entry, text_view_errors: &Te
     if let Some(store) = subview.get_simple_model() {
         for file_entry in vector {
             let (directory, file) = split_path(&file_entry.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(file_entry.modified_date),
@@ -862,9 +886,13 @@ fn compute_empty_folders(ef: EmptyFolder, entry_info: &Entry, text_view_errors: 
     if let Some(store) = subview.get_simple_model() {
         for fe in vector {
             let (directory, file) = split_path(&fe.path);
+            let is_protected = {
+                let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
+                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+            };
             store.append(&SimpleRow::new(
                 false,
-                false,
+                is_protected,
                 file.clone(),
                 directory.clone(),
                 get_dt_timestamp_string(fe.modified_date),
@@ -1234,10 +1262,17 @@ fn duplicates_add_to_duplicate_store(
 ) {
     let (size_str, string_date) = format_size_and_date(size, modified_date, is_header, is_reference_folder);
     let color = get_row_color(is_header).to_string();
+    let is_protected = if !is_header {
+        let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
+        crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+    } else {
+        false
+    };
+
     let row = DuplicateRow::new(
         !is_header,
         false,
-        false,
+        is_protected,
         size_str,
         size,
         file.to_string(),
@@ -1269,6 +1304,14 @@ fn similar_images_add_to_list_store(
     let color = get_group_row_color(is_header, group_index);
     let similarity_string = if is_header { String::new() } else { get_string_from_similarity(similarity, hash_size) };
 
+    let mut text_color = TEXT_COLOR.to_string();
+    if !is_header {
+        let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
+        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+            text_color = "#d32f2f".to_string();
+        }
+    }
+
     let values: [(u32, &dyn ToValue); COLUMNS_NUMBER] = [
         (ColumnsSimilarImages::ActivatableSelectButton as u32, &(!is_header)),
         (ColumnsSimilarImages::SelectionButton as u32, &false),
@@ -1282,7 +1325,7 @@ fn similar_images_add_to_list_store(
         (ColumnsSimilarImages::ModificationAsSecs as u32, &modified_date),
         (ColumnsSimilarImages::Color as u32, &color),
         (ColumnsSimilarImages::IsHeader as u32, &is_header),
-        (ColumnsSimilarImages::TextColor as u32, &TEXT_COLOR),
+        (ColumnsSimilarImages::TextColor as u32, &text_color),
     ];
     append_row_to_list_store(list_store, &values);
 }
@@ -1316,6 +1359,14 @@ fn similar_videos_add_to_list_store(
     };
     let duration_str = format_duration_opt(duration);
 
+    let mut text_color = TEXT_COLOR.to_string();
+    if !is_header {
+        let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
+        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+            text_color = "#d32f2f".to_string();
+        }
+    }
+
     let values: [(u32, &dyn ToValue); COLUMNS_NUMBER] = [
         (ColumnsSimilarVideos::ActivatableSelectButton as u32, &(!is_header)),
         (ColumnsSimilarVideos::SelectionButton as u32, &false),
@@ -1332,7 +1383,7 @@ fn similar_videos_add_to_list_store(
         (ColumnsSimilarVideos::ModificationAsSecs as u32, &modified_date),
         (ColumnsSimilarVideos::Color as u32, &color),
         (ColumnsSimilarVideos::IsHeader as u32, &is_header),
-        (ColumnsSimilarVideos::TextColor as u32, &TEXT_COLOR),
+        (ColumnsSimilarVideos::TextColor as u32, &text_color),
     ];
 
     append_row_to_list_store(list_store, &values);
@@ -1358,6 +1409,14 @@ fn same_music_add_to_list_store(
     let (size_str, string_date) = format_size_and_date(size, modified_date, is_header, is_reference_folder);
     let color = get_row_color(is_header);
 
+    let mut text_color = TEXT_COLOR.to_string();
+    if !is_header {
+        let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
+        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+            text_color = "#d32f2f".to_string();
+        }
+    }
+
     let values: [(u32, &dyn ToValue); COLUMNS_NUMBER] = [
         (ColumnsSameMusic::ActivatableSelectButton as u32, &(!is_header)),
         (ColumnsSameMusic::SelectionButton as u32, &false),
@@ -1376,7 +1435,7 @@ fn same_music_add_to_list_store(
         (ColumnsSameMusic::ModificationAsSecs as u32, &modified_date),
         (ColumnsSameMusic::Color as u32, &color),
         (ColumnsSameMusic::IsHeader as u32, &is_header),
-        (ColumnsSameMusic::TextColor as u32, &TEXT_COLOR),
+        (ColumnsSameMusic::TextColor as u32, &text_color),
     ];
 
     append_row_to_list_store(list_store, &values);

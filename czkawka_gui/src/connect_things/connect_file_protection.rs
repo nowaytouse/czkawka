@@ -59,6 +59,13 @@ fn connect_protect(gui_data: &GuiData) {
             }
         } else {
             let model = sv.get_model();
+            let text_color_col = match sv.nb_object.notebook_type {
+                crate::notebook_enums::NotebookMainEnum::SimilarImages => Some(crate::helpers::enums::ColumnsSimilarImages::TextColor as i32),
+                crate::notebook_enums::NotebookMainEnum::SimilarVideos => Some(crate::helpers::enums::ColumnsSimilarVideos::TextColor as i32),
+                crate::notebook_enums::NotebookMainEnum::SameMusic => Some(crate::helpers::enums::ColumnsSameMusic::TextColor as i32),
+                _ => None,
+            };
+
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
                     if let Some(column_header) = sv.nb_object.column_header {
@@ -71,6 +78,9 @@ fn connect_protect(gui_data: &GuiData) {
                     let full_path = get_full_name_from_path_name(&path, &name);
                     if pf.files.insert(PathBuf::from(&full_path)) {
                         protected_count += 1;
+                        if let Some(col) = text_color_col {
+                            m.set_value(i, col as u32, &glib::Value::from("#d32f2f"));
+                        }
                     }
                 }
             });
@@ -127,6 +137,13 @@ fn connect_unprotect(gui_data: &GuiData) {
             }
         } else {
             let model = sv.get_model();
+            let text_color_col = match sv.nb_object.notebook_type {
+                crate::notebook_enums::NotebookMainEnum::SimilarImages => Some(crate::helpers::enums::ColumnsSimilarImages::TextColor as i32),
+                crate::notebook_enums::NotebookMainEnum::SimilarVideos => Some(crate::helpers::enums::ColumnsSimilarVideos::TextColor as i32),
+                crate::notebook_enums::NotebookMainEnum::SameMusic => Some(crate::helpers::enums::ColumnsSameMusic::TextColor as i32),
+                _ => None,
+            };
+
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
                     if let Some(column_header) = sv.nb_object.column_header {
@@ -139,6 +156,9 @@ fn connect_unprotect(gui_data: &GuiData) {
                     let full_path = get_full_name_from_path_name(&path, &name);
                     if pf.files.remove(&PathBuf::from(&full_path)) {
                         unprotected_count += 1;
+                        if let Some(col) = text_color_col {
+                            m.set_value(i, col as u32, &glib::Value::from(Option::<String>::None));
+                        }
                     }
                 }
             });

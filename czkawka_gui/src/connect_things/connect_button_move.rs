@@ -2,10 +2,8 @@ use std::path::Path;
 
 use fs_extra::dir::CopyOptions;
 use gtk4::prelude::*;
-use gtk4::{ResponseType, TreePath};
+use gtk4::TreePath;
 use log::debug;
-
-use crate::connect_things::file_chooser_helpers::extract_paths_from_file_chooser;
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
@@ -16,44 +14,37 @@ use crate::helpers::model_iter::iter_list;
 
 pub(crate) fn connect_button_move(gui_data: &GuiData) {
     let buttons_move = gui_data.bottom_buttons.buttons_move.clone();
-
+    let window_main = gui_data.window_main.clone();
     let entry_info = gui_data.entry_info.clone();
     let text_view_errors = gui_data.text_view_errors.clone();
-
     let file_dialog_move_to_folder = gui_data.file_dialog_move_to_folder.clone();
     let common_tree_views = gui_data.main_notebook.common_tree_views.clone();
 
-    file_dialog_move_to_folder.connect_response(move |file_chooser, response_type| {
+    buttons_move.connect_clicked(move |_| {
         let sv = common_tree_views.get_current_subview();
-
         let (number_of_selected_items, _number_of_selected_groups) = check_how_much_elements_is_selected(sv);
-
-        // Nothing is selected
         if number_of_selected_items == 0 {
             return;
         }
-
         reset_text_view(&text_view_errors);
-
-        if response_type == ResponseType::Accept {
-            let folders = extract_paths_from_file_chooser(file_chooser);
-
-            if folders.len() != 1 {
-                add_text_to_text_view(&text_view_errors, flg!("move_files_choose_more_than_1_path", path_number = folders.len()).as_str());
-            } else {
-                let folder = folders[0].clone();
-                if sv.nb_object.column_header.is_some() {
-                    move_with_tree(sv, &folder, &entry_info, &text_view_errors);
-                } else {
-                    move_with_list(sv, &folder, &entry_info, &text_view_errors);
+        let entry_info = entry_info.clone();
+        let text_view_errors = text_view_errors.clone();
+        let common_tree_views = common_tree_views.clone();
+        file_dialog_move_to_folder.select_folder(Some(&window_main), None::<&gtk4::gio::Cancellable>, move |result| {
+            if let Ok(file) = result {
+                if let Some(folder) = file.path() {
+                    let sv = common_tree_views.get_current_subview();
+                    if sv.nb_object.column_header.is_some() {
+                        move_with_tree(sv, &folder, &entry_info, &text_view_errors);
+                    } else {
+                        move_with_list(sv, &folder, &entry_info, &text_view_errors);
+                    }
                 }
+            } else if let Err(e) = result {
+                add_text_to_text_view(&text_view_errors, &format!("{}", e));
             }
-        }
-        common_tree_views.hide_preview();
-    });
-
-    buttons_move.connect_clicked(move |_| {
-        file_dialog_move_to_folder.set_visible(true);
+            common_tree_views.hide_preview();
+        });
     });
 }
 

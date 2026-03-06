@@ -9,9 +9,9 @@ pub(crate) fn connect_duplicate_combo_box(gui_data: &GuiData) {
     let combo_box_duplicate_hash_type = gui_data.main_notebook.combo_box_duplicate_hash_type.clone();
     let label_duplicate_hash_type = gui_data.main_notebook.label_duplicate_hash_type.clone();
     let check_button_duplicate_case_sensitive_name = gui_data.main_notebook.check_button_duplicate_case_sensitive_name.clone();
-    combo_box_duplicate_check_method.connect_changed(move |combo_box_duplicate_check_method| {
-        // None active can be if when adding elements(this signal is activated when e.g. adding new fields or removing them)
-        if let Some(chosen_index) = combo_box_duplicate_check_method.active() {
+    combo_box_duplicate_check_method.connect_selected_notify(move |combo_box_duplicate_check_method| {
+        let chosen_index = combo_box_duplicate_check_method.selected();
+        if chosen_index != u32::MAX && (chosen_index as usize) < DUPLICATES_CHECK_METHOD_COMBO_BOX.len() {
             if DUPLICATES_CHECK_METHOD_COMBO_BOX[chosen_index as usize].check_method == CheckingMethod::Hash {
                 combo_box_duplicate_hash_type.set_visible(true);
                 label_duplicate_hash_type.set_visible(true);

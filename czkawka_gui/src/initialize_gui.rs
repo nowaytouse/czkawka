@@ -2,10 +2,11 @@ use czkawka_core::tools::similar_images::SIMILAR_VALUES;
 use czkawka_core::tools::similar_videos::MAX_TOLERANCE;
 use gtk4::prelude::*;
 
-use crate::gtk_traits::ComboBoxTraits;
 use crate::gui_structs::gui_data::GuiData;
+use crate::help_drop_down::set_drop_down_model_and_first;
 use crate::help_combo_box::{
-    DUPLICATES_CHECK_METHOD_COMBO_BOX, DUPLICATES_HASH_TYPE_COMBO_BOX, IMAGES_HASH_SIZE_COMBO_BOX, IMAGES_HASH_TYPE_COMBO_BOX, IMAGES_RESIZE_ALGORITHM_COMBO_BOX,
+    AUDIO_TYPE_CHECK_METHOD_COMBO_BOX, BIG_FILES_CHECK_METHOD_COMBO_BOX, DUPLICATES_CHECK_METHOD_COMBO_BOX, DUPLICATES_HASH_TYPE_COMBO_BOX, IMAGES_HASH_SIZE_COMBO_BOX,
+    IMAGES_HASH_TYPE_COMBO_BOX, IMAGES_RESIZE_ALGORITHM_COMBO_BOX,
 };
 use crate::help_functions::scale_set_min_max_values;
 use crate::language_functions::LANGUAGES_ALL;
@@ -19,33 +20,49 @@ pub(crate) fn initialize_gui(gui_data: &GuiData) {
         }
         gui_data.bottom_buttons.buttons_search.set_visible(true);
     }
-    //// Initialize language combo box
-    gui_data
-        .settings
-        .combo_box_settings_language
-        .set_model_and_first(LANGUAGES_ALL.iter().map(|e| &e.combo_box_text));
+    //// Initialize language combo box (DropDown + StringList)
+    set_drop_down_model_and_first(
+        &gui_data.settings.combo_box_settings_language,
+        &gui_data.settings.combo_box_settings_language_model,
+        LANGUAGES_ALL.iter().map(|e| e.combo_box_text),
+    );
 
-    gui_data
-        .main_notebook
-        .combo_box_duplicate_check_method
-        .set_model_and_first(DUPLICATES_CHECK_METHOD_COMBO_BOX.iter().map(|e| &e.eng_name));
-    gui_data
-        .main_notebook
-        .combo_box_duplicate_hash_type
-        .set_model_and_first(DUPLICATES_HASH_TYPE_COMBO_BOX.iter().map(|e| &e.eng_name));
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_duplicate_check_method,
+        &gui_data.main_notebook.combo_box_duplicate_check_method_model,
+        DUPLICATES_CHECK_METHOD_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_duplicate_hash_type,
+        &gui_data.main_notebook.combo_box_duplicate_hash_type_model,
+        DUPLICATES_HASH_TYPE_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
 
-    gui_data
-        .main_notebook
-        .combo_box_image_hash_algorithm
-        .set_model_and_first(IMAGES_HASH_TYPE_COMBO_BOX.iter().map(|e| &e.eng_name));
-    gui_data
-        .main_notebook
-        .combo_box_image_hash_size
-        .set_model_and_first(IMAGES_HASH_SIZE_COMBO_BOX.iter().map(|e| e.to_string()));
-    gui_data
-        .main_notebook
-        .combo_box_image_resize_algorithm
-        .set_model_and_first(IMAGES_RESIZE_ALGORITHM_COMBO_BOX.iter().map(|e| &e.eng_name));
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_image_hash_algorithm,
+        &gui_data.main_notebook.combo_box_image_hash_algorithm_model,
+        IMAGES_HASH_TYPE_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_image_hash_size,
+        &gui_data.main_notebook.combo_box_image_hash_size_model,
+        IMAGES_HASH_SIZE_COMBO_BOX.iter().map(|e| e.to_string()),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_image_resize_algorithm,
+        &gui_data.main_notebook.combo_box_image_resize_algorithm_model,
+        IMAGES_RESIZE_ALGORITHM_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_big_files_mode,
+        &gui_data.main_notebook.combo_box_big_files_mode_model,
+        BIG_FILES_CHECK_METHOD_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_audio_check_type,
+        &gui_data.main_notebook.combo_box_audio_check_type_model,
+        AUDIO_TYPE_CHECK_METHOD_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
 
     //// Initialize main scrolled view with notebook
     {

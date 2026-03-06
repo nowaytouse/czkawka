@@ -1,7 +1,8 @@
 // Remove console window in Windows OS
 #![windows_subsystem = "windows"]
 #![allow(clippy::indexing_slicing)] // Too much used, to be able to ignore it in every place
-
+// TreeView/ListStore/Dialog 等仍为 GTK 4.10 弃用 API，待后续迁移到 ColumnView/ListView/AlertDialog
+#![allow(deprecated)]
 use std::env;
 
 use connect_things::connect_about_buttons::connect_about_buttons;
@@ -57,6 +58,7 @@ mod file_protection;
 mod gtk_traits;
 mod gui_structs;
 mod help_combo_box;
+mod help_drop_down;
 mod help_functions;
 mod helpers;
 mod initialize_gui;

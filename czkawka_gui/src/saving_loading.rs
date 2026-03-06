@@ -536,22 +536,18 @@ fn set_configuration_to_gui_internal(upper_notebook: &GuiUpperNotebook, main_not
         settings.entry_settings_prehash_cache_file_minimal_size.set_text(&default_config.minimal_prehash_cache_size);
 
         let lang_idx = LANGUAGES_ALL.iter().position(|l| l.short_text == default_config.language).unwrap_or(0);
-        settings.combo_box_settings_language.set_active(Some(lang_idx as u32));
+        settings.combo_box_settings_language.set_selected(lang_idx as u32);
 
         settings.check_button_settings_one_filesystem.set_active(default_config.ignore_other_filesystems);
         settings.check_button_settings_use_rust_preview.set_active(default_config.use_rust_libraries_to_preview);
 
         // Set combo boxes and check buttons as before
-        main_notebook.combo_box_duplicate_hash_type.set_active(Some(default_config.combo_box_duplicate_hash_type));
-        main_notebook
-            .combo_box_duplicate_check_method
-            .set_active(Some(default_config.combo_box_duplicate_check_method));
-        main_notebook.combo_box_image_hash_algorithm.set_active(Some(default_config.combo_box_image_hash_type));
-        main_notebook
-            .combo_box_image_resize_algorithm
-            .set_active(Some(default_config.combo_box_image_resize_algorithm));
-        main_notebook.combo_box_image_hash_size.set_active(Some(default_config.combo_box_image_hash_size));
-        main_notebook.combo_box_big_files_mode.set_active(Some(default_config.combo_box_big_files_mode));
+        main_notebook.combo_box_duplicate_hash_type.set_selected(default_config.combo_box_duplicate_hash_type);
+        main_notebook.combo_box_duplicate_check_method.set_selected(default_config.combo_box_duplicate_check_method);
+        main_notebook.combo_box_image_hash_algorithm.set_selected(default_config.combo_box_image_hash_type);
+        main_notebook.combo_box_image_resize_algorithm.set_selected(default_config.combo_box_image_resize_algorithm);
+        main_notebook.combo_box_image_hash_size.set_selected(default_config.combo_box_image_hash_size);
+        main_notebook.combo_box_big_files_mode.set_selected(default_config.combo_box_big_files_mode);
 
         main_notebook.check_button_broken_files_audio.set_active(default_config.broken_files_audio);
         main_notebook.check_button_broken_files_pdf.set_active(default_config.broken_files_pdf);
@@ -572,7 +568,7 @@ fn set_configuration_to_gui_internal(upper_notebook: &GuiUpperNotebook, main_not
 
         // Update duplicate-related widget visibility according to chosen method
         {
-            let combo_chosen_index = main_notebook.combo_box_duplicate_check_method.active().unwrap_or(0) as usize;
+            let combo_chosen_index = main_notebook.combo_box_duplicate_check_method.selected() as usize;
             if DUPLICATES_CHECK_METHOD_COMBO_BOX[combo_chosen_index].check_method == CheckingMethod::Hash {
                 main_notebook.combo_box_duplicate_hash_type.set_visible(true);
                 main_notebook.label_duplicate_hash_type.set_visible(true);
@@ -628,7 +624,7 @@ fn gui_to_settings(upper_notebook: &GuiUpperNotebook, main_notebook: &GuiMainNot
     let reference_directories = get_from_list_store_fnc(tree_view_included_directories, ref_fnc);
 
     // Language short text
-    let language_text = match settings.combo_box_settings_language.active_text() {
+    let language_text = match crate::help_drop_down::drop_down_selected_text(&settings.combo_box_settings_language) {
         Some(t) => get_language_from_combo_box_text(&t).short_text.to_string(),
         None => "en".to_string(),
     };
@@ -660,11 +656,11 @@ fn gui_to_settings(upper_notebook: &GuiUpperNotebook, main_notebook: &GuiMainNot
         use_prehash_cache: settings.check_button_duplicates_use_prehash_cache.is_active(),
         minimal_prehash_cache_size: settings.entry_settings_prehash_cache_file_minimal_size.text().to_string(),
         language: language_text,
-        combo_box_duplicate_hash_type: main_notebook.combo_box_duplicate_hash_type.active().unwrap_or(0),
-        combo_box_duplicate_check_method: main_notebook.combo_box_duplicate_check_method.active().unwrap_or(0),
-        combo_box_image_resize_algorithm: main_notebook.combo_box_image_resize_algorithm.active().unwrap_or(0),
-        combo_box_image_hash_type: main_notebook.combo_box_image_hash_algorithm.active().unwrap_or(0),
-        combo_box_image_hash_size: main_notebook.combo_box_image_hash_size.active().unwrap_or(1),
+        combo_box_duplicate_hash_type: main_notebook.combo_box_duplicate_hash_type.selected(),
+        combo_box_duplicate_check_method: main_notebook.combo_box_duplicate_check_method.selected(),
+        combo_box_image_resize_algorithm: main_notebook.combo_box_image_resize_algorithm.selected(),
+        combo_box_image_hash_type: main_notebook.combo_box_image_hash_algorithm.selected(),
+        combo_box_image_hash_size: main_notebook.combo_box_image_hash_size.selected().max(1),
         number_of_biggest_files: main_notebook.entry_big_files_number.text().to_string(),
         similar_images_similarity: main_notebook.scale_similarity_similar_images.value(),
         similar_images_ignore_same_size: main_notebook.check_button_image_ignore_same_size.is_active(),
@@ -672,7 +668,7 @@ fn gui_to_settings(upper_notebook: &GuiUpperNotebook, main_notebook: &GuiMainNot
         similar_videos_ignore_same_size: main_notebook.check_button_video_ignore_same_size.is_active(),
         music_approximate_comparison: main_notebook.check_button_music_approximate_comparison.is_active(),
         duplicate_name_case_sensitive: main_notebook.check_button_duplicate_case_sensitive_name.is_active(),
-        combo_box_big_files_mode: main_notebook.combo_box_big_files_mode.active().unwrap_or(0),
+        combo_box_big_files_mode: main_notebook.combo_box_big_files_mode.selected(),
         broken_files_pdf: main_notebook.check_button_broken_files_pdf.is_active(),
         broken_files_audio: main_notebook.check_button_broken_files_audio.is_active(),
         broken_files_image: main_notebook.check_button_broken_files_image.is_active(),

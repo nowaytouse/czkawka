@@ -1,12 +1,15 @@
 use czkawka_core::common::{remove_folder_if_contains_only_empty_folders, remove_single_file};
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
-use gtk4::{Align, CheckButton, Dialog, Orientation, ResponseType, TextView};
+use gtk4::{Align, CheckButton, Dialog, MultiSelection, Orientation, ResponseType, TextView};
+use itertools::Itertools;
 use log::debug;
 use rayon::prelude::*;
 
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_functions::get_full_name_from_path_name;
 use crate::helpers::list_store_operations::{check_how_much_elements_is_selected, clean_invalid_headers};
@@ -149,6 +152,9 @@ fn create_dialog_group_deletion(window_main: &gtk4::Window) -> (Dialog, CheckBut
 }
 
 pub async fn check_if_deleting_all_files_in_group(sv: &SubView, window_main: &gtk4::Window, check_button_settings_confirm_group_deletion: &CheckButton) -> bool {
+    if sv.get_duplicate_model().is_some() {
+        return false;
+    }
     let column_header = sv.nb_object.column_header.expect("Column header must exist here");
     let model = sv.get_model();
 
@@ -211,12 +217,21 @@ pub(crate) fn basic_remove(sv: &SubView, check_button_settings_use_trash: &Check
 }
 
 pub(crate) fn tree_remove(sv: &SubView, column_header: i32, check_button_settings_use_trash: &CheckButton, text_view_errors: &TextView) {
+    if let (Some(store), Some(selection)) = (sv.get_duplicate_model(), sv.get_duplicate_selection()) {
+        common_file_remove_duplicate(sv, store, selection, check_button_settings_use_trash, text_view_errors, Some(column_header), true);
+        return;
+    }
     common_file_remove(sv, check_button_settings_use_trash, text_view_errors, Some(column_header), true);
 
     clean_invalid_headers(&sv.get_model(), column_header, sv.nb_object.column_path);
 }
 
 pub(crate) fn common_file_remove(sv: &SubView, check_button_settings_use_trash: &CheckButton, text_view_errors: &TextView, column_header: Option<i32>, file_remove: bool) {
+    if let (Some(store), Some(selection)) = (sv.get_duplicate_model(), sv.get_duplicate_selection()) {
+        common_file_remove_duplicate(sv, store, selection, check_button_settings_use_trash, text_view_errors, column_header, file_remove);
+        return;
+    }
+
     let use_trash = check_button_settings_use_trash.is_active();
 
     let model = sv.get_model();
@@ -300,5 +315,77 @@ pub(crate) fn common_file_remove(sv: &SubView, check_button_settings_use_trash: 
         start_time.elapsed()
     );
 
+    text_view_errors.buffer().set_text(messages.as_str());
+}
+
+fn common_file_remove_duplicate(
+    _sv: &SubView,
+    store: &GioListStore,
+    _selection: &MultiSelection,
+    check_button_settings_use_trash: &CheckButton,
+    text_view_errors: &TextView,
+    column_header: Option<i32>,
+    file_remove: bool,
+) {
+    let use_trash = check_button_settings_use_trash.is_active();
+    let n = store.n_items();
+    let mut selected: Vec<(u32, String)> = Vec::new();
+    for pos in 0..n {
+        let Some(item) = store.item(pos) else { continue };
+        let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
+        if let Some(_) = column_header {
+            if row.is_header() {
+                continue;
+            }
+        }
+        if !row.selection_button() {
+            continue;
+        }
+        let path = row.path();
+        let name = row.name();
+        let full = get_full_name_from_path_name(&path, &name);
+        selected.push((pos, full));
+    }
+    if selected.is_empty() {
+        return;
+    }
+    debug!("Starting to delete {} files (duplicate column view)", selected.len());
+    let start_time = std::time::Instant::now();
+    let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
+    let (removed, failed_to_remove): (Vec<usize>, Vec<String>) = selected
+        .iter()
+        .enumerate()
+        .map(|(idx, (_pos, path))| {
+            if pf.is_protected(path) {
+                return Err(format!("File is protected: {path}"));
+            }
+            if file_remove {
+                remove_single_file(path, use_trash)?;
+            } else {
+                remove_folder_if_contains_only_empty_folders(path, use_trash)?;
+            }
+            Ok(idx)
+        })
+        .partition_map(|res| match res {
+            Ok(entry) => itertools::Either::Left(entry),
+            Err(err) => itertools::Either::Right(err),
+        });
+    drop(pf);
+    let mut messages = String::new();
+    for failed in &failed_to_remove {
+        messages += failed;
+        messages += "\n";
+    }
+    let mut positions_to_remove: Vec<u32> = removed.iter().map(|&idx| selected[idx].0).collect();
+    positions_to_remove.sort_unstable_by(|a, b| b.cmp(a));
+    for pos in positions_to_remove {
+        store.remove(pos);
+    }
+    debug!(
+        "Deleted {}/{} items (duplicate tab) in {:?}",
+        removed.len(),
+        selected.len(),
+        start_time.elapsed()
+    );
     text_view_errors.buffer().set_text(messages.as_str());
 }

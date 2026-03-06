@@ -51,14 +51,14 @@ pub(crate) fn connect_same_music_change_mode(gui_data: &GuiData) {
 
     let combo_box_audio_check_type = gui_data.main_notebook.combo_box_audio_check_type.clone();
 
-    let check_method_index = combo_box_audio_check_type.active().expect("Failed to get active item") as usize;
+    let check_method_index = combo_box_audio_check_type.selected() as usize;
     let check_method = AUDIO_TYPE_CHECK_METHOD_COMBO_BOX[check_method_index].check_method;
 
     disable_enable_buttons(&buttons, &reversed_buttons, &scales_and_labels, check_method);
-    combo_box_audio_check_type.connect_changed(move |combo_box_text| {
-        if let Some(active) = combo_box_text.active() {
+    combo_box_audio_check_type.connect_selected_notify(move |combo_box_text| {
+        let active = combo_box_text.selected();
+        if (active as usize) < AUDIO_TYPE_CHECK_METHOD_COMBO_BOX.len() {
             let check_method = AUDIO_TYPE_CHECK_METHOD_COMBO_BOX[active as usize].check_method;
-
             disable_enable_buttons(&buttons, &reversed_buttons, &scales_and_labels, check_method);
         }
     });

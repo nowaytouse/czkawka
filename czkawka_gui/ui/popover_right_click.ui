@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name popover_right_click.ui -->
-  <requires lib="gtk" version="4.6"/>
+  <requires lib="gtk" version="4.20"/>
   <object class="GtkPopover" id="popover_right_click">
     <property name="child">
       <object class="GtkBox">

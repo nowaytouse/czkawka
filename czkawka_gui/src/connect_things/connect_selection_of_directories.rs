@@ -5,16 +5,15 @@ use std::path::PathBuf;
 use czkawka_core::common::normalize_windows_path;
 use gdk4::{DragAction, FileList};
 use gtk4::prelude::*;
-use gtk4::{DropTarget, FileChooserNative, Notebook, Orientation, ResponseType, TreeView, Window};
+use gtk4::{DropTarget, Orientation, ResponseType, TreeView, Window};
 
-use crate::connect_things::file_chooser_helpers::extract_paths_from_file_chooser;
+use crate::connect_things::file_chooser_helpers::paths_from_list_model;
 use crate::flg;
 use crate::gui_structs::common_tree_view::TreeViewListStoreTrait;
 use crate::gui_structs::common_upper_tree_view::UpperTreeViewEnum;
 use crate::gui_structs::gui_data::GuiData;
 use crate::helpers::enums::{ColumnsExcludedDirectory, ColumnsIncludedDirectory};
 use crate::helpers::list_store_operations::{append_row_to_list_store, check_if_value_is_in_list_store};
-use crate::notebook_enums::{NotebookUpperEnum, to_notebook_upper_enum};
 
 pub(crate) fn connect_selection_of_directories(gui_data: &GuiData) {
     let tree_view_included_directories = gui_data.upper_notebook.common_upper_tree_views.get_tree_view(UpperTreeViewEnum::IncludedDirectories);
@@ -38,36 +37,39 @@ pub(crate) fn connect_selection_of_directories(gui_data: &GuiData) {
             add_manually_directories(&window_main, &tree_view_excluded_directories, true);
         });
     }
-    // Add included directory
+    // Add included directory (FileDialog async API)
     {
+        let window_main = gui_data.window_main.clone();
         let buttons_add_included_directory = gui_data.upper_notebook.buttons_add_included_directory.clone();
-        let file_dialog_include_exclude_folder_selection = gui_data.file_dialog_include_exclude_folder_selection.clone();
+        let file_dialog = gui_data.file_dialog_include_exclude_folder_selection.clone();
+        let tree_view = tree_view_included_directories.clone();
         buttons_add_included_directory.connect_clicked(move |_| {
-            file_dialog_include_exclude_folder_selection.set_visible(true);
-            file_dialog_include_exclude_folder_selection.set_title(&flg!("include_folders_dialog_title"));
+            let tree = tree_view.clone();
+            file_dialog.set_title(&flg!("include_folders_dialog_title"));
+            file_dialog.select_multiple_folders(Some(&window_main), None::<&gtk4::gio::Cancellable>, move |result| {
+                if let Ok(files) = result {
+                    let folders = paths_from_list_model(&files);
+                    add_directories(&tree, &folders, false);
+                }
+            });
         });
     }
-    // Add excluded directory
+    // Add excluded directory (FileDialog async API)
     {
+        let window_main = gui_data.window_main.clone();
         let buttons_add_excluded_directory = gui_data.upper_notebook.buttons_add_excluded_directory.clone();
-        let file_dialog_include_exclude_folder_selection = gui_data.file_dialog_include_exclude_folder_selection.clone();
+        let file_dialog = gui_data.file_dialog_include_exclude_folder_selection.clone();
+        let tree_view = tree_view_excluded_directories.clone();
         buttons_add_excluded_directory.connect_clicked(move |_| {
-            file_dialog_include_exclude_folder_selection.set_visible(true);
-            file_dialog_include_exclude_folder_selection.set_title(&flg!("exclude_folders_dialog_title"));
+            let tree = tree_view.clone();
+            file_dialog.set_title(&flg!("exclude_folders_dialog_title"));
+            file_dialog.select_multiple_folders(Some(&window_main), None::<&gtk4::gio::Cancellable>, move |result| {
+                if let Ok(files) = result {
+                    let folders = paths_from_list_model(&files);
+                    add_directories(&tree, &folders, true);
+                }
+            });
         });
-    }
-    // Connect
-    {
-        let notebook_upper = gui_data.upper_notebook.notebook_upper.clone();
-        let tree_view_included_directories = tree_view_included_directories.clone();
-        let tree_view_excluded_directories = tree_view_excluded_directories.clone();
-        let file_dialog_include_exclude_folder_selection = gui_data.file_dialog_include_exclude_folder_selection.clone();
-        connect_file_dialog(
-            &file_dialog_include_exclude_folder_selection,
-            tree_view_included_directories,
-            tree_view_excluded_directories,
-            notebook_upper,
-        );
     }
     // Drag and drop
     {
@@ -127,29 +129,6 @@ fn configure_directory_drop(tree_view: &TreeView, excluded_items: bool) {
     });
 
     tree_view.add_controller(drop_target);
-}
-
-fn connect_file_dialog(file_dialog_include_exclude_folder_selection: &FileChooserNative, include_tree_view: TreeView, exclude_tree_view: TreeView, notebook_upper: Notebook) {
-    file_dialog_include_exclude_folder_selection.connect_response(move |file_chooser, response_type| {
-        if response_type == ResponseType::Accept {
-            let excluded_items;
-            let tree_view = match to_notebook_upper_enum(notebook_upper.current_page().expect("Current page not set")) {
-                NotebookUpperEnum::IncludedDirectories => {
-                    excluded_items = false;
-                    &include_tree_view
-                }
-                NotebookUpperEnum::ExcludedDirectories => {
-                    excluded_items = true;
-                    &exclude_tree_view
-                }
-                NotebookUpperEnum::ItemsConfiguration => panic!(),
-            };
-
-            let folders = extract_paths_from_file_chooser(file_chooser);
-
-            add_directories(tree_view, &folders, excluded_items);
-        }
-    });
 }
 
 fn add_directories(tree_view: &TreeView, folders: &Vec<PathBuf>, excluded_items: bool) {

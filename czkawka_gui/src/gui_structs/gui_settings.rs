@@ -1,5 +1,5 @@
 use gtk4::prelude::*;
-use gtk4::{Builder, Window};
+use gtk4::{Builder, DropDown, StringList, Window};
 
 use crate::flg;
 use crate::gtk_traits::WidgetTraits;
@@ -21,7 +21,8 @@ pub struct GuiSettings {
     pub check_button_settings_save_also_json: gtk4::CheckButton,
     pub check_button_settings_use_trash: gtk4::CheckButton,
     pub label_settings_general_language: gtk4::Label,
-    pub combo_box_settings_language: gtk4::ComboBoxText,
+    pub combo_box_settings_language: DropDown,
+    pub combo_box_settings_language_model: StringList,
     pub check_button_settings_one_filesystem: gtk4::CheckButton,
     pub label_settings_number_of_threads: gtk4::Label,
     pub scale_settings_number_of_threads: gtk4::Scale,
@@ -82,7 +83,9 @@ impl GuiSettings {
         let check_button_settings_save_also_json: gtk4::CheckButton = builder.object("check_button_settings_save_also_json").expect("Cambalache");
         let check_button_settings_use_trash: gtk4::CheckButton = builder.object("check_button_settings_use_trash").expect("Cambalache");
         let label_settings_general_language: gtk4::Label = builder.object("label_settings_general_language").expect("Cambalache");
-        let combo_box_settings_language: gtk4::ComboBoxText = builder.object("combo_box_settings_language").expect("Cambalache");
+        let combo_box_settings_language: DropDown = builder.object("combo_box_settings_language").expect("Cambalache");
+        let combo_box_settings_language_model = StringList::new(&[]);
+        combo_box_settings_language.set_model(Some(&combo_box_settings_language_model));
         let label_settings_number_of_threads: gtk4::Label = builder.object("label_settings_number_of_threads").expect("Cambalache");
         let scale_settings_number_of_threads: gtk4::Scale = builder.object("scale_settings_number_of_threads").expect("Cambalache");
         let label_restart_needed: gtk4::Label = builder.object("label_restart_needed").expect("Cambalache");
@@ -134,6 +137,7 @@ impl GuiSettings {
             check_button_settings_use_trash,
             label_settings_general_language,
             combo_box_settings_language,
+            combo_box_settings_language_model,
             check_button_settings_one_filesystem,
             label_settings_number_of_threads,
             scale_settings_number_of_threads,

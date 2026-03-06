@@ -15,10 +15,12 @@ use czkawka_core::tools::similar_images::SimilarImages;
 use czkawka_core::tools::similar_videos::SimilarVideos;
 use czkawka_core::tools::temporary::Temporary;
 use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
+use gdk4::Texture;
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{
-    Builder, CellRendererText, CellRendererToggle, CheckButton, EventControllerKey, GestureClick, ListStore, Notebook, Picture, ScrolledWindow, SelectionMode, TextView, TreeModel,
-    TreeSelection, TreeView, TreeViewColumn,
+    Builder, CellRendererText, CellRendererToggle, CheckButton, ColumnView, ColumnViewColumn, EventControllerKey, GestureClick, Label, ListStore, MultiSelection,
+    Notebook, Picture, ScrolledWindow, SelectionMode, SignalListItemFactory, TextView, TreeModel, TreeSelection, TreeView, TreeViewColumn,
 };
 
 use crate::connect_things::connect_button_delete::delete_things;
@@ -31,6 +33,7 @@ use crate::helpers::enums::{
 };
 use crate::helpers::image_operations::{get_pixbuf_from_dynamic_image, resize_pixbuf_dimension};
 use crate::notebook_enums::NotebookMainEnum;
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::notebook_info::{NOTEBOOKS_INFO, NotebookObject};
 use crate::opening_selecting_records::{opening_double_click_function, opening_enter_function_ported, opening_middle_mouse_function, select_function_header};
 
@@ -113,6 +116,10 @@ impl GetTreeViewTrait for &GestureClick {
 pub struct SubView {
     pub scrolled_window: ScrolledWindow,
     pub tree_view: TreeView,
+    /// 重复项 Tab 使用 ColumnView 时的视图与模型（替代 TreeView/ListStore）
+    pub duplicate_column_view: Option<ColumnView>,
+    pub duplicate_list_store: Option<GioListStore>,
+    pub duplicate_selection: Option<MultiSelection>,
     pub gesture_click: GestureClick,
     pub event_controller_key: EventControllerKey,
     pub nb_object: NotebookObject,
@@ -127,6 +134,97 @@ pub struct PreviewStruct {
     pub settings_show_preview: CheckButton,
 }
 
+/// 为重复项 Tab 创建 ColumnView + gio::ListStore\<DuplicateRow\> + MultiSelection，并设为 scrolled 子控件。
+fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView, GioListStore, MultiSelection) {
+    let list_store = GioListStore::builder().item_type(DuplicateRow::static_type()).build();
+    let selection = MultiSelection::new(Some(list_store.clone().upcast::<gtk4::gio::ListModel>()));
+    let column_view = ColumnView::new(Some(selection.clone().upcast::<gtk4::SelectionModel>()));
+
+    // 选择列（勾选框）
+    let factory_select = SignalListItemFactory::new();
+    let store_sel = list_store.clone();
+    factory_select.connect_setup(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        let check = CheckButton::new();
+        list_item.set_child(Some(&check));
+    });
+    factory_select.connect_bind(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        let Some(item) = list_item.item() else { return };
+        let Ok(row) = item.downcast::<DuplicateRow>() else { return };
+        let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
+        child.set_active(row.selection_button());
+        child.set_sensitive(row.activatable_select_button());
+        let row_clone = row.clone();
+        let store_clone = store_sel.clone();
+        let id = child.connect_toggled(move |check| {
+            let active = check.is_active();
+            if let Some(pos) = store_clone.find(&row_clone) {
+                if let Some(it) = store_clone.item(pos) {
+                    if let Ok(r) = it.downcast::<DuplicateRow>() {
+                        r.set_selection_button(active);
+                    }
+                }
+            }
+        });
+        unsafe { list_item.set_data("toggled_id", id) };
+    });
+    factory_select.connect_unbind(move |_factory, obj| {
+        let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+        if let Some(child) = list_item.child().and_downcast::<CheckButton>() {
+            let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("toggled_id") };
+            if let Some(id) = id_opt {
+                let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
+                child.disconnect(handler_id);
+            }
+        }
+    });
+    let col_select = ColumnViewColumn::new(Some(""), Some(factory_select));
+    col_select.set_fixed_width(30);
+    col_select.set_resizable(false);
+    column_view.insert_column(0, &col_select);
+
+    // 文本列：Size, Name, Path, Modification
+    let mut col_idx = 1u32;
+    for (title, prop_name) in [
+        ("Size", "size"),
+        ("Name", "name"),
+        ("Path", "path"),
+        ("Modification", "modification"),
+    ] {
+        let factory = SignalListItemFactory::new();
+        factory.connect_setup(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            let label = Label::new(None);
+            label.set_xalign(0.0);
+            list_item.set_child(Some(&label));
+        });
+        factory.connect_bind(move |_f, obj| {
+            let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
+            let Some(item) = list_item.item() else { return };
+            let Ok(row) = item.downcast::<DuplicateRow>() else { return };
+            let child = list_item.child().and_downcast::<Label>().expect("child is Label");
+            let text = match prop_name {
+                "size" => row.size(),
+                "name" => row.name(),
+                "path" => row.path(),
+                "modification" => row.modification(),
+                _ => String::new(),
+            };
+            child.set_text(&text);
+        });
+        let col = ColumnViewColumn::new(Some(title), Some(factory));
+        col.set_resizable(true);
+        col.set_fixed_width(120);
+        column_view.insert_column(col_idx, &col);
+        col_idx += 1;
+    }
+
+    column_view.set_vexpand(true);
+    scrolled_window.set_child(Some(&column_view));
+    (column_view, list_store, selection)
+}
+
 impl SubView {
     pub fn get_model(&self) -> ListStore {
         self.tree_view.get_model()
@@ -136,6 +234,12 @@ impl SubView {
     }
     pub fn get_tree_selection(&self) -> TreeSelection {
         self.tree_view.selection()
+    }
+    pub fn get_duplicate_model(&self) -> Option<&GioListStore> {
+        self.duplicate_list_store.as_ref()
+    }
+    pub fn get_duplicate_selection(&self) -> Option<&MultiSelection> {
+        self.duplicate_selection.as_ref()
     }
     pub fn new(
         builder: &Builder,
@@ -147,9 +251,7 @@ impl SubView {
     ) -> Self {
         let tree_view: TreeView = TreeView::new();
         let event_controller_key: EventControllerKey = EventControllerKey::new();
-        tree_view.add_controller(event_controller_key.clone());
         let gesture_click: GestureClick = GestureClick::new();
-        tree_view.add_controller(gesture_click.clone());
 
         let image_preview = preview_str.map(|name| builder.object(name).unwrap_or_else(|| panic!("Cannot find preview image {name}")));
 
@@ -165,9 +267,25 @@ impl SubView {
             None
         };
 
+        let scrolled_window: ScrolledWindow = builder.object(scrolled_name).unwrap_or_else(|| panic!("Cannot find scrolled window {scrolled_name}"));
+
+        let (duplicate_column_view, duplicate_list_store, duplicate_selection) = if enum_value == NotebookMainEnum::Duplicate {
+            let (cv, store, sel) = create_duplicate_column_view(&scrolled_window);
+            cv.add_controller(event_controller_key.clone());
+            cv.add_controller(gesture_click.clone());
+            (Some(cv), Some(store), Some(sel))
+        } else {
+            tree_view.add_controller(event_controller_key.clone());
+            tree_view.add_controller(gesture_click.clone());
+            (None, None, None)
+        };
+
         Self {
-            scrolled_window: builder.object(scrolled_name).unwrap_or_else(|| panic!("Cannot find scrolled window {scrolled_name}")),
+            scrolled_window,
             tree_view,
+            duplicate_column_view,
+            duplicate_list_store,
+            duplicate_selection,
             gesture_click,
             event_controller_key,
             nb_object,
@@ -178,6 +296,9 @@ impl SubView {
     }
 
     fn _setup_tree_view(&self) {
+        if self.duplicate_column_view.is_some() {
+            return;
+        }
         self.tree_view.set_model(Some(&ListStore::new(self.nb_object.columns_types)));
         self.tree_view.selection().set_mode(SelectionMode::Multiple);
 
@@ -513,6 +634,8 @@ pub(crate) fn create_default_columns(tree_view: &TreeView, columns: &[(i32, Colu
             ColumnSort::Custom(val) => column.set_sort_column_id(*val),
         }
         if let Some(colors_columns_id) = colors_columns_id {
+            renderer.set_property("background-set", true);
+            renderer.set_property("foreground-set", true);
             column.add_attribute(&renderer, "background", colors_columns_id.0);
             column.add_attribute(&renderer, "foreground", colors_columns_id.1);
         }
@@ -586,7 +709,7 @@ pub(crate) fn show_preview(
                 Some(pixbuf) => pixbuf,
             };
 
-            image_preview.set_pixbuf(Some(&pixbuf));
+            image_preview.set_paintable(Some(&Texture::for_pixbuf(&pixbuf)));
             {
                 let mut preview_path = preview_path.borrow_mut();
                 *preview_path = file_name;

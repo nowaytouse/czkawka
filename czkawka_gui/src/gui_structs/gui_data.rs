@@ -7,7 +7,7 @@ use std::sync::atomic::AtomicBool;
 
 use gdk4::gdk_pixbuf::Pixbuf;
 use gtk4::prelude::*;
-use gtk4::{Builder, FileChooserNative};
+use gtk4::{Builder, FileDialog};
 
 use crate::flg;
 use crate::gui_structs::gui_about::GuiAbout;
@@ -62,8 +62,8 @@ pub struct GuiData {
     pub header: GuiHeader,
     pub compare_images: GuiCompareImages,
 
-    pub file_dialog_include_exclude_folder_selection: FileChooserNative,
-    pub file_dialog_move_to_folder: FileChooserNative,
+    pub file_dialog_include_exclude_folder_selection: FileDialog,
+    pub file_dialog_move_to_folder: FileDialog,
 
     // Taskbar state
     pub taskbar_state: Rc<RefCell<TaskbarProgress>>,
@@ -130,21 +130,12 @@ impl GuiData {
             shared_buttons.borrow_mut().insert(*i, temp_hashmap);
         }
 
-        // File Dialogs - Native file dialogs must exist all the time in opposite to normal dialog
-
-        let file_dialog_include_exclude_folder_selection = FileChooserNative::builder()
-            .action(gtk4::FileChooserAction::SelectFolder)
-            .transient_for(&window_main)
-            .select_multiple(true)
-            .modal(true)
-            .build();
-        let file_dialog_move_to_folder = FileChooserNative::builder()
-            .title(flg!("move_files_title_dialog"))
-            .action(gtk4::FileChooserAction::SelectFolder)
-            .transient_for(&window_main)
-            .select_multiple(false)
-            .modal(true)
-            .build();
+        // File Dialogs (GTK 4.10+ FileDialog, async API)
+        let file_dialog_include_exclude_folder_selection = FileDialog::new();
+        file_dialog_include_exclude_folder_selection.set_modal(true);
+        let file_dialog_move_to_folder = FileDialog::new();
+        file_dialog_move_to_folder.set_modal(true);
+        file_dialog_move_to_folder.set_title(&flg!("move_files_title_dialog"));
 
         //// Entry
         let entry_info: gtk4::Entry = builder.object("entry_info").expect("Cambalache");

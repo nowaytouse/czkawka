@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name about_dialog.ui -->
-  <requires lib="gtk" version="4.6"/>
+  <requires lib="gtk" version="4.20"/>
   <object class="GtkAboutDialog" id="about_dialog">
     <property name="comments" translatable="yes">2020 - 2026
 Rafał Mikrut (qarmin) and contributors

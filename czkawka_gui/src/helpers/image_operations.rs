@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::io::{BufReader, Cursor};
 
 use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
+use gdk4::Texture;
 use glib::Bytes;
 use gtk4::gdk_pixbuf::Colorspace;
 use gtk4::prelude::*;
@@ -61,7 +62,7 @@ pub(crate) fn set_icon_of_button<P: IsA<Widget>>(button: &P, data: &'static [u8]
     let image = button.get_widget_of_type::<Image>(true);
     let dynamic_image = svg_to_dynamic_image(data).expect("Failed to convert SVG data to DynamicImage");
     let pixbuf = dynamic_image_to_pixbuf(dynamic_image);
-    image.set_from_pixbuf(Some(&pixbuf));
+    image.set_paintable(Some(&Texture::for_pixbuf(&pixbuf)));
 }
 
 pub(crate) fn get_pixbuf_from_dynamic_image(dynamic_image: DynamicImage) -> Result<Pixbuf, String> {

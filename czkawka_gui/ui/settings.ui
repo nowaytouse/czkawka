@@ -2,7 +2,7 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name settings.ui -->
-  <requires lib="gtk" version="4.6"/>
+  <requires lib="gtk" version="4.20"/>
   <object class="GtkDialog" id="window_settings">
     <property name="modal">1</property>
     <property name="title" translatable="yes">Czkawka Options</property>
@@ -35,7 +35,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkComboBoxText" id="combo_box_settings_language">
+                              <object class="GtkDropDown" id="combo_box_settings_language">
                                 <property name="hexpand">1</property>
                               </object>
                             </child>

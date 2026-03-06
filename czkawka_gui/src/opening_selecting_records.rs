@@ -1,9 +1,10 @@
 use gdk4::{Key, ModifierType};
 use gtk4::prelude::*;
-use gtk4::{GestureClick, TreeModel, TreePath, TreeSelection};
+use gtk4::{ColumnView, GestureClick, MultiSelection, TreeModel, TreePath, TreeSelection, TreeView};
 use log::{debug, error};
 
 use crate::gui_structs::common_tree_view::{GetTreeViewTrait, TreeViewListStoreTrait};
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::help_functions::{KEY_ENTER, KEY_SPACE, get_full_name_from_path_name, get_notebook_object_from_tree_view, get_notebook_upper_enum_from_tree_view};
 use crate::helpers::enums::{ColumnsDuplicates, ColumnsExcludedDirectory, ColumnsIncludedDirectory, ColumnsSameMusic, ColumnsSimilarImages, ColumnsSimilarVideos};
 use crate::notebook_enums::NotebookUpperEnum;
@@ -43,14 +44,20 @@ pub(crate) fn opening_enter_function_ported_upper_directories(
 }
 
 pub(crate) fn opening_middle_mouse_function(gesture_click: &GestureClick, _number_of_clicks: i32, _b: f64, _c: f64) {
-    let tree_view = gesture_click.get_tree_view();
-
-    let nt_object = get_notebook_object_from_tree_view(&tree_view);
-    if let Some(column_header) = nt_object.column_header
-        && gesture_click.current_button() == 2
-    {
-        reverse_selection(&tree_view, column_header, nt_object.column_selection);
+    let widget = match gesture_click.widget() {
+        Some(w) => w.clone(),
+        None => return,
+    };
+    if gesture_click.current_button() != 2 {
+        return;
     }
+    if let Ok(tree_view) = widget.downcast::<TreeView>() {
+        let nt_object = get_notebook_object_from_tree_view(&tree_view);
+        if let Some(column_header) = nt_object.column_header {
+            reverse_selection(&tree_view, column_header, nt_object.column_selection);
+        }
+    }
+    // ColumnView 中键反转选择暂未实现
 }
 
 pub(crate) fn opening_double_click_function_directories(gesture_click: &GestureClick, number_of_clicks: i32, _b: f64, _c: f64) {
@@ -72,33 +79,51 @@ pub(crate) fn opening_double_click_function_directories(gesture_click: &GestureC
 }
 
 pub(crate) fn opening_enter_function_ported(event_controller: &gtk4::EventControllerKey, _key: Key, key_code: u32, _modifier_type: ModifierType) -> glib::Propagation {
-    let tree_view = event_controller.get_tree_view();
+    let widget = match event_controller.widget() {
+        Some(w) => w.clone(),
+        None => return glib::Propagation::Proceed,
+    };
     if cfg!(debug_assertions) {
         debug!("Clicked {key_code}");
     }
-
-    let nt_object = get_notebook_object_from_tree_view(&tree_view);
-    handle_tree_keypress(
-        &tree_view,
-        key_code,
-        nt_object.column_name,
-        nt_object.column_path,
-        nt_object.column_selection,
-        nt_object.column_header,
-    );
-    glib::Propagation::Proceed // True catches signal, and don't send it to function, e.g. up button is caught and don't move selection
+    if let Ok(tree_view) = widget.clone().downcast::<TreeView>() {
+        let nt_object = get_notebook_object_from_tree_view(&tree_view);
+        handle_tree_keypress(
+            &tree_view,
+            key_code,
+            nt_object.column_name,
+            nt_object.column_path,
+            nt_object.column_selection,
+            nt_object.column_header,
+        );
+    } else if let Ok(column_view) = widget.downcast::<ColumnView>() {
+        if key_code == KEY_ENTER {
+            common_open_function_column_view(&column_view, &OpenMode::PathAndName);
+        }
+    }
+    glib::Propagation::Proceed
 }
 
 pub(crate) fn opening_double_click_function(gesture_click: &GestureClick, number_of_clicks: i32, _b: f64, _c: f64) {
-    let tree_view = gesture_click.get_tree_view();
-
-    let nt_object = get_notebook_object_from_tree_view(&tree_view);
-    if number_of_clicks == 2 {
-        if gesture_click.current_button() == 1 {
-            common_open_function(&tree_view, nt_object.column_name, nt_object.column_path, &OpenMode::PathAndName);
-        } else if gesture_click.current_button() == 3 {
-            common_open_function(&tree_view, nt_object.column_name, nt_object.column_path, &OpenMode::OnlyPath);
-        }
+    let widget = match gesture_click.widget() {
+        Some(w) => w.clone(),
+        None => return,
+    };
+    if number_of_clicks != 2 {
+        return;
+    }
+    let opening_mode = if gesture_click.current_button() == 1 {
+        OpenMode::PathAndName
+    } else if gesture_click.current_button() == 3 {
+        OpenMode::OnlyPath
+    } else {
+        return;
+    };
+    if let Ok(tree_view) = widget.clone().downcast::<TreeView>() {
+        let nt_object = get_notebook_object_from_tree_view(&tree_view);
+        common_open_function(&tree_view, nt_object.column_name, nt_object.column_path, &opening_mode);
+    } else if let Ok(column_view) = widget.downcast::<ColumnView>() {
+        common_open_function_column_view(&column_view, &opening_mode);
     }
 }
 
@@ -137,6 +162,28 @@ fn common_open_function(tree_view: &gtk4::TreeView, column_name: i32, column_pat
             OpenMode::PathAndName => get_full_name_from_path_name(&path, &name),
         };
 
+        if let Err(e) = open::that(&end_path) {
+            error!("Failed to open file {end_path}, reason {e}");
+        }
+    }
+}
+
+fn common_open_function_column_view(column_view: &ColumnView, opening_mode: &OpenMode) {
+    let Some(selection) = column_view.model().and_downcast::<MultiSelection>() else { return };
+    let Some(store) = selection.model() else { return };
+    let n = store.n_items();
+    for pos in 0..n {
+        if !selection.is_selected(pos) {
+            continue;
+        }
+        let Some(item) = store.item(pos) else { continue };
+        let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
+        let path = row.path();
+        let name = row.name();
+        let end_path = match opening_mode {
+            OpenMode::OnlyPath => path.clone(),
+            OpenMode::PathAndName => get_full_name_from_path_name(&path, &name),
+        };
         if let Err(e) = open::that(&end_path) {
             error!("Failed to open file {end_path}, reason {e}");
         }

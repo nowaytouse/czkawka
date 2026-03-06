@@ -1,6 +1,7 @@
 use gdk4::gdk_pixbuf::Pixbuf;
+use gdk4::Texture;
 use gtk4::prelude::*;
-use gtk4::{Builder, Button, Orientation, Picture, Window};
+use gtk4::{Builder, Button, Orientation, Window};
 
 use crate::flg;
 use crate::gtk_traits::WidgetTraits;
@@ -25,7 +26,8 @@ impl GuiAbout {
         about_dialog.set_modal(true);
         about_dialog.set_transient_for(Some(window_main));
 
-        about_dialog.set_logo(Picture::for_pixbuf(logo).paintable().as_ref());
+        let texture = Texture::for_pixbuf(logo);
+        about_dialog.set_logo(Some(&texture));
 
         // Taken from command - "git shortlog -s -n -e > a.txt" - remember to remove duplicates
         // First clean it with regex " \<[^\n]+" and next with " +[0-9]+\t" and at end replace "([^\n]+)" with ""$1"," (or ""\0",")

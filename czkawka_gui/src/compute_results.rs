@@ -24,6 +24,7 @@ use czkawka_core::tools::similar_videos::SimilarVideos;
 use czkawka_core::tools::similar_videos::core::{format_bitrate_opt, format_duration_opt};
 use czkawka_core::tools::temporary::Temporary;
 use fun_time::fun_time;
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{Entry, ListStore, TextView};
 use humansize::{BINARY, format_size};
@@ -33,9 +34,10 @@ use rayon::prelude::*;
 use crate::connect_things::connect_file_protection::filter_protected_from_model;
 use crate::flg;
 use crate::gui_structs::common_tree_view::{SharedModelEnum, SubView, TreeViewListStoreTrait};
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_combo_box::IMAGES_HASH_SIZE_COMBO_BOX;
-use crate::help_functions::{HEADER_ROW_COLOR, MAIN_ROW_COLOR, TEXT_COLOR, print_text_messages_to_text_view, set_buttons};
+use crate::help_functions::{HEADER_ROW_COLOR, MAIN_ROW_COLOR, ROW_GROUP_COLORS, TEXT_COLOR, print_text_messages_to_text_view, set_buttons};
 use crate::helpers::enums::{
     BottomButtonsEnum, ColumnsBadExtensions, ColumnsBigFiles, ColumnsBrokenFiles, ColumnsDuplicates, ColumnsEmptyFiles, ColumnsEmptyFolders, ColumnsInvalidSymlinks,
     ColumnsSameMusic, ColumnsSimilarImages, ColumnsSimilarVideos, ColumnsTemporaryFiles, Message,
@@ -89,6 +91,16 @@ fn get_row_color(is_header: bool) -> &'static str {
     if is_header { HEADER_ROW_COLOR } else { MAIN_ROW_COLOR }
 }
 
+fn get_group_row_color(is_header: bool, group_index: Option<usize>) -> &'static str {
+    if is_header {
+        HEADER_ROW_COLOR
+    } else if let Some(idx) = group_index {
+        ROW_GROUP_COLORS[idx % ROW_GROUP_COLORS.len()]
+    } else {
+        MAIN_ROW_COLOR
+    }
+}
+
 pub(crate) fn connect_compute_results(gui_data: &GuiData, result_receiver: Receiver<Message>) {
     let combo_box_image_hash_size = gui_data.main_notebook.combo_box_image_hash_size.clone();
     let buttons_search = gui_data.bottom_buttons.buttons_search.clone();
@@ -122,7 +134,7 @@ pub(crate) fn connect_compute_results(gui_data: &GuiData, result_receiver: Recei
 
                 taskbar_state.borrow().hide();
 
-                let hash_size_index = combo_box_image_hash_size.active().expect("Failed to get active item") as usize;
+                let hash_size_index = combo_box_image_hash_size.selected() as usize;
                 let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u16;
 
                 let msg_type = msg.get_message_type();
@@ -438,7 +450,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
         if ff.get_use_reference() {
             let vec_struct_similar = ff.get_similar_videos_referenced();
 
-            for (base_file_entry, vec_file_entry) in vec_struct_similar {
+            for (group_index, (base_file_entry, vec_file_entry)) in vec_struct_similar.into_iter().enumerate() {
                 let vec_file_entry = vector_sort_unstable_entry_by_path(vec_file_entry);
 
                 let (directory, file) = split_path(&base_file_entry.path);
@@ -450,6 +462,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
                     base_file_entry.modified_date,
                     true,
                     true,
+                    Some(group_index),
                     base_file_entry.fps,
                     base_file_entry.codec.as_deref(),
                     base_file_entry.bitrate,
@@ -467,6 +480,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
                         file_entry.modified_date,
                         false,
                         true,
+                        Some(group_index),
                         file_entry.fps,
                         file_entry.codec.as_deref(),
                         file_entry.bitrate,
@@ -479,10 +493,10 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
         } else {
             let vec_struct_similar = ff.get_similar_videos();
 
-            for vec_file_entry in vec_struct_similar {
+            for (group_index, vec_file_entry) in vec_struct_similar.into_iter().enumerate() {
                 let vec_file_entry = vector_sort_unstable_entry_by_path(vec_file_entry);
 
-                similar_videos_add_to_list_store(&list_store, "", "", 0, 0, true, false, None, None, None, None, None, None);
+                similar_videos_add_to_list_store(&list_store, "", "", 0, 0, true, false, Some(group_index), None, None, None, None, None, None);
                 for file_entry in &vec_file_entry {
                     let (directory, file) = split_path(&file_entry.path);
                     similar_videos_add_to_list_store(
@@ -493,6 +507,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
                         file_entry.modified_date,
                         false,
                         false,
+                        Some(group_index),
                         file_entry.fps,
                         file_entry.codec.as_deref(),
                         file_entry.bitrate,
@@ -543,7 +558,7 @@ fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_error
 
         if sf.get_use_reference() {
             let vec_struct_similar: Vec<(ImagesEntry, Vec<ImagesEntry>)> = sf.get_similar_images_referenced().clone();
-            for (base_file_entry, mut vec_file_entry) in vec_struct_similar {
+            for (group_index, (base_file_entry, mut vec_file_entry)) in vec_struct_similar.into_iter().enumerate() {
                 vec_file_entry.sort_by_key(|e| e.difference);
 
                 // Header
@@ -559,6 +574,7 @@ fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_error
                     hash_size,
                     true,
                     true,
+                    Some(group_index),
                 );
                 for file_entry in &vec_file_entry {
                     let (directory, file) = split_path(&file_entry.path);
@@ -573,15 +589,16 @@ fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_error
                         hash_size,
                         false,
                         true,
+                        Some(group_index),
                     );
                 }
             }
         } else {
             let vec_struct_similar = sf.get_similar_images().clone();
-            for mut vec_file_entry in vec_struct_similar {
+            for (group_index, mut vec_file_entry) in vec_struct_similar.into_iter().enumerate() {
                 vec_file_entry.sort_by_key(|e| e.difference);
 
-                similar_images_add_to_list_store(&list_store, "", "", 0, 0, "", 0, 0, true, false);
+                similar_images_add_to_list_store(&list_store, "", "", 0, 0, "", 0, 0, true, false, Some(group_index));
                 for file_entry in &vec_file_entry {
                     let (directory, file) = split_path(&file_entry.path);
                     similar_images_add_to_list_store(
@@ -595,6 +612,7 @@ fn compute_similar_images(sf: SimilarImages, entry_info: &Entry, text_view_error
                         hash_size,
                         false,
                         false,
+                        Some(group_index),
                     );
                 }
             }
@@ -753,10 +771,12 @@ fn compute_duplicate_finder(df: DuplicateFinder, entry_info: &Entry, text_view_e
         return None;
     }
 
-    if df.get_use_reference() {
-        subview.tree_view.selection().set_select_function(select_function_always_true);
-    } else {
-        subview.tree_view.selection().set_select_function(select_function_duplicates);
+    if subview.get_duplicate_model().is_none() {
+        if df.get_use_reference() {
+            subview.tree_view.selection().set_select_function(select_function_always_true);
+        } else {
+            subview.tree_view.selection().set_select_function(select_function_duplicates);
+        }
     }
 
     let information = df.get_information();
@@ -820,29 +840,120 @@ fn compute_duplicate_finder(df: DuplicateFinder, entry_info: &Entry, text_view_e
 
     // Create GUI
     {
-        let list_store = subview.tree_view.get_model();
-
-        if df.get_use_reference() {
-            match df.get_params().check_method {
-                CheckingMethod::Name => {
-                    let btreemap = df.get_files_with_identical_name_referenced();
-
-                    for (_name, (base_file_entry, vector)) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        let (directory, file) = split_path(&base_file_entry.path);
-                        duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
-
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+        if let Some(store) = subview.get_duplicate_model() {
+            store.remove_all();
+            if df.get_use_reference() {
+                match df.get_params().check_method {
+                    CheckingMethod::Name => {
+                        let btreemap = df.get_files_with_identical_name_referenced();
+                        for (_name, (base_file_entry, vector)) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            let (directory, file) = split_path(&base_file_entry.path);
+                            duplicates_add_to_duplicate_store(store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, true);
+                            }
                         }
                     }
+                    CheckingMethod::Hash => {
+                        let btreemap = df.get_files_with_identical_hashes_referenced();
+                        for (_size, vectors_vector) in btreemap.iter().rev() {
+                            for (base_file_entry, vector) in vectors_vector {
+                                let vector = vector_sort_unstable_entry_by_path(vector);
+                                let (directory, file) = split_path(&base_file_entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                                for entry in vector {
+                                    let (directory, file) = split_path(&entry.path);
+                                    duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, true);
+                                }
+                            }
+                        }
+                    }
+                    CheckingMethod::Size => {
+                        let btreemap = df.get_files_with_identical_size_referenced();
+                        for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            let (directory, file) = split_path(&base_file_entry.path);
+                            duplicates_add_to_duplicate_store(store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, true);
+                            }
+                        }
+                    }
+                    CheckingMethod::SizeName => {
+                        let btreemap = df.get_files_with_identical_size_names_referenced();
+                        for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            let (directory, file) = split_path(&base_file_entry.path);
+                            duplicates_add_to_duplicate_store(store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, true);
+                            }
+                        }
+                    }
+                    _ => panic!(),
                 }
-                CheckingMethod::Hash => {
-                    let btreemap = df.get_files_with_identical_hashes_referenced();
-
-                    for (_size, vectors_vector) in btreemap.iter().rev() {
-                        for (base_file_entry, vector) in vectors_vector {
+            } else {
+                match df.get_params().check_method {
+                    CheckingMethod::Name => {
+                        let btreemap = df.get_files_sorted_by_names();
+                        for (_name, vector) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            duplicates_add_to_duplicate_store(store, "", "", 0, 0, true, false);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, false);
+                            }
+                        }
+                    }
+                    CheckingMethod::Hash => {
+                        let btreemap = df.get_files_sorted_by_hash();
+                        for (_size, vectors_vector) in btreemap.iter().rev() {
+                            for vector in vectors_vector {
+                                let vector = vector_sort_unstable_entry_by_path(vector);
+                                duplicates_add_to_duplicate_store(store, "", "", 0, 0, true, false);
+                                for entry in vector {
+                                    let (directory, file) = split_path(&entry.path);
+                                    duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, false);
+                                }
+                            }
+                        }
+                    }
+                    CheckingMethod::Size => {
+                        let btreemap = df.get_files_sorted_by_size();
+                        for (_size, vector) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            duplicates_add_to_duplicate_store(store, "", "", 0, 0, true, false);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, false);
+                            }
+                        }
+                    }
+                    CheckingMethod::SizeName => {
+                        let btreemap = df.get_files_sorted_by_size_name();
+                        for (_size, vector) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            duplicates_add_to_duplicate_store(store, "", "", 0, 0, true, false);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_duplicate_store(store, &file, &directory, entry.size, entry.modified_date, false, false);
+                            }
+                        }
+                    }
+                    _ => panic!(),
+                }
+            }
+        } else {
+            let list_store = subview.tree_view.get_model();
+            if df.get_use_reference() {
+                match df.get_params().check_method {
+                    CheckingMethod::Name => {
+                        let btreemap = df.get_files_with_identical_name_referenced();
+                        for (_name, (base_file_entry, vector)) in btreemap.iter().rev() {
                             let vector = vector_sort_unstable_entry_by_path(vector);
                             let (directory, file) = split_path(&base_file_entry.path);
                             duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
@@ -852,91 +963,96 @@ fn compute_duplicate_finder(df: DuplicateFinder, entry_info: &Entry, text_view_e
                             }
                         }
                     }
-                }
-                CheckingMethod::Size => {
-                    let btreemap = df.get_files_with_identical_size_referenced();
-
-                    for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        let (directory, file) = split_path(&base_file_entry.path);
-                        duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+                    CheckingMethod::Hash => {
+                        let btreemap = df.get_files_with_identical_hashes_referenced();
+                        for (_size, vectors_vector) in btreemap.iter().rev() {
+                            for (base_file_entry, vector) in vectors_vector {
+                                let vector = vector_sort_unstable_entry_by_path(vector);
+                                let (directory, file) = split_path(&base_file_entry.path);
+                                duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                                for entry in vector {
+                                    let (directory, file) = split_path(&entry.path);
+                                    duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+                                }
+                            }
                         }
                     }
-                }
-                CheckingMethod::SizeName => {
-                    let btreemap = df.get_files_with_identical_size_names_referenced();
-
-                    for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        let (directory, file) = split_path(&base_file_entry.path);
-                        duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+                    CheckingMethod::Size => {
+                        let btreemap = df.get_files_with_identical_size_referenced();
+                        for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            let (directory, file) = split_path(&base_file_entry.path);
+                            duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+                            }
                         }
                     }
-                }
-                _ => panic!(),
-            }
-        } else {
-            match df.get_params().check_method {
-                CheckingMethod::Name => {
-                    let btreemap = df.get_files_sorted_by_names();
-
-                    for (_name, vector) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                    CheckingMethod::SizeName => {
+                        let btreemap = df.get_files_with_identical_size_names_referenced();
+                        for (_size, (base_file_entry, vector)) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            let (directory, file) = split_path(&base_file_entry.path);
+                            duplicates_add_to_list_store(&list_store, &file, &directory, base_file_entry.size, base_file_entry.modified_date, true, true);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, true);
+                            }
                         }
                     }
+                    _ => panic!(),
                 }
-                CheckingMethod::Hash => {
-                    let btreemap = df.get_files_sorted_by_hash();
-
-                    for (_size, vectors_vector) in btreemap.iter().rev() {
-                        for vector in vectors_vector {
+            } else {
+                match df.get_params().check_method {
+                    CheckingMethod::Name => {
+                        let btreemap = df.get_files_sorted_by_names();
+                        for (_name, vector) in btreemap.iter().rev() {
                             let vector = vector_sort_unstable_entry_by_path(vector);
                             duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
-
                             for entry in vector {
                                 let (directory, file) = split_path(&entry.path);
                                 duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
                             }
                         }
                     }
-                }
-                CheckingMethod::Size => {
-                    let btreemap = df.get_files_sorted_by_size();
-
-                    for (_size, vector) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
-
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                    CheckingMethod::Hash => {
+                        let btreemap = df.get_files_sorted_by_hash();
+                        for (_size, vectors_vector) in btreemap.iter().rev() {
+                            for vector in vectors_vector {
+                                let vector = vector_sort_unstable_entry_by_path(vector);
+                                duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
+                                for entry in vector {
+                                    let (directory, file) = split_path(&entry.path);
+                                    duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                                }
+                            }
                         }
                     }
-                }
-                CheckingMethod::SizeName => {
-                    let btreemap = df.get_files_sorted_by_size_name();
-
-                    for (_size, vector) in btreemap.iter().rev() {
-                        let vector = vector_sort_unstable_entry_by_path(vector);
-                        duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
-
-                        for entry in vector {
-                            let (directory, file) = split_path(&entry.path);
-                            duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                    CheckingMethod::Size => {
+                        let btreemap = df.get_files_sorted_by_size();
+                        for (_size, vector) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                            }
                         }
                     }
+                    CheckingMethod::SizeName => {
+                        let btreemap = df.get_files_sorted_by_size_name();
+                        for (_size, vector) in btreemap.iter().rev() {
+                            let vector = vector_sort_unstable_entry_by_path(vector);
+                            duplicates_add_to_list_store(&list_store, "", "", 0, 0, true, false);
+                            for entry in vector {
+                                let (directory, file) = split_path(&entry.path);
+                                duplicates_add_to_list_store(&list_store, &file, &directory, entry.size, entry.modified_date, false, false);
+                            }
+                        }
+                    }
+                    _ => panic!(),
                 }
-                _ => panic!(),
             }
         }
         print_text_messages_to_text_view(text_messages, text_view_errors);
@@ -979,6 +1095,33 @@ fn duplicates_add_to_list_store(list_store: &ListStore, file: &str, directory: &
     append_row_to_list_store(list_store, &values);
 }
 
+fn duplicates_add_to_duplicate_store(
+    store: &GioListStore,
+    file: &str,
+    directory: &str,
+    size: u64,
+    modified_date: u64,
+    is_header: bool,
+    is_reference_folder: bool,
+) {
+    let (size_str, string_date) = format_size_and_date(size, modified_date, is_header, is_reference_folder);
+    let color = get_row_color(is_header).to_string();
+    let row = DuplicateRow::new(
+        !is_header,
+        false,
+        size_str,
+        size,
+        file.to_string(),
+        directory.to_string(),
+        string_date,
+        modified_date,
+        color,
+        is_header,
+        TEXT_COLOR.to_string(),
+    );
+    store.append(&row);
+}
+
 fn similar_images_add_to_list_store(
     list_store: &ListStore,
     file: &str,
@@ -990,10 +1133,11 @@ fn similar_images_add_to_list_store(
     hash_size: u16,
     is_header: bool,
     is_reference_folder: bool,
+    group_index: Option<usize>,
 ) {
     const COLUMNS_NUMBER: usize = 13;
     let (size_str, string_date) = format_size_and_date(size, modified_date, is_header, is_reference_folder);
-    let color = get_row_color(is_header);
+    let color = get_group_row_color(is_header, group_index);
     let similarity_string = if is_header { String::new() } else { get_string_from_similarity(similarity, hash_size) };
 
     let values: [(u32, &dyn ToValue); COLUMNS_NUMBER] = [
@@ -1022,6 +1166,7 @@ fn similar_videos_add_to_list_store(
     modified_date: u64,
     is_header: bool,
     is_reference_folder: bool,
+    group_index: Option<usize>,
     fps: Option<f64>,
     codec: Option<&str>,
     bitrate: Option<u64>,
@@ -1031,7 +1176,7 @@ fn similar_videos_add_to_list_store(
 ) {
     const COLUMNS_NUMBER: usize = 16;
     let (size_str, string_date) = format_size_and_date(size, modified_date, is_header, is_reference_folder);
-    let color = get_row_color(is_header);
+    let color = get_group_row_color(is_header, group_index);
 
     let fps_str = fps.map(|f| format!("{f:.2}")).unwrap_or_default();
     let bitrate_str = format_bitrate_opt(bitrate);

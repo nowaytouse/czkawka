@@ -242,10 +242,10 @@ fn duplicate_search(
     image_preview_duplicates.set_visible(false);
     clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
 
-    let check_method_index = combo_box_duplicate_check_method.active().expect("Failed to get active search") as usize;
+    let check_method_index = combo_box_duplicate_check_method.selected() as usize;
     let check_method = DUPLICATES_CHECK_METHOD_COMBO_BOX[check_method_index].check_method;
 
-    let hash_type_index = combo_box_duplicate_hash_type.active().expect("Failed to get active search") as usize;
+    let hash_type_index = combo_box_duplicate_hash_type.selected() as usize;
     let hash_type = DUPLICATES_HASH_TYPE_COMBO_BOX[hash_type_index].hash_type;
 
     let use_prehash_cache = check_button_duplicates_use_prehash_cache.is_active();
@@ -339,7 +339,7 @@ fn big_files_search(
     let entry_big_files_number = gui_data.main_notebook.entry_big_files_number.clone();
     clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
 
-    let big_files_mode_index = combo_box_big_files_mode.active().expect("Failed to get active search") as usize;
+    let big_files_mode_index = combo_box_big_files_mode.selected() as usize;
     let big_files_mode = BIG_FILES_CHECK_METHOD_COMBO_BOX[big_files_mode_index].check_method;
 
     let numbers_of_files_to_check = entry_big_files_number.text().as_str().parse::<usize>().unwrap_or(50);
@@ -430,7 +430,7 @@ fn same_music_search(
         music_similarity |= MusicSimilarity::LENGTH;
     }
 
-    let check_method_index = combo_box_audio_check_type.active().expect("Failed to get active search") as usize;
+    let check_method_index = combo_box_audio_check_type.selected() as usize;
     let check_method = AUDIO_TYPE_CHECK_METHOD_COMBO_BOX[check_method_index].check_method;
 
     let maximum_difference = scale_similarity_same_music.value();
@@ -580,13 +580,13 @@ fn similar_image_search(
     clean_tree_view(&gui_data.main_notebook.common_tree_views.get_current_subview().tree_view);
     image_preview_similar_images.set_visible(false);
 
-    let hash_size_index = combo_box_image_hash_size.active().expect("Failed to get active search") as usize;
+    let hash_size_index = combo_box_image_hash_size.selected() as usize;
     let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index] as u16;
 
-    let image_filter_index = combo_box_image_resize_algorithm.active().expect("Failed to get active search") as usize;
+    let image_filter_index = combo_box_image_resize_algorithm.selected() as usize;
     let image_filter = IMAGES_RESIZE_ALGORITHM_COMBO_BOX[image_filter_index].filter;
 
-    let hash_alg_index = combo_box_image_hash_algorithm.active().expect("Failed to get active search") as usize;
+    let hash_alg_index = combo_box_image_hash_algorithm.selected() as usize;
     let hash_alg = IMAGES_HASH_TYPE_COMBO_BOX[hash_alg_index].hash_alg;
 
     let ignore_same_size = check_button_image_ignore_same_size.is_active();

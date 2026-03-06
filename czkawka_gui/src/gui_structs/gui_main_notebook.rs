@@ -8,7 +8,7 @@ use czkawka_core::tools::big_file::SearchMode;
 use czkawka_core::tools::similar_images::SIMILAR_VALUES;
 use czkawka_core::tools::similar_images::core::get_string_from_similarity;
 use gtk4::prelude::*;
-use gtk4::{Builder, CheckButton, ComboBoxText, Entry, Label, Notebook, Picture, Scale, Widget};
+use gtk4::{Builder, CheckButton, DropDown, Entry, Label, Notebook, Picture, Scale, StringList, Widget};
 use log::error;
 
 use crate::flg;
@@ -26,8 +26,10 @@ pub struct GuiMainNotebook {
     // General
 
     // Duplicate
-    pub combo_box_duplicate_check_method: ComboBoxText,
-    pub combo_box_duplicate_hash_type: ComboBoxText,
+    pub combo_box_duplicate_check_method: DropDown,
+    pub combo_box_duplicate_check_method_model: StringList,
+    pub combo_box_duplicate_hash_type: DropDown,
+    pub combo_box_duplicate_hash_type_model: StringList,
     pub label_duplicate_check_method: Label,
     pub label_duplicate_hash_type: Label,
     pub check_button_duplicate_case_sensitive_name: CheckButton,
@@ -38,7 +40,8 @@ pub struct GuiMainNotebook {
     pub label_big_shown_files: Label,
     pub entry_big_files_number: Entry,
     pub label_big_files_mode: Label,
-    pub combo_box_big_files_mode: ComboBoxText,
+    pub combo_box_big_files_mode: DropDown,
+    pub combo_box_big_files_mode_model: StringList,
 
     // Similar Images
     pub scale_similarity_similar_images: Scale,
@@ -47,9 +50,12 @@ pub struct GuiMainNotebook {
     pub label_image_hash_type: Label,
     pub label_image_hash_size: Label,
 
-    pub combo_box_image_resize_algorithm: ComboBoxText,
-    pub combo_box_image_hash_algorithm: ComboBoxText,
-    pub combo_box_image_hash_size: ComboBoxText,
+    pub combo_box_image_resize_algorithm: DropDown,
+    pub combo_box_image_resize_algorithm_model: StringList,
+    pub combo_box_image_hash_algorithm: DropDown,
+    pub combo_box_image_hash_algorithm_model: StringList,
+    pub combo_box_image_hash_size: DropDown,
+    pub combo_box_image_hash_size_model: StringList,
 
     pub check_button_image_ignore_same_size: CheckButton,
     pub check_button_image_size_ratio: CheckButton,
@@ -87,7 +93,8 @@ pub struct GuiMainNotebook {
     pub check_button_music_compare_only_in_title_group: CheckButton,
     #[expect(unused)]
     pub label_audio_check_type: Label,
-    pub combo_box_audio_check_type: ComboBoxText,
+    pub combo_box_audio_check_type: DropDown,
+    pub combo_box_audio_check_type_model: StringList,
     pub label_same_music_seconds: Label,
     pub label_same_music_similarity: Label,
     pub scale_seconds_same_music: Scale,
@@ -100,8 +107,12 @@ impl GuiMainNotebook {
     pub(crate) fn create_from_builder(builder: &Builder, settings: &GuiSettings) -> Self {
         let notebook_main: Notebook = builder.object("notebook_main").expect("Cambalache");
 
-        let combo_box_duplicate_check_method: ComboBoxText = builder.object("combo_box_duplicate_check_method").expect("Cambalache");
-        let combo_box_duplicate_hash_type: ComboBoxText = builder.object("combo_box_duplicate_hash_type").expect("Cambalache");
+        let combo_box_duplicate_check_method: DropDown = builder.object("combo_box_duplicate_check_method").expect("Cambalache");
+        let combo_box_duplicate_check_method_model = StringList::new(&[]);
+        combo_box_duplicate_check_method.set_model(Some(&combo_box_duplicate_check_method_model));
+        let combo_box_duplicate_hash_type: DropDown = builder.object("combo_box_duplicate_hash_type").expect("Cambalache");
+        let combo_box_duplicate_hash_type_model = StringList::new(&[]);
+        combo_box_duplicate_hash_type.set_model(Some(&combo_box_duplicate_hash_type_model));
 
         let entry_big_files_number: Entry = builder.object("entry_big_files_number").expect("Cambalache");
 
@@ -125,10 +136,18 @@ impl GuiMainNotebook {
         let scale_similarity_similar_images: Scale = builder.object("scale_similarity_similar_images").expect("Cambalache");
         let scale_similarity_similar_videos: Scale = builder.object("scale_similarity_similar_videos").expect("Cambalache");
 
-        let combo_box_image_resize_algorithm: ComboBoxText = builder.object("combo_box_image_resize_algorithm").expect("Cambalache");
-        let combo_box_image_hash_algorithm: ComboBoxText = builder.object("combo_box_image_hash_algorithm").expect("Cambalache");
-        let combo_box_image_hash_size: ComboBoxText = builder.object("combo_box_image_hash_size").expect("Cambalache");
-        let combo_box_big_files_mode: ComboBoxText = builder.object("combo_box_big_files_mode").expect("Cambalache");
+        let combo_box_image_resize_algorithm: DropDown = builder.object("combo_box_image_resize_algorithm").expect("Cambalache");
+        let combo_box_image_resize_algorithm_model = StringList::new(&[]);
+        combo_box_image_resize_algorithm.set_model(Some(&combo_box_image_resize_algorithm_model));
+        let combo_box_image_hash_algorithm: DropDown = builder.object("combo_box_image_hash_algorithm").expect("Cambalache");
+        let combo_box_image_hash_algorithm_model = StringList::new(&[]);
+        combo_box_image_hash_algorithm.set_model(Some(&combo_box_image_hash_algorithm_model));
+        let combo_box_image_hash_size: DropDown = builder.object("combo_box_image_hash_size").expect("Cambalache");
+        let combo_box_image_hash_size_model = StringList::new(&[]);
+        combo_box_image_hash_size.set_model(Some(&combo_box_image_hash_size_model));
+        let combo_box_big_files_mode: DropDown = builder.object("combo_box_big_files_mode").expect("Cambalache");
+        let combo_box_big_files_mode_model = StringList::new(&[]);
+        combo_box_big_files_mode.set_model(Some(&combo_box_big_files_mode_model));
 
         let check_button_image_ignore_same_size: CheckButton = builder.object("check_button_image_ignore_same_size").expect("Cambalache");
         let check_button_image_size_ratio: CheckButton = builder.object("check_button_image_size_ratio").expect("Cambalache");
@@ -154,7 +173,9 @@ impl GuiMainNotebook {
         let image_preview_duplicates: Picture = builder.object("image_preview_duplicates").expect("Cambalache");
 
         let label_audio_check_type: Label = builder.object("label_audio_check_type").expect("Cambalache");
-        let combo_box_audio_check_type: ComboBoxText = builder.object("combo_box_audio_check_type").expect("Cambalache");
+        let combo_box_audio_check_type: DropDown = builder.object("combo_box_audio_check_type").expect("Cambalache");
+        let combo_box_audio_check_type_model = StringList::new(&[]);
+        combo_box_audio_check_type.set_model(Some(&combo_box_audio_check_type_model));
         let label_same_music_seconds: Label = builder.object("label_same_music_seconds").expect("Cambalache");
         let label_same_music_similarity: Label = builder.object("label_same_music_similarity").expect("Cambalache");
         let scale_seconds_same_music: Scale = builder.object("scale_seconds_same_music").expect("Cambalache");
@@ -186,7 +207,9 @@ impl GuiMainNotebook {
         Self {
             notebook_main,
             combo_box_duplicate_check_method,
+            combo_box_duplicate_check_method_model,
             combo_box_duplicate_hash_type,
+            combo_box_duplicate_hash_type_model,
             label_duplicate_check_method,
             label_duplicate_hash_type,
             check_button_duplicate_case_sensitive_name,
@@ -195,13 +218,17 @@ impl GuiMainNotebook {
             entry_big_files_number,
             label_big_files_mode,
             combo_box_big_files_mode,
+            combo_box_big_files_mode_model,
             scale_similarity_similar_images,
             label_image_resize_algorithm,
             label_image_hash_type,
             label_image_hash_size,
             combo_box_image_resize_algorithm,
+            combo_box_image_resize_algorithm_model,
             combo_box_image_hash_algorithm,
+            combo_box_image_hash_algorithm_model,
             combo_box_image_hash_size,
+            combo_box_image_hash_size_model,
             check_button_image_ignore_same_size,
             check_button_image_size_ratio,
             entry_image_size_ratio,
@@ -229,6 +256,7 @@ impl GuiMainNotebook {
             check_button_music_compare_only_in_title_group,
             label_audio_check_type,
             combo_box_audio_check_type,
+            combo_box_audio_check_type_model,
             label_same_music_seconds,
             label_same_music_similarity,
             scale_seconds_same_music,
@@ -316,7 +344,7 @@ impl GuiMainNotebook {
         self.scale_similarity_similar_videos.set_tooltip_text(Some(&flg!("same_music_tooltip")));
 
         {
-            let hash_size_index = self.combo_box_image_hash_size.active().expect("Some hash size must be active") as usize;
+            let hash_size_index = self.combo_box_image_hash_size.selected() as usize;
             let hash_size = IMAGES_HASH_SIZE_COMBO_BOX[hash_size_index];
             let index = match hash_size {
                 8 => 0,
@@ -478,6 +506,24 @@ impl GuiMainNotebook {
         for (key_enum, columns_names) in names_of_columns {
             let s = &self.common_tree_views.get_subview(key_enum);
 
+            if key_enum == NotebookMainEnum::Duplicate {
+                if let Some(ref cv) = s.duplicate_column_view {
+                    let cols = cv.columns();
+                    let n = cols.n_items();
+                    for (i, name) in columns_names.iter().enumerate() {
+                        let idx = (i + 1) as u32;
+                        if idx < n {
+                            if let Some(col) = cols.item(idx) {
+                                if let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
+                                    column.set_title(Some(name.as_str()));
+                                }
+                            }
+                        }
+                    }
+                }
+                continue;
+            }
+
             // Skipping first column because it is selection button
             assert_eq!(
                 columns_names.len() + 1,
@@ -492,44 +538,50 @@ impl GuiMainNotebook {
         }
 
         {
-            let active = self.combo_box_audio_check_type.active().unwrap_or(0);
-            self.combo_box_audio_check_type.remove_all();
-            for i in &AUDIO_TYPE_CHECK_METHOD_COMBO_BOX {
-                let text = match i.check_method {
+            let active = self.combo_box_audio_check_type.selected();
+            let n = self.combo_box_audio_check_type_model.n_items();
+            let v: Vec<String> = AUDIO_TYPE_CHECK_METHOD_COMBO_BOX
+                .iter()
+                .map(|i| match i.check_method {
                     CheckingMethod::AudioTags => flg!("music_checking_by_tags"),
                     CheckingMethod::AudioContent => flg!("music_checking_by_content"),
                     _ => panic!(),
-                };
-                self.combo_box_audio_check_type.append_text(&text);
-            }
-            self.combo_box_audio_check_type.set_active(Some(active));
+                })
+                .collect();
+            let refs: Vec<&str> = v.iter().map(|s| s.as_str()).collect();
+            self.combo_box_audio_check_type_model.splice(0, n, &refs);
+            self.combo_box_audio_check_type.set_selected(active.min(refs.len().saturating_sub(1) as u32));
         }
         {
-            let active = self.combo_box_duplicate_check_method.active().unwrap_or(0);
-            self.combo_box_duplicate_check_method.remove_all();
-            for i in &DUPLICATES_CHECK_METHOD_COMBO_BOX {
-                let text = match i.check_method {
+            let active = self.combo_box_duplicate_check_method.selected();
+            let n = self.combo_box_duplicate_check_method_model.n_items();
+            let v: Vec<String> = DUPLICATES_CHECK_METHOD_COMBO_BOX
+                .iter()
+                .map(|i| match i.check_method {
                     CheckingMethod::Hash => flg!("duplicate_mode_hash_combo_box"),
                     CheckingMethod::Size => flg!("duplicate_mode_size_combo_box"),
                     CheckingMethod::Name => flg!("duplicate_mode_name_combo_box"),
                     CheckingMethod::SizeName => flg!("duplicate_mode_size_name_combo_box"),
                     _ => panic!(),
-                };
-                self.combo_box_duplicate_check_method.append_text(&text);
-            }
-            self.combo_box_duplicate_check_method.set_active(Some(active));
+                })
+                .collect();
+            let refs: Vec<&str> = v.iter().map(|s| s.as_str()).collect();
+            self.combo_box_duplicate_check_method_model.splice(0, n, &refs);
+            self.combo_box_duplicate_check_method.set_selected(active.min(refs.len().saturating_sub(1) as u32));
         }
         {
-            let active = self.combo_box_big_files_mode.active().unwrap_or(0);
-            self.combo_box_big_files_mode.remove_all();
-            for i in &BIG_FILES_CHECK_METHOD_COMBO_BOX {
-                let text = match i.check_method {
+            let active = self.combo_box_big_files_mode.selected();
+            let n = self.combo_box_big_files_mode_model.n_items();
+            let v: Vec<String> = BIG_FILES_CHECK_METHOD_COMBO_BOX
+                .iter()
+                .map(|i| match i.check_method {
                     SearchMode::SmallestFiles => flg!("big_files_mode_smallest_combo_box"),
                     SearchMode::BiggestFiles => flg!("big_files_mode_biggest_combo_box"),
-                };
-                self.combo_box_big_files_mode.append_text(&text);
-            }
-            self.combo_box_big_files_mode.set_active(Some(active));
+                })
+                .collect();
+            let refs: Vec<&str> = v.iter().map(|s| s.as_str()).collect();
+            self.combo_box_big_files_mode_model.splice(0, n, &refs);
+            self.combo_box_big_files_mode.set_selected(active.min(refs.len().saturating_sub(1) as u32));
         }
     }
 }

@@ -18,9 +18,23 @@ pub const KEY_SPACE: u32 = 65;
 
 pub type SharedState<T> = Rc<RefCell<Option<T>>>;
 
-pub const MAIN_ROW_COLOR: &str = "#222222";
-pub const HEADER_ROW_COLOR: &str = "#111111";
-pub const TEXT_COLOR: &str = "#ffffff";
+pub const MAIN_ROW_COLOR: &str = "#2d2d2d";
+pub const HEADER_ROW_COLOR: &str = "#1a4d6e";
+pub const TEXT_COLOR: &str = "#e0e0e0";
+
+/// Per-group row background colors for similar/duplicate lists (pastel, distinct).
+pub const ROW_GROUP_COLORS: &[&str] = &[
+    "#2d3e50", // slate
+    "#34495e", // dark blue-gray
+    "#1e5f4a", // dark green
+    "#5c4d7a", // mauve
+    "#8b5e3c", // brown
+    "#2c5f6f", // teal
+    "#6b4e71", // plum
+    "#4a6572", // blue-gray
+    "#3d5c5c", // dark cyan
+    "#5d4e6d", // violet
+];
 
 pub(crate) fn get_path_buf_from_vector_of_strings(vec_string: &[String]) -> Vec<PathBuf> {
     vec_string.iter().map(PathBuf::from).collect()

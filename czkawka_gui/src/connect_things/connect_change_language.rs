@@ -3,6 +3,7 @@ use i18n_embed::DesktopLanguageRequester;
 use i18n_embed::unic_langid::LanguageIdentifier;
 use log::error;
 
+use crate::help_drop_down::drop_down_selected_text;
 use crate::language_functions::get_language_from_combo_box_text;
 use crate::{GuiData, LANGUAGES_ALL, localizer_gui};
 
@@ -13,7 +14,7 @@ pub(crate) fn connect_change_language(gui_data: &GuiData) {
 
     let combo_box_settings_language = gui_data.settings.combo_box_settings_language.clone();
     let gui_data = gui_data.clone();
-    combo_box_settings_language.connect_changed(move |_| {
+    combo_box_settings_language.connect_selected_notify(move |_| {
         change_language(&gui_data);
     });
 }
@@ -24,7 +25,10 @@ fn change_language(gui_data: &GuiData) {
         ("czkawka_gui", localizer_gui::localizer_gui()),
     ];
 
-    let lang_short = get_language_from_combo_box_text(&gui_data.settings.combo_box_settings_language.active_text().expect("No active text")).short_text;
+    let lang_short = get_language_from_combo_box_text(
+        &drop_down_selected_text(&gui_data.settings.combo_box_settings_language).expect("No selected language"),
+    )
+    .short_text;
 
     let lang_identifier = vec![LanguageIdentifier::from_bytes(lang_short.as_bytes()).expect("Failed to create LanguageIdentifier")];
     for (lib, localizer) in localizers {
@@ -51,7 +55,7 @@ pub(crate) fn load_system_language(gui_data: &GuiData) {
         }
         for (index, lang) in LANGUAGES_ALL.iter().enumerate() {
             if lang.short_text == short_lang {
-                gui_data.settings.combo_box_settings_language.set_active(Some(index as u32));
+                gui_data.settings.combo_box_settings_language.set_selected(index as u32);
                 break;
             }
         }

@@ -1,8 +1,10 @@
 use fun_time::fun_time;
+use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{ListStore, TreeView};
 
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::helpers::model_iter::{iter_list, iter_list_with_break, iter_list_with_break_init};
 
 pub(crate) fn get_string_from_list_store(tree_view: &TreeView, column_full_path: i32, column_selection: Option<i32>) -> Vec<String> {
@@ -161,6 +163,10 @@ pub(crate) fn clean_invalid_headers(model: &ListStore, column_header: i32, colum
 }
 
 pub(crate) fn check_how_much_elements_is_selected(sv: &SubView) -> (u64, u64) {
+    if let Some(store) = sv.get_duplicate_model() {
+        return check_how_much_elements_is_selected_duplicate(store);
+    }
+
     let mut number_of_selected_items: u64 = 0;
     let mut number_of_selected_groups: u64 = 0;
 
@@ -199,7 +205,41 @@ pub(crate) fn check_how_much_elements_is_selected(sv: &SubView) -> (u64, u64) {
     (number_of_selected_items, number_of_selected_groups)
 }
 
+fn check_how_much_elements_is_selected_duplicate(store: &GioListStore) -> (u64, u64) {
+    let n = store.n_items();
+    let mut number_of_selected_items: u64 = 0;
+    let mut number_of_selected_groups: u64 = 0;
+    let mut is_item_currently_selected_in_group = false;
+    for pos in 0..n {
+        let Some(item) = store.item(pos) else { continue };
+        let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
+        if row.is_header() {
+            is_item_currently_selected_in_group = false;
+        } else if row.selection_button() {
+            number_of_selected_items += 1;
+            if !is_item_currently_selected_in_group {
+                number_of_selected_groups += 1;
+            }
+            is_item_currently_selected_in_group = true;
+        }
+    }
+    (number_of_selected_items, number_of_selected_groups)
+}
+
 pub(crate) fn count_number_of_groups(sv: &SubView) -> u32 {
+    if let Some(store) = sv.get_duplicate_model() {
+        let n = store.n_items();
+        let mut count = 0u32;
+        for pos in 0..n {
+            let Some(item) = store.item(pos) else { continue };
+            let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
+            if row.is_header() {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
     let mut number_of_selected_groups = 0;
     let column_header = sv.nb_object.column_header.expect("Column header should be present to count number of groups");
 

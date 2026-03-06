@@ -219,7 +219,10 @@ where
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
                     log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file.to_string_lossy(), e);
-                    let _ = fs::remove_file(&cache_file);
+                    drop(reader); // Ensure file is closed before removal
+                    if let Err(remove_err) = fs::remove_file(&cache_file) {
+                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file.to_string_lossy(), remove_err);
+                    }
                     return (text_messages, None);
                 }
             };
@@ -235,7 +238,10 @@ where
                         reason = e.to_string()
                     ));
                     log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
-                    let _ = fs::remove_file(&cache_file_json);
+                    drop(reader);
+                    if let Err(remove_err) = fs::remove_file(&cache_file_json) {
+                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file_json.to_string_lossy(), remove_err);
+                    }
                     return (text_messages, None);
                 }
             };

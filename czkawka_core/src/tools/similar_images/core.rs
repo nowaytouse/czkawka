@@ -131,11 +131,6 @@ impl SimilarImages {
         debug!("hash_images - end hashing {} images", vec_file_entry.len());
 
         progress_handler.join_thread();
-        
-        if check_if_stop_received(stop_flag) {
-            debug!("hash_images - stop received, skipping cache saving");
-            return WorkContinueStatus::Stop;
-        }
 
         vec_file_entry.extend(records_already_cached.into_values());
 

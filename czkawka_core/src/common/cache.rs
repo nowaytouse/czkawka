@@ -52,7 +52,7 @@ where
     T: Serialize + ResultEntry + Sized + Send + Sync,
 {
     let mut text_messages = Messages::new();
-    if let Some(((_, cache_file), (_, cache_file_json))) = open_cache_folder(cache_file_name, true, save_also_as_json, &mut text_messages.warnings) {
+    if let Some(((_, cache_file), (_, cache_file_json))) = open_cache_folder(cache_file_name, false, save_also_as_json, &mut text_messages.warnings) {
         let hashmap_to_save = hashmap.values().filter(|t| t.get_size() >= minimum_file_size).collect::<Vec<_>>();
 
         {
@@ -80,7 +80,6 @@ where
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
                 debug!("Failed to save cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
                 drop(writer);
-                let _ = fs::remove_file(&tmp_cache_file);
                 return text_messages;
             }
             if let Err(e) = writer.flush() {
@@ -90,14 +89,12 @@ where
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
                 debug!("Failed to flush cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
                 drop(writer);
-                let _ = fs::remove_file(&tmp_cache_file);
                 return text_messages;
             }
             drop(writer);
 
             if let Err(e) = fs::rename(&tmp_cache_file, &cache_file) {
                 text_messages.warnings.push(format!("Failed to rename temporary cache file to final name: {e}"));
-                let _ = fs::remove_file(&tmp_cache_file);
                 return text_messages;
             }
 
@@ -123,7 +120,6 @@ where
                         .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
                     debug!("Failed to save JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
                     drop(writer);
-                    let _ = fs::remove_file(&tmp_cache_file_json);
                     return text_messages;
                 }
                 if let Err(e) = writer.flush() {
@@ -133,14 +129,12 @@ where
                         .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
                     debug!("Failed to flush JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
                     drop(writer);
-                    let _ = fs::remove_file(&tmp_cache_file_json);
                     return text_messages;
                 }
                 drop(writer);
 
                 if let Err(e) = fs::rename(&tmp_cache_file_json, &cache_file_json) {
                     text_messages.warnings.push(format!("Failed to rename temporary JSON cache file to final name: {e}"));
-                    let _ = fs::remove_file(&tmp_cache_file_json);
                     return text_messages;
                 }
                 debug!("Saved cache to JSON file \"{}\" with size {}", cache_file_json.to_string_lossy(), get_cache_size(&cache_file_json));
@@ -282,21 +276,17 @@ where
                     text_messages
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file.to_string_lossy(), e);
-                    if let Err(remove_err) = fs::remove_file(&cache_file) {
-                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file.to_string_lossy(), remove_err);
-                    }
+                    log::warn!("Failed to load cache from file {} - {}.", cache_file.to_string_lossy(), e);
                     return (text_messages, None);
                 }
             };
         } else {
             cache_full_name = cache_file_json.clone();
             
-            // Check if file is empty to avoid "EOF" errors
+            // Check if file is empty
             if let Ok(metadata) = fs::metadata(&cache_file_json) {
                 if metadata.len() == 0 {
-                    log::warn!("Cache file {} is empty. Deleting it.", cache_file_json.to_string_lossy());
-                    let _ = fs::remove_file(&cache_file_json);
+                    log::warn!("Cache file {} is empty.", cache_file_json.to_string_lossy());
                     return (text_messages, None);
                 }
             }
@@ -311,11 +301,8 @@ where
                         file = cache_file_json.to_string_lossy(),
                         reason = e.to_string()
                     ));
-                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
+                    log::warn!("Failed to load cache from file {} - {}.", cache_file_json.to_string_lossy(), e);
                     drop(reader);
-                    if let Err(remove_err) = fs::remove_file(&cache_file_json) {
-                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file_json.to_string_lossy(), remove_err);
-                    }
                     return (text_messages, None);
                 }
             };

@@ -181,7 +181,6 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
 
     // 选择列（勾选框）
     let factory_select = SignalListItemFactory::new();
-    let store_sel = list_store.clone();
     factory_select.connect_setup(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
         let check = CheckButton::new();
@@ -300,7 +299,6 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
 
     // 勾选框列
     let factory_select = SignalListItemFactory::new();
-    let store_sel = list_store.clone();
     factory_select.connect_setup(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
         let check = CheckButton::new();

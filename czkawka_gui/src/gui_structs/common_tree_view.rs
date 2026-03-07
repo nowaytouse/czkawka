@@ -192,21 +192,13 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
         let Some(item) = list_item.item() else { return };
         let Ok(row) = item.downcast::<DuplicateRow>() else { return };
         let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
-        child.set_active(row.selection_button());
-        child.set_sensitive(row.activatable_select_button());
-        let row_clone = row.clone();
-        let store_clone = store_sel.clone();
-        let id = child.connect_toggled(move |check| {
-            let active = check.is_active();
-            if let Some(pos) = store_clone.find(&row_clone) {
-                if let Some(it) = store_clone.item(pos) {
-                    if let Ok(r) = it.downcast::<DuplicateRow>() {
-                        r.set_selection_button(active);
-                    }
-                }
-            }
-        });
-        unsafe { list_item.set_data("toggled_id", id) };
+        row.bind_property("selection-button", &child, "active")
+            .sync_create()
+            .bidirectional()
+            .build();
+        row.bind_property("activatable-select-button", &child, "sensitive")
+            .sync_create()
+            .build();
     });
     factory_select.connect_unbind(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -319,20 +311,14 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
         let Some(item) = list_item.item() else { return };
         let Ok(row) = item.downcast::<SimpleRow>() else { return };
         let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
-        child.set_active(row.selection_button());
-        let row_clone = row.clone();
-        let store_clone = store_sel.clone();
-        let id = child.connect_toggled(move |check| {
-            let active = check.is_active();
-            if let Some(pos) = store_clone.find(&row_clone) {
-                if let Some(it) = store_clone.item(pos) {
-                    if let Ok(r) = it.downcast::<SimpleRow>() {
-                        r.set_selection_button(active);
-                    }
-                }
-            }
-        });
-        unsafe { list_item.set_data("toggled_id", id) };
+        row.bind_property("selection-button", &child, "active")
+            .sync_create()
+            .bidirectional()
+            .build();
+        row.bind_property("protected", &child, "sensitive")
+            .transform_to(|_b, protected: bool| Some(!protected)) // Sensitive if NOT protected
+            .sync_create()
+            .build();
     });
     factory_select.connect_unbind(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");

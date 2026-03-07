@@ -7,17 +7,15 @@
 ### GUI Modernization and Visual Polish
 - **Modernized App Aesthetics**: Injected a global `CssProvider` with rounded buttons, hover transitions, shadows, and improved Notebook tab styling to replace the legacy "retro" look.
 - **Improved File Protection Feedback**: Protected files are now clearly marked in red (`#d32f2f`). In migrated ColumnView tabs, this is achieved via dynamic CSS class binding (`.protected-file`) which adds a strikethrough. In legacy TreeView tabs (Similar Images, Similar Videos, Same Music), the `TextColor` attribute is dynamically modified during search and protection toggles to provide immediate visual feedback.
+- **Improved Batch Selection**: Replaced manual signal handling with bidirectional property bindings for `ColumnView` checkboxes. This fixes the issue where batch actions like "Select All" had no visual effect in Duplicates and simple folder tabs.
 - **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) and wrapped dense Similar Images settings in stacked `GtkBox` layouts to prevent GTK `width-request` measurement warnings.
 
 ### Infrastructure and Stability Improvements
 - **Increased Memory/Allocation Limits for Massive Hashes**: 
-  - Raised `MEMORY_LIMIT` for Bincode cache serialization to **90 GB** in `czkawka_core/src/common/cache.rs`.
-  - Raised image decoding allocation limit to **90 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
+  - Raised `MEMORY_LIMIT` for Bincode cache serialization to **14 GB** in `czkawka_core/src/common/cache.rs`.
+  - Raised image decoding allocation limit to **14 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
   - These changes prevent "failed to fill whole buffer" and "failed to allocate X bytes" errors when using massive perceptual hash sizes (up to 8192).
-- **Corrupt Cache Auto-Cleanup**: Implemented automatic deletion of truncated or corrupt cache files during loading to prevent persistent warnings after a failed scan.
-- **Save Failure Cleanup**: Added logic to remove partial binary and JSON files if a save operation fails (e.g., due to size limits), ensuring no "broken" cache states are left behind.
 - **Fixed Similar Images Hash Size Support**: Reverted accidental removal of 1024-8192 hash sizes in the UI and core logic.
-- **Task Management Scripts**: Added `scripts/build.sh` and `scripts/run.sh` to allow separate compilation and execution without redundant rebuilds.
 
 ### GTK4 API Migration — Deprecated API Removal (ongoing)
 

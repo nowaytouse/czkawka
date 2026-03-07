@@ -58,6 +58,7 @@ pub struct GuiMainNotebook {
     pub combo_box_image_hash_size_model: StringList,
 
     pub check_button_image_ignore_same_size: CheckButton,
+    pub check_button_image_only_same_size: CheckButton,
     pub check_button_image_size_ratio: CheckButton,
     pub entry_image_size_ratio: Entry,
     pub check_button_video_ignore_same_size: CheckButton,
@@ -150,6 +151,7 @@ impl GuiMainNotebook {
         combo_box_big_files_mode.set_model(Some(&combo_box_big_files_mode_model));
 
         let check_button_image_ignore_same_size: CheckButton = builder.object("check_button_image_ignore_same_size").expect("Cambalache");
+        let check_button_image_only_same_size: CheckButton = builder.object("check_button_image_only_same_size").expect("Cambalache");
         let check_button_image_size_ratio: CheckButton = builder.object("check_button_image_size_ratio").expect("Cambalache");
         let entry_image_size_ratio: Entry = builder.object("entry_image_size_ratio").expect("Cambalache");
         let check_button_video_ignore_same_size: CheckButton = builder.object("check_button_video_ignore_same_size").expect("Cambalache");
@@ -230,6 +232,7 @@ impl GuiMainNotebook {
             combo_box_image_hash_size,
             combo_box_image_hash_size_model,
             check_button_image_ignore_same_size,
+            check_button_image_only_same_size,
             check_button_image_size_ratio,
             entry_image_size_ratio,
             check_button_video_ignore_same_size,
@@ -318,12 +321,16 @@ impl GuiMainNotebook {
         self.label_big_files_mode.set_tooltip_text(Some(&flg!("big_files_mode_combobox_tooltip")));
         self.label_big_files_mode.set_label(&flg!("big_files_mode_label"));
 
+        self.check_button_image_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
+        self.check_button_image_only_same_size.set_label(Some(&flg!("check_button_general_only_same_size")));
+        self.check_button_video_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
+
         self.check_button_image_ignore_same_size
             .set_tooltip_text(Some(&flg!("check_button_general_same_size_tooltip")));
+        self.check_button_image_only_same_size
+            .set_tooltip_text(Some(&flg!("check_button_general_only_same_size_tooltip")));
         self.check_button_video_ignore_same_size
             .set_tooltip_text(Some(&flg!("check_button_general_same_size_tooltip")));
-        self.check_button_image_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
-        self.check_button_video_ignore_same_size.set_label(Some(&flg!("check_button_general_same_size")));
 
         self.check_button_image_size_ratio.set_label(Some(&flg!("check_button_image_size_ratio")));
         self.entry_image_size_ratio.set_tooltip_text(Some(&flg!("entry_image_size_ratio_tooltip")));

@@ -102,6 +102,7 @@ pub struct SimilarImagesParameters {
     pub hash_alg: HashAlg,
     pub image_filter: FilterType,
     pub exclude_images_with_same_size: bool,
+    pub only_images_with_same_size: bool,
     pub size_ratio_enabled: bool,
     pub size_ratio: f64,
 }
@@ -113,6 +114,7 @@ impl SimilarImagesParameters {
         hash_alg: HashAlg,
         image_filter: FilterType,
         exclude_images_with_same_size: bool,
+        only_images_with_same_size: bool,
         size_ratio_enabled: bool,
         size_ratio: f64,
     ) -> Self {
@@ -123,6 +125,7 @@ impl SimilarImagesParameters {
             hash_alg,
             image_filter,
             exclude_images_with_same_size,
+            only_images_with_same_size,
             size_ratio_enabled,
             size_ratio,
         }

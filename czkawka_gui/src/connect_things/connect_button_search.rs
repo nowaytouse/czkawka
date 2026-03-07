@@ -570,9 +570,6 @@ fn similar_image_search(
     let combo_box_image_hash_size = gui_data.main_notebook.combo_box_image_hash_size.clone();
     let combo_box_image_hash_algorithm = gui_data.main_notebook.combo_box_image_hash_algorithm.clone();
     let combo_box_image_resize_algorithm = gui_data.main_notebook.combo_box_image_resize_algorithm.clone();
-    let check_button_image_ignore_same_size = gui_data.main_notebook.check_button_image_ignore_same_size.clone();
-    let check_button_image_size_ratio = gui_data.main_notebook.check_button_image_size_ratio.clone();
-    let entry_image_size_ratio = gui_data.main_notebook.entry_image_size_ratio.clone();
     let check_button_settings_similar_images_delete_outdated_cache = gui_data.settings.check_button_settings_similar_images_delete_outdated_cache.clone();
     let image_preview_similar_images = gui_data.main_notebook.image_preview_similar_images.clone();
     let scale_similarity_similar_images = gui_data.main_notebook.scale_similarity_similar_images.clone();
@@ -589,10 +586,11 @@ fn similar_image_search(
     let hash_alg_index = combo_box_image_hash_algorithm.selected() as usize;
     let hash_alg = IMAGES_HASH_TYPE_COMBO_BOX[hash_alg_index].hash_alg;
 
-    let ignore_same_size = check_button_image_ignore_same_size.is_active();
+    let ignore_same_size = gui_data.main_notebook.check_button_image_ignore_same_size.is_active();
+    let only_same_size = gui_data.main_notebook.check_button_image_only_same_size.is_active();
 
-    let size_ratio_enabled = check_button_image_size_ratio.is_active();
-    let size_ratio: f64 = entry_image_size_ratio.text().parse().unwrap_or(1.05);
+    let size_ratio_enabled = gui_data.main_notebook.check_button_image_size_ratio.is_active();
+    let size_ratio: f64 = gui_data.main_notebook.entry_image_size_ratio.text().parse().unwrap_or(1.05);
 
     let similarity = scale_similarity_similar_images.value() as u32;
 
@@ -601,7 +599,16 @@ fn similar_image_search(
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
         .spawn(move || {
-            let params = SimilarImagesParameters::new(similarity, hash_size, hash_alg, image_filter, ignore_same_size, size_ratio_enabled, size_ratio);
+            let params = SimilarImagesParameters::new(
+                similarity,
+                hash_size,
+                hash_alg,
+                image_filter,
+                ignore_same_size,
+                only_same_size,
+                size_ratio_enabled,
+                size_ratio,
+            );
             let mut tool = SimilarImages::new(params);
 
             set_common_settings(&mut tool, &loaded_commons);

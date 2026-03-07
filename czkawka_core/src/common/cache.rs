@@ -3,10 +3,9 @@
 mod cleaning;
 
 use std::collections::BTreeMap;
-use std::fs::{self, OpenOptions};
-use std::io::{BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter};
 use std::path::Path;
-use std::mem;
+use std::{fs, mem};
 
 use bincode::Options;
 pub use cleaning::{CacheCleaningStatistics, CacheProgressCleaning, clean_all_cache_files};
@@ -32,7 +31,7 @@ pub(crate) const CACHE_VIDEO_VERSION: u8 = 110;
 pub(crate) const CACHE_BROKEN_FILES_VERSION: u8 = 110;
 pub(crate) const CACHE_VIDEO_OPTIMIZE_VERSION: u8 = 110;
 
-pub(crate) const MEMORY_LIMIT: u64 = 90 * 1024 * 1024 * 1024; // 90 GB
+pub(crate) const MEMORY_LIMIT: u64 = 14 * 1024 * 1024 * 1024; // 14 GB
 
 const CLEANING_TIMESTAMPS_FILE: &str = "cleaning_timestamps.json";
 
@@ -52,94 +51,37 @@ where
     T: Serialize + ResultEntry + Sized + Send + Sync,
 {
     let mut text_messages = Messages::new();
-    if let Some(((_, cache_file), (_, cache_file_json))) = open_cache_folder(cache_file_name, false, save_also_as_json, &mut text_messages.warnings) {
+    if let Some(((file_handler, cache_file), (file_handler_json, cache_file_json))) = open_cache_folder(cache_file_name, true, save_also_as_json, &mut text_messages.warnings) {
         let hashmap_to_save = hashmap.values().filter(|t| t.get_size() >= minimum_file_size).collect::<Vec<_>>();
 
         {
-            let tmp_cache_file = cache_file.with_extension("tmp");
-            let tmp_cache_file_json = cache_file_json.with_extension("tmp");
-
-            debug!("Saving cache to binary file \"{}\"...", cache_file.to_string_lossy());
-
-            let file_to_save = match OpenOptions::new().truncate(true).write(true).create(true).open(&tmp_cache_file) {
-                Ok(t) => t,
-                Err(e) => {
-                    let err_str = e.to_string();
-                    text_messages.warnings.push(flc!("core_cannot_create_or_open_cache_file", file = tmp_cache_file.to_string_lossy(), reason = err_str.clone()));
-                    debug!("Failed to open temporary cache file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
-                    return text_messages;
-                }
-            };
-
-            let mut writer = BufWriter::new(file_to_save);
-            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-            if let Err(e) = options.serialize_into(&mut writer, &hashmap_to_save) {
-                let err_str = e.to_string();
+            let writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
+            let options = bincode::DefaultOptions::new().with_no_limit();
+            if let Err(e) = options.serialize_into(writer, &hashmap_to_save) {
                 text_messages
                     .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
-                debug!("Failed to save cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
-                drop(writer);
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
+                debug!("Failed to save cache to file \"{}\" - {e}", cache_file.to_string_lossy());
                 return text_messages;
             }
-            if let Err(e) = writer.flush() {
-                let err_str = e.to_string();
-                text_messages
-                    .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
-                debug!("Failed to flush cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
-                drop(writer);
-                return text_messages;
-            }
-            drop(writer);
-
-            if let Err(e) = fs::rename(&tmp_cache_file, &cache_file) {
-                text_messages.warnings.push(format!("Failed to rename temporary cache file to final name: {e}"));
-                return text_messages;
-            }
-
             debug!("Saved cache to binary file \"{}\" with size {}", cache_file.to_string_lossy(), get_cache_size(&cache_file));
-
-            if save_also_as_json {
-                debug!("Saving cache to JSON file \"{}\"...", cache_file_json.to_string_lossy());
-                let file_json_to_save = match OpenOptions::new().truncate(true).write(true).create(true).open(&tmp_cache_file_json) {
-                    Ok(t) => t,
-                    Err(e) => {
-                        let err_str = e.to_string();
-                        text_messages.warnings.push(flc!("core_cannot_create_or_open_cache_file", file = tmp_cache_file_json.to_string_lossy(), reason = err_str.clone()));
-                        debug!("Failed to open temporary JSON cache file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
-                        return text_messages;
-                    }
-                };
-
-                let mut writer = BufWriter::new(file_json_to_save);
-                if let Err(e) = serde_json::to_writer(&mut writer, &hashmap_to_save) {
-                    let err_str = e.to_string();
-                    text_messages
-                        .warnings
-                        .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
-                    debug!("Failed to save JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
-                    drop(writer);
-                    return text_messages;
-                }
-                if let Err(e) = writer.flush() {
-                    let err_str = e.to_string();
-                    text_messages
-                        .warnings
-                        .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
-                    debug!("Failed to flush JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
-                    drop(writer);
-                    return text_messages;
-                }
-                drop(writer);
-
-                if let Err(e) = fs::rename(&tmp_cache_file_json, &cache_file_json) {
-                    text_messages.warnings.push(format!("Failed to rename temporary JSON cache file to final name: {e}"));
-                    return text_messages;
-                }
-                debug!("Saved cache to JSON file \"{}\" with size {}", cache_file_json.to_string_lossy(), get_cache_size(&cache_file_json));
-            }
         }
+        if save_also_as_json && let Some(file_handler_json) = file_handler_json {
+            let writer = BufWriter::new(file_handler_json);
+            if let Err(e) = serde_json::to_writer(writer, &hashmap_to_save) {
+                text_messages
+                    .warnings
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
+                debug!("Failed to save cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
+                return text_messages;
+            }
+            debug!(
+                "Saved cache to json file \"{}\" with size {}",
+                cache_file_json.to_string_lossy(),
+                get_cache_size(&cache_file_json)
+            );
+        }
+
         text_messages.messages.push(flc!("core_properly_saved_cache_entries", count = hashmap.len()));
         debug!("Properly saved to file {} cache entries.", hashmap.len());
     } else {
@@ -267,32 +209,27 @@ where
         let mut vec_loaded_entries: Vec<T>;
         if let Some(file_handler) = file_handler {
             cache_full_name = cache_file.clone();
-            let reader = BufReader::new(file_handler);
+            let mut reader = BufReader::new(file_handler);
 
-            let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-            vec_loaded_entries = match options.deserialize_from(reader) {
+            let options = bincode::DefaultOptions::new().with_no_limit();
+            vec_loaded_entries = match options.deserialize_from(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages
                         .warnings
                         .push(flc!("core_failed_to_load_data_from_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                    log::warn!("Failed to load cache from file {} - {}.", cache_file.to_string_lossy(), e);
+                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file.to_string_lossy(), e);
+                    drop(reader); // Ensure file is closed before removal
+                    if let Err(remove_err) = fs::remove_file(&cache_file) {
+                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file.to_string_lossy(), remove_err);
+                    }
                     return (text_messages, None);
                 }
             };
         } else {
             cache_full_name = cache_file_json.clone();
-            
-            // Check if file is empty
-            if let Ok(metadata) = fs::metadata(&cache_file_json) {
-                if metadata.len() == 0 {
-                    log::warn!("Cache file {} is empty.", cache_file_json.to_string_lossy());
-                    return (text_messages, None);
-                }
-            }
-
-            let file = file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None");
-            let mut reader = BufReader::new(file);
+            let reader = BufReader::new(file_handler_json.expect("This cannot fail, because if file_handler is None, then this cannot be None"));
+            let mut reader = reader;
             vec_loaded_entries = match serde_json::from_reader(&mut reader) {
                 Ok(t) => t,
                 Err(e) => {
@@ -301,8 +238,11 @@ where
                         file = cache_file_json.to_string_lossy(),
                         reason = e.to_string()
                     ));
-                    log::warn!("Failed to load cache from file {} - {}.", cache_file_json.to_string_lossy(), e);
+                    log::warn!("Failed to load cache from file {} - {}. Deleting corrupt cache file.", cache_file_json.to_string_lossy(), e);
                     drop(reader);
+                    if let Err(remove_err) = fs::remove_file(&cache_file_json) {
+                        log::error!("Failed to delete corrupt cache file {}: {}", cache_file_json.to_string_lossy(), remove_err);
+                    }
                     return (text_messages, None);
                 }
             };

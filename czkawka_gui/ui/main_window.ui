@@ -601,6 +601,13 @@
                                   </object>
                                 </child>
                                 <child>
+                                  <object class="GtkCheckButton" id="check_button_image_only_same_size">
+                                    <property name="focusable">1</property>
+                                    <property name="label" translatable="yes">Only same size</property>
+                                    <property name="margin-start">7</property>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="GtkBox">
                                     <property name="spacing">5</property>
                                     <property name="margin-start">7</property>

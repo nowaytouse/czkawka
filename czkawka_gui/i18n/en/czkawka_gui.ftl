@@ -172,6 +172,8 @@ main_check_box_broken_files_video_tooltip = Uses ffmpeg/ffprobe to validate vide
 
 check_button_general_same_size = Ignore same size
 check_button_general_same_size_tooltip = Ignore files with identical size in results - usually these are 1:1 duplicates
+check_button_general_only_same_size = Only same size
+check_button_general_only_same_size_tooltip = Only show images with identical size in results
 
 main_label_size_bytes_tooltip = Size of files which will be used in scan
 

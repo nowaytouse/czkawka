@@ -288,6 +288,8 @@ pub struct SettingsJson {
 
     #[serde(default = "default_similar_images_ignore_same_size")]
     pub similar_images_ignore_same_size: bool,
+    #[serde(default)]
+    pub similar_images_only_same_size: bool,
 
     #[serde(default = "default_similar_videos_similarity")]
     pub similar_videos_similarity: f64,
@@ -547,6 +549,7 @@ fn set_configuration_to_gui_internal(upper_notebook: &GuiUpperNotebook, main_not
         main_notebook.combo_box_image_hash_algorithm.set_selected(default_config.combo_box_image_hash_type);
         main_notebook.combo_box_image_resize_algorithm.set_selected(default_config.combo_box_image_resize_algorithm);
         main_notebook.combo_box_image_hash_size.set_selected(default_config.combo_box_image_hash_size);
+        main_notebook.check_button_image_only_same_size.set_active(default_config.similar_images_only_same_size);
         main_notebook.combo_box_big_files_mode.set_selected(default_config.combo_box_big_files_mode);
 
         main_notebook.check_button_broken_files_audio.set_active(default_config.broken_files_audio);
@@ -664,6 +667,7 @@ fn gui_to_settings(upper_notebook: &GuiUpperNotebook, main_notebook: &GuiMainNot
         number_of_biggest_files: main_notebook.entry_big_files_number.text().to_string(),
         similar_images_similarity: main_notebook.scale_similarity_similar_images.value(),
         similar_images_ignore_same_size: main_notebook.check_button_image_ignore_same_size.is_active(),
+        similar_images_only_same_size: main_notebook.check_button_image_only_same_size.is_active(),
         similar_videos_similarity: main_notebook.scale_similarity_similar_videos.value(),
         similar_videos_ignore_same_size: main_notebook.check_button_video_ignore_same_size.is_active(),
         music_approximate_comparison: main_notebook.check_button_music_approximate_comparison.is_active(),

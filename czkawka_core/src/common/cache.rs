@@ -3,9 +3,10 @@
 mod cleaning;
 
 use std::collections::BTreeMap;
+use std::fs::{self, OpenOptions};
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
-use std::{fs, mem};
+use std::mem;
 
 use bincode::Options;
 pub use cleaning::{CacheCleaningStatistics, CacheProgressCleaning, clean_all_cache_files};
@@ -51,67 +52,100 @@ where
     T: Serialize + ResultEntry + Sized + Send + Sync,
 {
     let mut text_messages = Messages::new();
-    if let Some(((file_handler, cache_file), (file_handler_json, cache_file_json))) = open_cache_folder(cache_file_name, true, save_also_as_json, &mut text_messages.warnings) {
+    if let Some(((_, cache_file), (_, cache_file_json))) = open_cache_folder(cache_file_name, true, save_also_as_json, &mut text_messages.warnings) {
         let hashmap_to_save = hashmap.values().filter(|t| t.get_size() >= minimum_file_size).collect::<Vec<_>>();
 
         {
-            let mut writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
+            let tmp_cache_file = cache_file.with_extension("tmp");
+            let tmp_cache_file_json = cache_file_json.with_extension("tmp");
+
+            debug!("Saving cache to binary file \"{}\"...", cache_file.to_string_lossy());
+
+            let file_to_save = match OpenOptions::new().truncate(true).write(true).create(true).open(&tmp_cache_file) {
+                Ok(t) => t,
+                Err(e) => {
+                    let err_str = e.to_string();
+                    text_messages.warnings.push(flc!("core_cannot_create_or_open_cache_file", file = tmp_cache_file.to_string_lossy(), reason = err_str.clone()));
+                    debug!("Failed to open temporary cache file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
+                    return text_messages;
+                }
+            };
+
+            let mut writer = BufWriter::new(file_to_save);
             let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
             if let Err(e) = options.serialize_into(&mut writer, &hashmap_to_save) {
+                let err_str = e.to_string();
                 text_messages
                     .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                debug!("Failed to save cache to file \"{}\" - {e}", cache_file.to_string_lossy());
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
+                debug!("Failed to save cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
                 drop(writer);
-                let _ = fs::remove_file(&cache_file);
-                if save_also_as_json {
-                    let _ = fs::remove_file(&cache_file_json);
-                }
+                let _ = fs::remove_file(&tmp_cache_file);
                 return text_messages;
             }
             if let Err(e) = writer.flush() {
+                let err_str = e.to_string();
                 text_messages
                     .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
-                debug!("Failed to flush cache to file \"{}\" - {e}", cache_file.to_string_lossy());
+                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = err_str.clone()));
+                debug!("Failed to flush cache to file \"{}\" - {err_str}", tmp_cache_file.to_string_lossy());
                 drop(writer);
-                let _ = fs::remove_file(&cache_file);
-                if save_also_as_json {
-                    let _ = fs::remove_file(&cache_file_json);
-                }
+                let _ = fs::remove_file(&tmp_cache_file);
                 return text_messages;
             }
-            debug!("Saved cache to binary file \"{}\" with size {}", cache_file.to_string_lossy(), get_cache_size(&cache_file));
-        }
-        if save_also_as_json && let Some(file_handler_json) = file_handler_json {
-            let mut writer = BufWriter::new(file_handler_json);
-            if let Err(e) = serde_json::to_writer(&mut writer, &hashmap_to_save) {
-                text_messages
-                    .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
-                debug!("Failed to save cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
-                drop(writer);
-                let _ = fs::remove_file(&cache_file);
-                let _ = fs::remove_file(&cache_file_json);
-                return text_messages;
-            }
-            if let Err(e) = writer.flush() {
-                text_messages
-                    .warnings
-                    .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = e.to_string()));
-                debug!("Failed to flush cache to file \"{}\" - {e}", cache_file_json.to_string_lossy());
-                drop(writer);
-                let _ = fs::remove_file(&cache_file);
-                let _ = fs::remove_file(&cache_file_json);
-                return text_messages;
-            }
-            debug!(
-                "Saved cache to json file \"{}\" with size {}",
-                cache_file_json.to_string_lossy(),
-                get_cache_size(&cache_file_json)
-            );
-        }
+            drop(writer);
 
+            if let Err(e) = fs::rename(&tmp_cache_file, &cache_file) {
+                text_messages.warnings.push(format!("Failed to rename temporary cache file to final name: {e}"));
+                let _ = fs::remove_file(&tmp_cache_file);
+                return text_messages;
+            }
+
+            debug!("Saved cache to binary file \"{}\" with size {}", cache_file.to_string_lossy(), get_cache_size(&cache_file));
+
+            if save_also_as_json {
+                debug!("Saving cache to JSON file \"{}\"...", cache_file_json.to_string_lossy());
+                let file_json_to_save = match OpenOptions::new().truncate(true).write(true).create(true).open(&tmp_cache_file_json) {
+                    Ok(t) => t,
+                    Err(e) => {
+                        let err_str = e.to_string();
+                        text_messages.warnings.push(flc!("core_cannot_create_or_open_cache_file", file = tmp_cache_file_json.to_string_lossy(), reason = err_str.clone()));
+                        debug!("Failed to open temporary JSON cache file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
+                        return text_messages;
+                    }
+                };
+
+                let mut writer = BufWriter::new(file_json_to_save);
+                if let Err(e) = serde_json::to_writer(&mut writer, &hashmap_to_save) {
+                    let err_str = e.to_string();
+                    text_messages
+                        .warnings
+                        .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
+                    debug!("Failed to save JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
+                    drop(writer);
+                    let _ = fs::remove_file(&tmp_cache_file_json);
+                    return text_messages;
+                }
+                if let Err(e) = writer.flush() {
+                    let err_str = e.to_string();
+                    text_messages
+                        .warnings
+                        .push(flc!("core_failed_to_write_data_to_cache", file = cache_file_json.to_string_lossy(), reason = err_str.clone()));
+                    debug!("Failed to flush JSON cache to file \"{}\" - {err_str}", tmp_cache_file_json.to_string_lossy());
+                    drop(writer);
+                    let _ = fs::remove_file(&tmp_cache_file_json);
+                    return text_messages;
+                }
+                drop(writer);
+
+                if let Err(e) = fs::rename(&tmp_cache_file_json, &cache_file_json) {
+                    text_messages.warnings.push(format!("Failed to rename temporary JSON cache file to final name: {e}"));
+                    let _ = fs::remove_file(&tmp_cache_file_json);
+                    return text_messages;
+                }
+                debug!("Saved cache to JSON file \"{}\" with size {}", cache_file_json.to_string_lossy(), get_cache_size(&cache_file_json));
+            }
+        }
         text_messages.messages.push(flc!("core_properly_saved_cache_entries", count = hashmap.len()));
         debug!("Properly saved to file {} cache entries.", hashmap.len());
     } else {

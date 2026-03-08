@@ -414,7 +414,7 @@ impl SimilarImages {
 
         let mut tolerance = self.get_params().max_difference;
         if self.get_params().only_images_with_same_size {
-            tolerance = 40;
+            tolerance = return_similarity_from_similarity_preset(SimilarityPreset::Minimal, self.get_params().hash_size);
         }
 
         // Results

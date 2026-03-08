@@ -524,13 +524,11 @@ impl GuiMainNotebook {
                 let n = cols.n_items();
                 for (i, name) in columns_names.iter().enumerate() {
                     let idx = (i + 1) as u32;
-                    if idx < n {
-                        if let Some(col) = cols.item(idx) {
-                            if let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
+                    if idx < n
+                        && let Some(col) = cols.item(idx)
+                            && let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
                                 column.set_title(Some(name.as_str()));
                             }
-                        }
-                    }
                 }
                 continue;
             }

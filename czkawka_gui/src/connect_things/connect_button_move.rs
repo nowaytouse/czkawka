@@ -47,7 +47,7 @@ pub(crate) fn connect_button_move(gui_data: &GuiData) {
                     }
                 }
             } else if let Err(e) = result {
-                add_text_to_text_view(&text_view_errors, &format!("{}", e));
+                add_text_to_text_view(&text_view_errors, &format!("{e}"));
             }
             common_tree_views.hide_preview();
         });

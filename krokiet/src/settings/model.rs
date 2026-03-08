@@ -451,3 +451,7 @@ pub(crate) fn default_use_manual_application_scale() -> bool {
 pub(crate) fn default_ignored_exif_tags() -> String {
     "Orientation".to_string()
 }
+
+pub(crate) fn default_size_ratio() -> f64 {
+    1.05
+}

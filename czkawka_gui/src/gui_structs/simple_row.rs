@@ -46,14 +46,14 @@ mod imp {
         /// - InvalidSymlinks → DestinationPath
         /// - BrokenFiles     → ErrorType
         /// - BadExtensions   → CurrentExtension
-        /// 其他 Tab 留空
+        /// - 其他 Tab 留空
         #[property(get, set)]
         pub extra1: RefCell<String>,
 
         /// 附加列2：
         /// - InvalidSymlinks → TypeOfError
         /// - BadExtensions   → ValidExtensions
-        /// 其他 Tab 留空
+        /// - 其他 Tab 留空
         #[property(get, set)]
         pub extra2: RefCell<String>,
     }
@@ -69,7 +69,7 @@ mod imp {
             Self::derived_properties()
         }
         fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
-            self.derived_set_property(id, value, pspec)
+            self.derived_set_property(id, value, pspec);
         }
         fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
             self.derived_property(id, pspec)

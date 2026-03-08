@@ -56,9 +56,9 @@ pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
     });
 
     // Connect Size Ratio Filter
-    let only_btn_clone2 = check_button_image_only_same_size.clone();
-    let ratio_entry_clone2 = entry_image_size_ratio.clone();
-    let ignore_btn_clone2 = check_button_image_ignore_same_size.clone();
+    let only_btn_clone2 = check_button_image_only_same_size;
+    let ratio_entry_clone2 = entry_image_size_ratio;
+    let ignore_btn_clone2 = check_button_image_ignore_same_size;
     check_button_image_size_ratio.connect_toggled(move |ratio_btn| {
         let is_active = ratio_btn.is_active();
         if is_active {

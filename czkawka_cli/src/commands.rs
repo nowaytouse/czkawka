@@ -303,6 +303,28 @@ pub struct SimilarImagesArgs {
         long_help = "Size of the perceptual hash. Larger values provide more detailed comparison but require higher max_difference values. 8 is fastest and least detailed, 8192 is slowest but most detailed. Recommended: 8 or 16 for typical use."
     )]
     pub hash_size: u16,
+    #[clap(
+        short = 'O',
+        long,
+        help = "Only show images with same size",
+        long_help = "Show only images with exactly the same file size, ignoring similarity threshold"
+    )]
+    pub only_same_size: bool,
+    #[clap(
+        short = 'R',
+        long,
+        help = "Enable size ratio filter",
+        long_help = "Filter results by file size ratio"
+    )]
+    pub size_ratio_enabled: bool,
+    #[clap(
+        short = 'r',
+        long,
+        default_value = "0.0",
+        help = "File size ratio (0.0-1.0)",
+        long_help = "Maximum allowed file size ratio between similar images"
+    )]
+    pub size_ratio: f64,
 }
 
 #[derive(Debug, clap::Args)]

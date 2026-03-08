@@ -45,10 +45,7 @@ pub(crate) fn opening_enter_function_ported_upper_directories(
 }
 
 pub(crate) fn opening_middle_mouse_function(gesture_click: &GestureClick, _number_of_clicks: i32, _b: f64, _c: f64) {
-    let widget = match gesture_click.widget() {
-        Some(w) => w.clone(),
-        None => return,
-    };
+    let Some(widget) = gesture_click.widget() else { return };
     if gesture_click.current_button() != 2 {
         return;
     }
@@ -80,10 +77,7 @@ pub(crate) fn opening_double_click_function_directories(gesture_click: &GestureC
 }
 
 pub(crate) fn opening_enter_function_ported(event_controller: &gtk4::EventControllerKey, _key: Key, key_code: u32, _modifier_type: ModifierType) -> glib::Propagation {
-    let widget = match event_controller.widget() {
-        Some(w) => w.clone(),
-        None => return glib::Propagation::Proceed,
-    };
+    let Some(widget) = event_controller.widget() else { return glib::Propagation::Proceed };
     if cfg!(debug_assertions) {
         debug!("Clicked {key_code}");
     }
@@ -97,19 +91,15 @@ pub(crate) fn opening_enter_function_ported(event_controller: &gtk4::EventContro
             nt_object.column_selection,
             nt_object.column_header,
         );
-    } else if let Ok(column_view) = widget.downcast::<ColumnView>() {
-        if key_code == KEY_ENTER {
+    } else if let Ok(column_view) = widget.downcast::<ColumnView>()
+        && key_code == KEY_ENTER {
             common_open_function_column_view(&column_view, &OpenMode::PathAndName);
         }
-    }
     glib::Propagation::Proceed
 }
 
 pub(crate) fn opening_double_click_function(gesture_click: &GestureClick, number_of_clicks: i32, _b: f64, _c: f64) {
-    let widget = match gesture_click.widget() {
-        Some(w) => w.clone(),
-        None => return,
-    };
+    let Some(widget) = gesture_click.widget() else { return };
     if number_of_clicks != 2 {
         return;
     }

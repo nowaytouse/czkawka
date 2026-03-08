@@ -518,7 +518,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
         if ff.get_use_reference() {
             let vec_struct_similar = ff.get_similar_videos_referenced();
 
-            for (group_index, (base_file_entry, vec_file_entry)) in vec_struct_similar.into_iter().enumerate() {
+            for (group_index, (base_file_entry, vec_file_entry)) in vec_struct_similar.iter().enumerate() {
                 let vec_file_entry = vector_sort_unstable_entry_by_path(vec_file_entry);
 
                 let (directory, file) = split_path(&base_file_entry.path);
@@ -561,7 +561,7 @@ fn compute_similar_videos(ff: SimilarVideos, entry_info: &Entry, text_view_error
         } else {
             let vec_struct_similar = ff.get_similar_videos();
 
-            for (group_index, vec_file_entry) in vec_struct_similar.into_iter().enumerate() {
+            for (group_index, vec_file_entry) in vec_struct_similar.iter().enumerate() {
                 let vec_file_entry = vector_sort_unstable_entry_by_path(vec_file_entry);
 
                 similar_videos_add_to_list_store(&list_store, "", "", 0, 0, true, false, Some(group_index), None, None, None, None, None, None);

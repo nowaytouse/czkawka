@@ -250,7 +250,7 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
                 child.remove_css_class("protected-file");
             }
 
-            let child_clone = child.clone();
+            let child_clone = child;
             let id = row.connect_protected_notify(move |r| {
                 if r.protected() {
                     child_clone.add_css_class("protected-file");
@@ -366,7 +366,7 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
                 child.remove_css_class("protected-file");
             }
 
-            let child_clone = child.clone();
+            let child_clone = child;
             let id = row.connect_protected_notify(move |r| {
                 if r.protected() {
                     child_clone.add_css_class("protected-file");
@@ -595,17 +595,14 @@ impl SubView {
             let bitset = sel.selection();
             let mut file_name = String::new();
 
-            if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset) {
-                if let Some(item) = store.item(first_pos) {
-                    if let Ok(row) = item.downcast::<DuplicateRow>() {
-                        if !row.is_header() {
+            if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset)
+                && let Some(item) = store.item(first_pos)
+                    && let Ok(row) = item.downcast::<DuplicateRow>()
+                        && !row.is_header() {
                             let path = row.path();
                             let name = row.name();
                             file_name = get_full_name_from_path_name(&path, &name);
                         }
-                    }
-                }
-            }
 
             if file_name.is_empty() {
                 preview_struct.image_preview.set_visible(false);

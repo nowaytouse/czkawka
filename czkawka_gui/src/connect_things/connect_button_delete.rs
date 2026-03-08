@@ -292,11 +292,10 @@ fn common_file_remove_duplicate(
     for pos in 0..n {
         let Some(item) = store.item(pos) else { continue };
         let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
-        if let Some(_) = column_header {
-            if row.is_header() {
+        if column_header.is_some()
+            && row.is_header() {
                 continue;
             }
-        }
         if !row.selection_button() {
             continue;
         }

@@ -335,6 +335,11 @@ mod test {
         let sv = crate::gui_structs::common_tree_view::SubView {
             scrolled_window,
             tree_view,
+            duplicate_column_view: None,
+            duplicate_list_store: None,
+            duplicate_selection: None,
+            simple_column_view: None,
+            simple_list_store: None,
             gesture_click,
             event_controller_key,
             nb_object,

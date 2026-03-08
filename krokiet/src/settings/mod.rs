@@ -403,6 +403,9 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     set_combobox_custom_settings_items(&settings, custom_settings);
 
     settings.set_similar_images_sub_ignore_same_size(custom_settings.similar_images_sub_ignore_same_size);
+    settings.set_similar_images_sub_only_same_size(custom_settings.similar_images_sub_only_same_size);
+    settings.set_similar_images_sub_size_ratio_enabled(custom_settings.similar_images_sub_size_ratio_enabled);
+    settings.set_similar_images_sub_size_ratio(custom_settings.similar_images_sub_size_ratio as f32);
     settings.set_similar_images_sub_max_similarity(MAX_HASH_SIZE);
     settings.set_similar_images_sub_current_similarity(custom_settings.similar_images_sub_similarity as f32);
 
@@ -581,6 +584,9 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let similar_images_sub_hash_alg = combo_box_items.image_hash_alg.config_name.clone();
     let similar_images_sub_resize_algorithm = combo_box_items.resize_algorithm.config_name.clone();
     let similar_images_sub_ignore_same_size = settings.get_similar_images_sub_ignore_same_size();
+    let similar_images_sub_only_same_size = settings.get_similar_images_sub_only_same_size();
+    let similar_images_sub_size_ratio_enabled = settings.get_similar_images_sub_size_ratio_enabled();
+    let similar_images_sub_size_ratio = settings.get_similar_images_sub_size_ratio() as f64;
     let similar_images_sub_similarity = settings.get_similar_images_sub_current_similarity().round() as i32;
 
     let duplicates_sub_check_method = combo_box_items.duplicates_check_method.config_name.clone();
@@ -704,6 +710,9 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         similar_images_sub_hash_alg,
         similar_images_sub_resize_algorithm,
         similar_images_sub_ignore_same_size,
+        similar_images_sub_only_same_size,
+        similar_images_sub_size_ratio_enabled,
+        similar_images_sub_size_ratio,
         similar_images_sub_similarity,
         duplicates_sub_check_method,
         duplicates_sub_available_hash_type,

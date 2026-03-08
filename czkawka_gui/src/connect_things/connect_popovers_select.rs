@@ -18,31 +18,28 @@ use crate::helpers::model_iter::iter_list;
 
 fn dup_select_all(store: &GioListStore) {
     for i in 0..store.n_items() {
-        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
-            if !row.is_header() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
+            && !row.is_header() {
                 row.set_selection_button(true);
             }
-        }
     }
 }
 
 fn dup_unselect_all(store: &GioListStore) {
     for i in 0..store.n_items() {
-        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
-            if !row.is_header() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
+            && !row.is_header() {
                 row.set_selection_button(false);
             }
-        }
     }
 }
 
 fn dup_reverse(store: &GioListStore) {
     for i in 0..store.n_items() {
-        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
-            if !row.is_header() {
+        if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
+            && !row.is_header() {
                 row.set_selection_button(!row.selection_button());
             }
-        }
     }
 }
 
@@ -52,13 +49,12 @@ fn dup_for_each_group(store: &GioListStore, mut f: impl FnMut(&GioListStore, u32
     let mut group_start: Option<u32> = None;
     let mut i = 0u32;
     while i <= n {
-        let is_boundary = i == n || store.item(i).and_downcast::<DuplicateRow>().map_or(false, |r| r.is_header());
+        let is_boundary = i == n || store.item(i).and_downcast::<DuplicateRow>().is_some_and(|r| r.is_header());
         if is_boundary {
-            if let Some(start) = group_start {
-                if start < i {
+            if let Some(start) = group_start
+                && start < i {
                     f(store, start, i);
                 }
-            }
             group_start = if i < n { Some(i + 1) } else { None };
         }
         i += 1;
@@ -767,7 +763,7 @@ fn popover_custom_select_unselect(
             dialog_cancel.close();
         });
 
-        let dialog_ok = dialog.clone();
+        let dialog_ok = dialog;
         ok_button.connect_clicked(move |_| {
             let dialog = &dialog_ok;
             let name_wildcard = entry_name.text().trim().to_string();

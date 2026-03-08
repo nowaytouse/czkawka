@@ -16,54 +16,54 @@ use crate::tools::similar_images::{Info, SimilarImages, SimilarImagesParameters}
 
 pub fn format_size_exact(size: u64) -> String {
     if size < 1_000 {
-        format!("{} B", size)
+        format!("{size} B")
     } else if size < 1_000_000 {
         let whole = size / 1_000;
         let frac = size % 1_000;
         if frac == 0 {
-            format!("{} KB", whole)
+            format!("{whole} KB")
         } else {
-            format!("{}.{:03} KB", whole, frac)
+            format!("{whole}.{frac:03} KB")
         }
     } else if size < 1_000_000_000 {
         let whole = size / 1_000_000;
         let frac = size % 1_000_000;
         if frac == 0 {
-            format!("{} MB", whole)
+            format!("{whole} MB")
         } else {
             let frac_kb = frac / 1_000;
             let frac_b = frac % 1_000;
             if frac_b == 0 {
-                format!("{}.{:03} MB", whole, frac_kb)
+                format!("{whole}.{frac_kb:03} MB")
             } else {
-                format!("{}.{:03}{:03} MB", whole, frac_kb, frac_b)
+                format!("{whole}.{frac_kb:03}{frac_b:03} MB")
             }
         }
     } else if size < 1_000_000_000_000 {
         let whole = size / 1_000_000_000;
         let frac = size % 1_000_000_000;
         if frac == 0 {
-            format!("{} GB", whole)
+            format!("{whole} GB")
         } else {
             let frac_mb = frac / 1_000_000;
             let frac_kb = (frac % 1_000_000) / 1_000;
             let frac_b = frac % 1_000;
             if frac_kb == 0 && frac_b == 0 {
-                format!("{}.{:03} GB", whole, frac_mb)
+                format!("{whole}.{frac_mb:03} GB")
             } else if frac_b == 0 {
-                format!("{}.{:03}{:03} GB", whole, frac_mb, frac_kb)
+                format!("{whole}.{frac_mb:03}{frac_kb:03} GB")
             } else {
-                format!("{}.{:03}{:03}{:03} GB", whole, frac_mb, frac_kb, frac_b)
+                format!("{whole}.{frac_mb:03}{frac_kb:03}{frac_b:03} GB")
             }
         }
     } else {
         let whole = size / 1_000_000_000_000;
         let frac = size % 1_000_000_000_000;
         if frac == 0 {
-            format!("{} TB", whole)
+            format!("{whole} TB")
         } else {
             let frac_gb = frac / 1_000_000_000;
-            format!("{}.{:03} TB", whole, frac_gb)
+            format!("{whole}.{frac_gb:03} TB")
         }
     }
 }

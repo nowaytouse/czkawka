@@ -464,7 +464,7 @@ impl SimilarImages {
     fn exclude_items_with_same_size(&mut self) {
         if self.get_params().exclude_images_with_same_size {
             for vec_file_entry in mem::take(&mut self.similar_vectors) {
-                let first_size = vec_file_entry[0].size;
+                let first_size = vec_file_entry.first().expect("At least one element must exist in group").size;
                 let all_same_size = vec_file_entry.iter().all(|e| e.size == first_size);
                 if !all_same_size {
                     self.similar_vectors.push(vec_file_entry);
@@ -473,7 +473,7 @@ impl SimilarImages {
         }
         if self.get_params().only_images_with_same_size {
             for vec_file_entry in mem::take(&mut self.similar_vectors) {
-                let first_size = vec_file_entry[0].size;
+                let first_size = vec_file_entry.first().expect("At least one element must exist in group").size;
                 let all_same_size = vec_file_entry.iter().all(|e| e.size == first_size);
                 if all_same_size {
                     self.similar_vectors.push(vec_file_entry);
@@ -732,6 +732,7 @@ mod tests {
             max_difference: 0,
             image_filter: FilterType::Lanczos3,
             exclude_images_with_same_size: false,
+            only_images_with_same_size: false,
             size_ratio_enabled: false,
             size_ratio: 0.0,
         }
@@ -1179,7 +1180,7 @@ mod connect_results_tests {
 
     #[test]
     fn test_connect_results_real_case() {
-        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, 0.0);
+        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0);
         let _finder = SimilarImages::new(params);
 
         let hash1: ImHash = vec![59, 41, 53, 27, 19, 143, 228, 228];

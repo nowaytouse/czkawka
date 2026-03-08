@@ -181,7 +181,7 @@ fn add_manually_directories(window_main: &Window, tree_view: &TreeView, excluded
         win_cancel.close();
     });
 
-    let win_ok = window.clone();
+    let win_ok = window;
     let tree_view = tree_view.clone();
     ok_btn.connect_clicked(move |_| {
         for text in entry.text().split(';') {

@@ -34,8 +34,8 @@ fn connect_protect(app: &MainWindow) {
 
         // Collect paths of checked (selected) items and protect them
         for idx in 0..model.row_count() {
-            if let Some(item) = model.row_data(idx) {
-                if item.checked && !item.header_row {
+            if let Some(item) = model.row_data(idx)
+                && item.checked && !item.header_row {
                     let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
                     if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
                         let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
@@ -44,7 +44,6 @@ fn connect_protect(app: &MainWindow) {
                         }
                     }
                 }
-            }
         }
 
         if protected_count > 0 {
@@ -75,8 +74,8 @@ fn connect_unprotect(app: &MainWindow) {
         let mut unprotected_count = 0;
 
         for idx in 0..model.row_count() {
-            if let Some(item) = model.row_data(idx) {
-                if item.checked && !item.header_row {
+            if let Some(item) = model.row_data(idx)
+                && item.checked && !item.header_row {
                     let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
                     if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
                         let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
@@ -85,7 +84,6 @@ fn connect_unprotect(app: &MainWindow) {
                         }
                     }
                 }
-            }
         }
 
         if unprotected_count > 0 {
@@ -106,10 +104,10 @@ fn connect_clear_all(app: &MainWindow) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let count = pf.count();
         pf.clear();
-        info!("Cleared all {} protected files", count);
+        info!("Cleared all {count} protected files");
 
         app.global::<GuiState>().set_protected_files_count(0);
-        let info = format!("Cleared all {} protected files", count);
+        let info = format!("Cleared all {count} protected files");
         app.global::<GuiState>().set_info_text(info.into());
     });
 }
@@ -122,7 +120,7 @@ fn connect_filter_after_scan(app: &MainWindow) {
         let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         if !pf.files.is_empty() {
             remove_protected_from_model(&app, active_tab, &pf.files);
-            info!("Filtered protected files from scan results for {:?}", active_tab);
+            info!("Filtered protected files from scan results for {active_tab:?}");
         }
     });
 }
@@ -157,14 +155,10 @@ pub(crate) fn remove_protected_from_model(
         let mut current_group: Vec<crate::SingleMainListModel> = Vec::new();
 
         for item in &items {
-            if item.header_row {
-                if !current_group.is_empty() {
-                    groups.push(std::mem::take(&mut current_group));
-                }
-                current_group.push(item.clone());
-            } else {
-                current_group.push(item.clone());
+            if item.header_row && !current_group.is_empty() {
+                groups.push(std::mem::take(&mut current_group));
             }
+            current_group.push(item.clone());
         }
         if !current_group.is_empty() {
             groups.push(current_group);

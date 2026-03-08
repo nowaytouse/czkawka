@@ -68,11 +68,10 @@ fn connect_protect(gui_data: &GuiData) {
 
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
-                    if let Some(column_header) = sv.nb_object.column_header {
-                        if m.get::<bool>(i, column_header) {
+                    if let Some(column_header) = sv.nb_object.column_header
+                        && m.get::<bool>(i, column_header) {
                             return;
                         }
-                    }
                     let name = m.get::<String>(i, sv.nb_object.column_name);
                     let path = m.get::<String>(i, sv.nb_object.column_path);
                     let full_path = get_full_name_from_path_name(&path, &name);
@@ -146,11 +145,10 @@ fn connect_unprotect(gui_data: &GuiData) {
 
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
-                    if let Some(column_header) = sv.nb_object.column_header {
-                        if m.get::<bool>(i, column_header) {
+                    if let Some(column_header) = sv.nb_object.column_header
+                        && m.get::<bool>(i, column_header) {
                             return;
                         }
-                    }
                     let name = m.get::<String>(i, sv.nb_object.column_name);
                     let path = m.get::<String>(i, sv.nb_object.column_path);
                     let full_path = get_full_name_from_path_name(&path, &name);
@@ -183,9 +181,9 @@ fn connect_clear_all(gui_data: &GuiData) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let count = pf.count();
         pf.clear();
-        info!("Cleared all {} protected files", count);
+        info!("Cleared all {count} protected files");
 
-        let info_text = format!("Cleared all {} protected files", count);
+        let info_text = format!("Cleared all {count} protected files");
         gui_data.entry_info.set_text(&info_text);
         update_clear_button_label_inner(&gui_data, 0);
     });
@@ -253,11 +251,10 @@ pub(crate) fn filter_protected_from_model(sv: &SubView) {
 
     let mut rows_to_remove = Vec::new();
     iter_list(&model, |m, i| {
-        if let Some(column_header) = sv.nb_object.column_header {
-            if m.get::<bool>(i, column_header) {
+        if let Some(column_header) = sv.nb_object.column_header
+            && m.get::<bool>(i, column_header) {
                 return;
             }
-        }
         let name = m.get::<String>(i, sv.nb_object.column_name);
         let path = m.get::<String>(i, sv.nb_object.column_path);
         let full_path = get_full_name_from_path_name(&path, &name);

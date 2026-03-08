@@ -26,18 +26,18 @@ impl ProtectedFiles {
             return Self::default();
         }
         match std::fs::read_to_string(&config_file) {
-            Ok(content) => match serde_json::from_str::<ProtectedFiles>(&content) {
+            Ok(content) => match serde_json::from_str::<Self>(&content) {
                 Ok(data) => {
                     debug!("Loaded {} protected files from {:?}", data.files.len(), config_file);
                     data
                 }
                 Err(e) => {
-                    error!("Failed to parse protected files from {:?}: {}", config_file, e);
+                    error!("Failed to parse protected files from {config_file:?}: {e}");
                     Self::default()
                 }
             },
             Err(e) => {
-                error!("Failed to read protected files from {:?}: {}", config_file, e);
+                error!("Failed to read protected files from {config_file:?}: {e}");
                 Self::default()
             }
         }
@@ -54,13 +54,13 @@ impl ProtectedFiles {
         match serde_json::to_string_pretty(self) {
             Ok(content) => {
                 if let Err(e) = std::fs::write(&config_file, content) {
-                    error!("Failed to write protected files to {:?}: {}", config_file, e);
+                    error!("Failed to write protected files to {config_file:?}: {e}");
                 } else {
                     debug!("Saved {} protected files to {:?}", self.files.len(), config_file);
                 }
             }
             Err(e) => {
-                error!("Failed to serialize protected files: {}", e);
+                error!("Failed to serialize protected files: {e}");
             }
         }
     }

@@ -8,13 +8,11 @@ pub fn paths_from_list_model(list_model: &gio::ListModel) -> Vec<PathBuf> {
     let mut folders = Vec::new();
     let n = list_model.n_items();
     for i in 0..n {
-        if let Some(obj) = list_model.item(i) {
-            if let Ok(file) = obj.downcast::<gio::File>() {
-                if let Some(p) = file.path() {
+        if let Some(obj) = list_model.item(i)
+            && let Ok(file) = obj.downcast::<gio::File>()
+                && let Some(p) = file.path() {
                     folders.push(p);
                 }
-            }
-        }
     }
     folders
 }

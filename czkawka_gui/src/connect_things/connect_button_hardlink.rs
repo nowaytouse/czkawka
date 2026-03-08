@@ -220,11 +220,10 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
     for i in 0..n {
         if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
             if row.is_header() {
-                if let Some(orig) = current_original.take() {
-                    if !current_targets.is_empty() {
+                if let Some(orig) = current_original.take()
+                    && !current_targets.is_empty() {
                         groups.push(GroupData { original: orig, targets: std::mem::take(&mut current_targets) });
                     }
-                }
                 current_targets.clear();
                 in_group = true;
                 continue;
@@ -242,11 +241,10 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
             }
         }
     }
-    if let Some(orig) = current_original.take() {
-        if !current_targets.is_empty() {
+    if let Some(orig) = current_original.take()
+        && !current_targets.is_empty() {
             groups.push(GroupData { original: orig, targets: current_targets });
         }
-    }
 
     if groups.is_empty() {
         return;
@@ -361,11 +359,10 @@ pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, wind
 pub(crate) fn check_if_anything_is_selected_async(sv: &SubView) -> bool {
     if let Some(store) = sv.get_duplicate_model() {
         for i in 0..store.n_items() {
-            if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
-                if !row.is_header() && row.selection_button() {
+            if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
+                && !row.is_header() && row.selection_button() {
                     return true;
                 }
-            }
         }
         return false;
     }

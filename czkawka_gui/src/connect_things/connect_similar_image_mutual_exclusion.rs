@@ -44,12 +44,13 @@ pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
 
     // Connect Ignore Same Size
     let only_btn_clone = check_button_image_only_same_size.clone();
+    let ratio_btn_clone_for_ignore = check_button_image_size_ratio.clone();
     check_button_image_ignore_same_size.connect_toggled(move |ignore_btn| {
         let is_active = ignore_btn.is_active();
         if is_active {
             only_btn_clone.set_active(false);
             only_btn_clone.set_sensitive(false);
-        } else if !check_button_image_size_ratio.is_active() {
+        } else if !ratio_btn_clone_for_ignore.is_active() {
             only_btn_clone.set_sensitive(true);
         }
     });

@@ -10,37 +10,37 @@ homepage = "https://github.com/qarmin/czkawka"
 repository = "https://github.com/qarmin/czkawka"
 
 [dependencies]
-gdk4 = { version = "0.11.0", default-features = false, features = ["v4_20"] }
-glib = "0.22.2"
-gtk4 = { version = "0.11.0", default-features = false, features = ["v4_20"] }
+gdk4 = { git = "https://github.com/gtk-rs/gtk4-rs.git", default-features = false, features = ["v4_20"] }
+glib = { git = "https://github.com/gtk-rs/gtk-rs-core.git" }
+gtk4 = { git = "https://github.com/gtk-rs/gtk4-rs.git", default-features = false, features = ["v4_20"] }
 
-humansize = "2.1"
-chrono = "0.4.44"
-crossbeam-channel = "0.5"
+humansize = { git = "https://github.com/LeopoldArkham/humansize.git" }
+chrono = { git = "https://github.com/chronotope/chrono.git" }
+crossbeam-channel = { git = "https://github.com/crossbeam-rs/crossbeam.git" }
 directories-next = "2.0"
-open = "5.3"
-image = "0.25"
-regex = "1.12"
+open = { git = "https://github.com/Byron/open-rs.git" }
+image = { git = "https://github.com/image-rs/image.git" }
+regex = { git = "https://github.com/rust-lang/regex.git" }
 fs_extra = "1.3"
 dunce = "1.0.5"
 
-i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = "0.10"
-rust-embed = { version = "8.11", features = ["debug-embed"] }
-once_cell = "1.21"
+i18n-embed = { git = "https://github.com/kellpossible/cargo-i18n.git", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = { git = "https://github.com/kellpossible/cargo-i18n.git" }
+rust-embed = { git = "https://github.com/pyrossh/rust-embed.git", features = ["debug-embed"] }
+once_cell = { git = "https://github.com/matklad/once_cell.git" }
 
-log = "0.4.29"
+log = { git = "https://github.com/rust-lang/log.git" }
 fun_time = { version = "0.3", features = ["log"] }
 rayon = "1.11"
 
 czkawka_core = { path = "../czkawka_core", version = "11.0.1", features = [] }
 
-resvg = { version = "0.47.0", default-features = false }
-serde_json = "1.0.149"
-serde = { version = "1.0.228", features = ["derive"] }
-itertools = "0.14.0"
-rand = "0.10.0"
-futures-channel = "0.3.32"
+resvg = { git = "https://github.com/RazrFalcon/resvg.git", default-features = false }
+serde_json = { git = "https://github.com/serde-rs/json.git" }
+serde = { git = "https://github.com/serde-rs/serde.git", features = ["derive"] }
+itertools = { git = "https://github.com/rust-itertools/itertools.git" }
+rand = { git = "https://github.com/rust-random/rand.git" }
+futures-channel = { git = "https://github.com/rust-lang/futures-rs.git" }
 
 [dev-dependencies]
 

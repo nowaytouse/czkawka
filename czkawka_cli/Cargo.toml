@@ -10,14 +10,14 @@ homepage = "https://github.com/qarmin/czkawka"
 repository = "https://github.com/qarmin/czkawka"
 
 [dependencies]
-clap = { version = "4.5", features = ["derive", "color"] }
+clap = { git = "https://github.com/clap-rs/clap.git", features = ["derive", "color"] }
 
-log = "0.4.29"
+log = { git = "https://github.com/rust-lang/log.git" }
 czkawka_core = { path = "../czkawka_core", version = "11.0.1", features = [] }
-indicatif = "0.18"
-crossbeam-channel = { version = "0.5", features = [] }
+indicatif = { git = "https://github.com/console-rs/indicatif.git" }
+crossbeam-channel = { git = "https://github.com/crossbeam-rs/crossbeam.git", features = [] }
 ctrlc = { version = "3.5", features = ["termination"] }
-humansize = "2.1"
+humansize = { git = "https://github.com/LeopoldArkham/humansize.git" }
 
 [features]
 default = []

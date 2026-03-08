@@ -6,6 +6,7 @@ pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
     let check_button_image_ignore_same_size = gui_data.main_notebook.check_button_image_ignore_same_size.clone();
     let check_button_image_size_ratio = gui_data.main_notebook.check_button_image_size_ratio.clone();
     let entry_image_size_ratio = gui_data.main_notebook.entry_image_size_ratio.clone();
+    let scale_similarity_similar_images = gui_data.main_notebook.scale_similarity_similar_images.clone();
 
     // Initial state check
     if check_button_image_only_same_size.is_active() {
@@ -14,6 +15,7 @@ pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
         check_button_image_size_ratio.set_active(false);
         check_button_image_size_ratio.set_sensitive(false);
         entry_image_size_ratio.set_sensitive(false);
+        scale_similarity_similar_images.set_sensitive(false);
     }
 
     check_button_image_only_same_size.connect_toggled(move |only_same_size_btn| {
@@ -24,11 +26,13 @@ pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
             check_button_image_size_ratio.set_active(false);
             check_button_image_size_ratio.set_sensitive(false);
             entry_image_size_ratio.set_sensitive(false);
+            scale_similarity_similar_images.set_sensitive(false);
         } else {
             check_button_image_ignore_same_size.set_sensitive(true);
             check_button_image_size_ratio.set_sensitive(true);
             // Entry sensitivity depends on its own checkbox
             entry_image_size_ratio.set_sensitive(check_button_image_size_ratio.is_active());
+            scale_similarity_similar_images.set_sensitive(true);
         }
     });
 

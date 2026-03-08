@@ -412,27 +412,18 @@ impl SimilarImages {
             return WorkContinueStatus::Continue;
         }
 
-        let tolerance = self.get_params().max_difference;
+        let mut tolerance = self.get_params().max_difference;
+        if self.get_params().only_images_with_same_size {
+            tolerance = 40;
+        }
 
         // Results
         let mut collected_similar_images: IndexMap<ImHash, Vec<ImagesEntry>> = Default::default();
 
         let all_hashed_images = mem::take(&mut self.image_hashes);
 
-        if self.get_params().only_images_with_same_size {
-            let mut size_groups: IndexMap<u64, Vec<ImagesEntry>> = Default::default();
-            for vec_file_entry in all_hashed_images.into_values() {
-                for entry in vec_file_entry {
-                    size_groups.entry(entry.size).or_default().push(entry);
-                }
-            }
-            for (_size, group) in size_groups {
-                if group.len() >= 2 {
-                    // We use the first image's hash as the key for the group
-                    collected_similar_images.insert(group[0].hash.clone(), group);
-                }
-            }
-        } else if tolerance == 0 {
+        // Checking entries with tolerance 0 is really easy and fast, because only entries with same hashes needs to be checked
+        if tolerance == 0 {
             for (hash, vec_file_entry) in all_hashed_images {
                 if vec_file_entry.len() >= 2 {
                     collected_similar_images.insert(hash, vec_file_entry);

@@ -412,10 +412,7 @@ impl SimilarImages {
             return WorkContinueStatus::Continue;
         }
 
-        let mut tolerance = self.get_params().max_difference;
-        if self.get_params().only_images_with_same_size {
-            tolerance = return_similarity_from_similarity_preset(SimilarityPreset::Minimal, self.get_params().hash_size);
-        }
+        let tolerance = self.get_params().max_difference;
 
         // Results
         let mut collected_similar_images: IndexMap<ImHash, Vec<ImagesEntry>> = Default::default();

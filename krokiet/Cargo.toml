@@ -12,46 +12,46 @@ build = "build.rs"
 
 [dependencies]
 czkawka_core = { version = "11.0.1", path = "../czkawka_core" }
-chrono = { git = "https://github.com/chronotope/chrono.git" }
-open = { git = "https://github.com/Byron/open-rs.git" }
-crossbeam-channel = { git = "https://github.com/crossbeam-rs/crossbeam.git" }
-rfd = { git = "https://github.com/PolyMeilex/rfd.git", default-features = false, features = ["xdg-portal"] }
+chrono = "0.4.44"
+open = "5.3"
+crossbeam-channel = "0.5"
+rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }
 home = "0.5"
-log = { git = "https://github.com/rust-lang/log.git" }
-serde = { git = "https://github.com/serde-rs/serde.git" }
-serde_json = { git = "https://github.com/serde-rs/json.git" }
-humansize = { git = "https://github.com/LeopoldArkham/humansize.git" }
-image = { git = "https://github.com/image-rs/image.git" }
+log = "0.4.29"
+serde = "1.0"
+serde_json = "1.0"
+humansize = "2.1"
+image = "0.25"
 rayon = "1.11"
 fs_extra = "1.3" # TODO replace with less buggy library
-fast_image_resize = { git = "https://github.com/Cykooz/fast_image_resize.git", features = ["image"] }
-num_enum = { git = "https://github.com/illicitonion/num_enum.git" }
-regex = { git = "https://github.com/rust-lang/regex.git" }
+fast_image_resize = { version = "6.0.0", features = ["image"] }
+num_enum = "0.7.5"
+regex = "1.12"
 
 # Translations
-i18n-embed = { git = "https://github.com/kellpossible/cargo-i18n.git", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = { git = "https://github.com/kellpossible/cargo-i18n.git" }
-rust-embed = { git = "https://github.com/pyrossh/rust-embed.git", features = ["debug-embed"] }
+i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.10"
+rust-embed = { version = "8.11", features = ["debug-embed"] }
 
 
 # Easier cross-compilation of app to e.g. 32 bit os, by using dlopen instead of linking libraries at compile time
-fontique = { git = "https://github.com/linebender/parley.git", default-features = false, features = ["fontconfig-dlopen"] }
+fontique = { version = "0.7.0", default-features = false, features = ["fontconfig-dlopen"] }
 
 # Try to use only needed features from https://github.com/slint-ui/slint/blob/master/api/rs/slint/Cargo.toml#L23-L31
 #slint = { path = "/home/rafal/test/slint/api/rs/slint/", default-features = false, features = ["std",
 #slint = { git = "https://github.com/slint-ui/slint.git", default-features = false, features = [
-slint = { git = "https://github.com/slint-ui/slint.git", default-features = false, features = [
+slint = { version = "1.15.1", default-features = false, features = [
     "std",
     "backend-winit",
     "compat-1-2"
 ] }
 
-rodio = { git = "https://github.com/RustAudio/rodio.git", default-features = false, features = ["playback", "symphonia-all"], optional = true }
+rodio = { version = "0.22.2", default-features = false, features = ["playback", "symphonia-all"], optional = true }
 
 [build-dependencies]
 #slint-build = { path = "/home/rafal/test/slint/api/rs/build/"}
 #slint-build = { git = "https://github.com/slint-ui/slint.git" }
-slint-build = { git = "https://github.com/slint-ui/slint.git" }
+slint-build = "1.15"
 winresource = "0.1"
 
 [features]

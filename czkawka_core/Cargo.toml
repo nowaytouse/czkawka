@@ -11,12 +11,12 @@ repository = "https://github.com/qarmin/czkawka"
 build = "build.rs"
 
 [dependencies]
-humansize = { git = "https://github.com/LeopoldArkham/humansize.git" }
+humansize = "2.1"
 rayon = "1.11"
-crossbeam-channel = { git = "https://github.com/crossbeam-rs/crossbeam.git" }
+crossbeam-channel = "0.5"
 
 # For stable iteration over hashmaps.
-indexmap = { git = "https://github.com/indexmap-rs/indexmap.git" }
+indexmap = "2.13"
 
 # For saving/loading config files to specific directories
 directories-next = "2.0"
@@ -24,87 +24,87 @@ directories-next = "2.0"
 # Needed by similar images
 image_hasher = { version = "3.1", features = ["fast_resize_unstable"] }
 bk-tree = "0.5"
-image = { git = "https://github.com/image-rs/image.git", default-features = false, features = ["bmp", "dds", "exr", "ff", "gif", "hdr", "ico", "jpeg", "png", "pnm", "qoi", "tga", "tiff", "webp", "rayon"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "dds", "exr", "ff", "gif", "hdr", "ico", "jpeg", "png", "pnm", "qoi", "tga", "tiff", "webp", "rayon"] }
 hamming-bitwise-fast = "1.0"
 
 # Needed by same music
-bitflags = { git = "https://github.com/bitflags/bitflags.git" }
-lofty = { git = "https://github.com/Serial-ATA/lofty-rs.git" }
+bitflags = "2.11"
+lofty = "0.23"
 
 # Needed by broken files
-zip = { git = "https://github.com/zip-rs/zip2.git", features = ["aes-crypto", "bzip2", "deflate", "time"], default-features = false }
-lopdf = { git = "https://github.com/J-F-Liu/lopdf.git" }
+zip = { version = "8.2", features = ["aes-crypto", "bzip2", "deflate", "time"], default-features = false }
+lopdf = "0.39.0"
 
 # Needed by audio similarity feature
 rusty-chromaprint = "0.3"
-symphonia = { git = "https://github.com/pdeljanov/Symphonia.git", features = ["all"] }
+symphonia = { version = "0.5", features = ["all"] }
 
 # Hashes for duplicate files
-blake3 = { git = "https://github.com/BLAKE3-team/BLAKE3.git" }
-crc32fast = { git = "https://github.com/srijs/rust-crc32fast.git" }
-xxhash-rust = { git = "https://github.com/DoumanAsh/xxhash-rust.git", features = ["xxh3"] }
+blake3 = "1.8"
+crc32fast = "1.5"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
 
-tempfile = { git = "https://github.com/Stebalien/tempfile.git" }
+tempfile = "3.26"
 
 # Video Duplicates
 vid_dup_finder_lib = "0.4"
-filetime = { git = "https://github.com/alexcrichton/filetime.git" }
+filetime = "0.2.27"
 
 # For extracting video properties using ffprobe CLI
 # https://github.com/theduke/ffprobe-rs/issues/33
 #ffprobe = "0.4.0"
 
 # Saving/Loading Cache
-serde = { git = "https://github.com/serde-rs/serde.git" }
+serde = "1.0"
 bincode = "<2.0"
-serde_json = { git = "https://github.com/serde-rs/json.git" }
+serde_json = "1.0"
 
 # Language
-i18n-embed = { git = "https://github.com/kellpossible/cargo-i18n.git", features = ["fluent-system", "desktop-requester"] }
-i18n-embed-fl = { git = "https://github.com/kellpossible/cargo-i18n.git" }
-rust-embed = { git = "https://github.com/pyrossh/rust-embed.git", features = ["debug-embed"] }
-once_cell = { git = "https://github.com/matklad/once_cell.git" }
+i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"] }
+i18n-embed-fl = "0.10"
+rust-embed = { version = "8.11", features = ["debug-embed"] }
+once_cell = "1.21"
 
 # Raw image files
-rawler = { git = "https://github.com/dnglab/dnglab.git" }
+rawler = "0.7.2"
 libraw-rs = { version = "0.0.4", optional = true }
-jxl-oxide = { git = "https://github.com/tirr-c/jxl-oxide.git", features = ["image"] }
+jxl-oxide = { version = "0.12.5", features = ["image"] }
 
 # Checking for invalid extensions
-mime_guess = { git = "https://github.com/abonander/mime_guess.git" }
-infer = { git = "https://github.com/bojand/infer.git" }
+mime_guess = "2.0"
+infer = "0.19"
 
 # Newer version of libheif-rs, which is not compatible with Ubuntu 22.04, and works only o
-libheif-rs = { git = "https://github.com/Cykooz/libheif-rs.git", optional = true, default-features = false, features = ["v1_17", "image"] }
+libheif-rs = { version = "2", optional = true, default-features = false, features = ["v1_17", "image"] }
 
-nom-exif = { git = "https://github.com/mindeng/nom-exif.git" }
+nom-exif = "2.7.0"
 
 # EXIF data cleaning
-little_exif = { git = "https://github.com/TechnikTobi/little_exif.git" }
+little_exif = "0.6.23"
 
 dunce = "1.0.5"
 
 os_info = { version = "3", default-features = false }
-log = { git = "https://github.com/rust-lang/log.git" }
+log = "0.4.29"
 handsome_logger = "0.9"
 fun_time = { version = "0.3", features = ["log"] }
-itertools = { git = "https://github.com/rust-itertools/itertools.git" }
+itertools = "0.14"
 static_assertions = "1.1.0"
-file-rotate = { git = "https://github.com/BourgondAries/file-rotate.git" }
+file-rotate = "0.8.0"
 
-open = { git = "https://github.com/Byron/open-rs.git" }
+open = "5.3"
 
-log-panics = { git = "https://github.com/sfackler/rust-log-panics.git", features = ["with-backtrace"] }
+log-panics = { version = "2.1.0", features = ["with-backtrace"] }
 deunicode = "1.6.2"
 glibc_musl_version = "0.1.0"
 
-rand = { git = "https://github.com/rust-random/rand.git" }
+rand = "0.10.0"
 
-ashpd = { git = "https://github.com/bilelmoussaoui/ashpd.git", optional = true, features = ["trash"] }
-tokio = { git = "https://github.com/tokio-rs/tokio.git", optional = true }
+ashpd = { version = "0.13.4", optional = true, features = ["trash"] }
+tokio = { version = "1.50.0", optional = true }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-trash = { git = "https://github.com/Byron/trash-rs.git" }
+trash = "5.2"
 
 [target.'cfg(windows)'.dependencies]
 file-id = "0.2.3"

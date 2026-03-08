@@ -153,6 +153,8 @@ main_check_box_broken_files_video = 视频
 main_check_box_broken_files_video_tooltip = 使用 ffmpeg/ffprobe 验证视频文件。 相当慢，并且可能检测到刻板的错误，即使文件播放正常。.
 check_button_general_same_size = 忽略相同的大小
 check_button_general_same_size_tooltip = 忽略结果中相同大小的文件 - 通常是 1:1 重复
+check_button_general_only_same_size = 仅显示相同大小
+check_button_general_only_same_size_tooltip = 仅在结果中显示文件大小完全相同的文件
 main_label_size_bytes_tooltip = 将用于扫描的文件大小
 # Upper window
 upper_tree_view_included_folder_column_title = 要搜索的文件夹

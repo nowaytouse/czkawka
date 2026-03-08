@@ -8,7 +8,8 @@
 - **Modernized App Aesthetics**: Injected a global `CssProvider` with rounded buttons, hover transitions, shadows, and improved Notebook tab styling to replace the legacy "retro" look.
 - **Improved File Protection Feedback**: Protected files are now clearly marked in red (`#d32f2f`). In migrated ColumnView tabs, this is achieved via dynamic CSS class binding (`.protected-file`) which adds a strikethrough. In legacy TreeView tabs (Similar Images, Similar Videos, Same Music), the `TextColor` attribute is dynamically modified during search and protection toggles to provide immediate visual feedback.
 - **Improved Batch Selection**: Replaced manual signal handling with bidirectional property bindings for `ColumnView` checkboxes. This fixes the issue where batch actions like "Select All" had no visual effect in Duplicates and simple folder tabs.
-- **Improved Similar Images Filter**: Added "Only show same size" filter to display results where all images in a group share exact byte dimensions.
+- **Improved Similar Images Filter**: Enhanced "Only show same size" to ignore similarity thresholds, allowing it to find same-sized images regardless of visual difference.
+- **Implemented Mutual Exclusivity**: Toggling "Only same size" now automatically disables and unchecks "Ignore same size" and "Size Ratio Filter" to prevent conflicting configurations.
 - **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) and wrapped dense Similar Images settings in stacked `GtkBox` layouts to prevent GTK `width-request` measurement warnings.
 
 ### Infrastructure and Stability Improvements

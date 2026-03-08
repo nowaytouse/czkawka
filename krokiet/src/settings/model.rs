@@ -91,6 +91,12 @@ pub struct SettingsCustom {
     pub similar_images_sub_resize_algorithm: String,
     #[serde(default)]
     pub similar_images_sub_ignore_same_size: bool,
+    #[serde(default)]
+    pub similar_images_sub_only_same_size: bool,
+    #[serde(default)]
+    pub similar_images_sub_size_ratio_enabled: bool,
+    #[serde(default = "default_size_ratio")]
+    pub similar_images_sub_size_ratio: f64,
     #[serde(default = "default_image_similarity")]
     pub similar_images_sub_similarity: i32,
     #[serde(default = "default_duplicates_check_method")]

@@ -116,6 +116,37 @@ export component ToolSettings {
             CheckBoxWrapper {
                 text: Translations.subsettings_images_ignore_same_size_text;
                 checked <=> Settings.similar_images_sub_ignore_same_size;
+                enabled: !Settings.similar_images_sub_only_same_size;
+            }
+
+            CheckBoxWrapper {
+                text: Translations.subsettings_images_only_same_size_text;
+                checked <=> Settings.similar_images_sub_only_same_size;
+                enabled: !Settings.similar_images_sub_ignore_same_size;
+            }
+
+            HintText {
+                hint_text: "When enabled, ignores similarity slider and shows only exact same size matches";
+                visible: Settings.similar_images_sub_only_same_size;
+            }
+
+            Rectangle {
+                height: 4px;
+            }
+
+            CheckBoxWrapper {
+                text: Translations.subsettings_images_size_ratio_text;
+                checked <=> Settings.similar_images_sub_size_ratio_enabled;
+                enabled: !Settings.similar_images_sub_only_same_size;
+            }
+
+            if Settings.similar_images_sub_size_ratio_enabled && !Settings.similar_images_sub_only_same_size: SliderWrapper {
+                text: "Max size ratio";
+                end_text: round(Settings.similar_images_sub_size_ratio) + "x";
+                end_text_size: 45px;
+                maximum <=> Settings.similar_images_sub_size_ratio_max;
+                minimum <=> Settings.similar_images_sub_size_ratio_min;
+                value <=> Settings.similar_images_sub_size_ratio;
             }
 
             Rectangle {
@@ -128,6 +159,7 @@ export component ToolSettings {
                 end_text_size: 45px;
                 maximum <=> Settings.similar_images_sub_max_similarity;
                 value <=> Settings.similar_images_sub_current_similarity;
+                enabled: !Settings.similar_images_sub_only_same_size;
             }
 
             Rectangle { }

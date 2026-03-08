@@ -25,6 +25,7 @@ use connect_things::connect_selection_of_directories::connect_selection_of_direc
 use connect_things::connect_settings::connect_settings;
 use connect_things::connect_show_hide_ui::connect_show_hide_ui;
 use connect_things::connect_similar_image_size_change::connect_similar_image_size_change;
+use connect_things::connect_similar_image_mutual_exclusion::connect_similar_image_mutual_exclusion;
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use czkawka_core::common::basic_gui_cli::{CliResult, process_cli_args};
 use czkawka_core::common::config_cache_path::{get_config_cache_path, print_infos_and_warnings, set_config_cache_path};
@@ -211,6 +212,7 @@ fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_op
     connect_button_about(&gui_data);
     connect_about_buttons(&gui_data);
     connect_similar_image_size_change(&gui_data);
+    connect_similar_image_mutual_exclusion(&gui_data);
     connect_same_music_change_mode(&gui_data);
 
     let window_main = gui_data.window_main.clone();

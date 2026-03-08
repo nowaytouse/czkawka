@@ -69,6 +69,11 @@ export global Settings {
     in-out property <float> similar_images_sub_max_similarity: 40;
     in-out property <float> similar_images_sub_current_similarity: 20;
     in-out property <bool> similar_images_sub_ignore_same_size: false;
+    in-out property <bool> similar_images_sub_only_same_size: false;
+    in-out property <bool> similar_images_sub_size_ratio_enabled: false;
+    in-out property <float> similar_images_sub_size_ratio: 2.0;
+    in-out property <float> similar_images_sub_size_ratio_max: 10.0;
+    in-out property <float> similar_images_sub_size_ratio_min: 1.0;
 
     // Duplicates
     in-out property <[string]> duplicates_sub_check_method: ["Hash", "Size", "Name", "Size and Name"];

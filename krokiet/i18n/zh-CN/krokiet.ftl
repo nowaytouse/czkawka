@@ -202,6 +202,7 @@ subsettings = 子设置
 subsettings_images_hash_size = 散列大小
 subsettings_images_resize_algorithm = 调整算法大小
 subsettings_images_ignore_same_size = 忽略大小相同的图像
+subsettings_images_only_same_size = 仅显示相同大小
 subsettings_images_max_difference = 最大差异
 subsettings_images_duplicates_hash_type = 哈希类型
 subsettings_duplicates_check_method = 检查方法

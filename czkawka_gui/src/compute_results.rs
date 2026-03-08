@@ -197,7 +197,7 @@ fn compute_bad_extensions(be: BadExtensions, entry_info: &Entry, text_view_error
             let (directory, file) = split_path(&file_entry.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -256,7 +256,7 @@ fn compute_broken_files(br: BrokenFiles, entry_info: &Entry, text_view_errors: &
             let (directory, file) = split_path(&file_entry.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -314,7 +314,7 @@ fn compute_invalid_symlinks(ifs: InvalidSymlinks, entry_info: &Entry, text_view_
             let symlink_info = file_entry.symlink_info;
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -716,7 +716,7 @@ fn compute_temporary_files(tf: Temporary, entry_info: &Entry, text_view_errors: 
             let (directory, file) = split_path(&file_entry.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -772,7 +772,7 @@ fn compute_big_files(bf: BigFile, entry_info: &Entry, text_view_errors: &TextVie
             let (directory, file) = split_path(&file_entry.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -830,7 +830,7 @@ fn compute_empty_files(vf: EmptyFiles, entry_info: &Entry, text_view_errors: &Te
             let (directory, file) = split_path(&file_entry.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -888,7 +888,7 @@ fn compute_empty_folders(ef: EmptyFolder, entry_info: &Entry, text_view_errors: 
             let (directory, file) = split_path(&fe.path);
             let is_protected = {
                 let full_name = crate::help_functions::get_full_name_from_path_name(&directory, &file);
-                crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+                crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
             };
             store.append(&SimpleRow::new(
                 false,
@@ -1264,7 +1264,7 @@ fn duplicates_add_to_duplicate_store(
     let color = get_row_color(is_header).to_string();
     let is_protected = if !is_header {
         let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
-        crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name))
+        crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name))
     } else {
         false
     };
@@ -1307,7 +1307,7 @@ fn similar_images_add_to_list_store(
     let mut text_color = TEXT_COLOR.to_string();
     if !is_header {
         let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
-        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+        if crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name)) {
             text_color = "#d32f2f".to_string();
         }
     }
@@ -1362,7 +1362,7 @@ fn similar_videos_add_to_list_store(
     let mut text_color = TEXT_COLOR.to_string();
     if !is_header {
         let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
-        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+        if crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name)) {
             text_color = "#d32f2f".to_string();
         }
     }
@@ -1412,7 +1412,7 @@ fn same_music_add_to_list_store(
     let mut text_color = TEXT_COLOR.to_string();
     if !is_header {
         let full_name = crate::help_functions::get_full_name_from_path_name(directory, file);
-        if crate::file_protection::PROTECTED_FILES.lock().unwrap().files.contains(&std::path::PathBuf::from(full_name)) {
+        if crate::file_protection::PROTECTED_FILES.lock().expect("Failed to lock protected files").files.contains(&std::path::PathBuf::from(full_name)) {
             text_color = "#d32f2f".to_string();
         }
     }

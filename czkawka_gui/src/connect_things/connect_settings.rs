@@ -203,13 +203,10 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                         let (mut messages, loaded_items) =
                             load_cache_from_file_generalized_by_path::<czkawka_core::tools::similar_videos::VideosEntry>(&file_name, true, &Default::default());
 
-                        let mut messages = if let Some(cache_entries) = loaded_items {
+                        if let Some(cache_entries) = loaded_items {
                             let save_messages = save_cache_to_file_generalized(&file_name, &cache_entries, false, 0);
                             messages.extend_with_another_messages(save_messages);
-                            messages
-                        } else {
-                            messages
-                        };
+                        }
 
                         messages.messages.push(flg!("cache_properly_cleared"));
                         text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());

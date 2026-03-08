@@ -202,8 +202,10 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     factory_select.connect_unbind(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
         if let Some(child) = list_item.child().and_downcast::<CheckButton>() {
+            // SAFETY: signals are always valid
             let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("toggled_id") };
             if let Some(id) = id_opt {
+                // SAFETY: signals are always valid
                 let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
                 child.disconnect(handler_id);
             }
@@ -258,13 +260,16 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
                     child_clone.remove_css_class("protected-file");
                 }
             });
+            // SAFETY: signals are always valid
             unsafe { list_item.set_data("protected_id", id) };
         });
         factory.connect_unbind(move |_f, obj| {
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
             if let Some(item) = list_item.item() {
+                // SAFETY: signals are always valid
                 let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("protected_id") };
                 if let Some(id) = id_opt {
+                    // SAFETY: signals are always valid
                     let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
                     item.disconnect(handler_id);
                 }
@@ -321,8 +326,10 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
     factory_select.connect_unbind(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
         if let Some(child) = list_item.child().and_downcast::<CheckButton>() {
+            // SAFETY: signals are always valid
             let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("toggled_id") };
             if let Some(id) = id_opt {
+                // SAFETY: signals are always valid
                 let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
                 child.disconnect(handler_id);
             }
@@ -374,13 +381,16 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
                     child_clone.remove_css_class("protected-file");
                 }
             });
+            // SAFETY: signals are always valid
             unsafe { list_item.set_data("protected_id", id) };
         });
         factory.connect_unbind(move |_f, obj| {
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
             if let Some(item) = list_item.item() {
+                // SAFETY: signals are always valid
                 let id_opt = unsafe { list_item.data::<glib::SignalHandlerId>("protected_id") };
                 if let Some(id) = id_opt {
+                    // SAFETY: signals are always valid
                     let handler_id = unsafe { std::ptr::read(id.as_ptr()) };
                     item.disconnect(handler_id);
                 }
@@ -593,16 +603,16 @@ impl SubView {
         selection.connect_selection_changed(move |sel, _pos, _n_items| {
             // Find the first selected non-header item
             let bitset = sel.selection();
-            let mut file_name = String::new();
-
-            if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset)
+            let file_name = if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset)
                 && let Some(item) = store.item(first_pos)
                     && let Ok(row) = item.downcast::<DuplicateRow>()
                         && !row.is_header() {
                             let path = row.path();
                             let name = row.name();
-                            file_name = get_full_name_from_path_name(&path, &name);
-                        }
+                            get_full_name_from_path_name(&path, &name)
+                        } else {
+                            String::new()
+                        };
 
             if file_name.is_empty() {
                 preview_struct.image_preview.set_visible(false);

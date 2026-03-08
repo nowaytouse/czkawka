@@ -18,6 +18,7 @@
   - Raised image decoding allocation limit to **14 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
   - These changes prevent "failed to fill whole buffer" and "failed to allocate X bytes" errors when using massive perceptual hash sizes (up to 8192).
 - **Fixed Similar Images Hash Size Support**: Reverted accidental removal of 1024-8192 hash sizes in the UI and core logic.
+- **Code Quality and Stability**: Cleared 30+ Clippy warnings and resolved multiple compiler errors in `czkawka_gui` and `krokiet`. Fixed `manual_let_else`, `useless_let_if_seq`, `undocumented_unsafe_blocks`, `needless_for_each`, and `branches_sharing_code` lints to ensure high-quality code.
 
 ### GTK4 API Migration — Deprecated API Removal (ongoing)
 

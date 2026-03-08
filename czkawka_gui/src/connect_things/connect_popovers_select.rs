@@ -192,25 +192,26 @@ fn dup_custom_select_unselect(
                     already_selected += 1;
                 }
 
-                let mut matches = false;
-                if check_regex && compiled_regex.find(&full).is_some() {
-                    matches = true;
+                let matches = if check_regex && compiled_regex.find(&full).is_some() {
+                    true
                 } else {
+                    let mut m = false;
                     if check_name {
                         if case_sensitive {
-                            if regex_check(name_wc, &name) { matches = true; }
+                            if regex_check(name_wc, &name) { m = true; }
                         } else if regex_check(name_wc_lower, &name.to_lowercase()) {
-                            matches = true;
+                            m = true;
                         }
                     }
-                    if check_path {
+                    if !m && check_path {
                         if case_sensitive {
-                            if regex_check(path_wc, &path) { matches = true; }
+                            if regex_check(path_wc, &path) { m = true; }
                         } else if regex_check(path_wc_lower, &path.to_lowercase()) {
-                            matches = true;
+                            m = true;
                         }
                     }
-                }
+                    m
+                };
                 if matches {
                     matched.push(j);
                 }
@@ -311,25 +312,26 @@ fn simple_custom_select_unselect(
         let path = row.path();
         let full = get_full_name_from_path_name(&path, &name);
 
-        let mut matches = false;
-        if check_regex && compiled_regex.find(&full).is_some() {
-            matches = true;
+        let matches = if check_regex && compiled_regex.find(&full).is_some() {
+            true
         } else {
+            let mut m = false;
             if check_name {
                 if case_sensitive {
-                    if regex_check(name_wc, &name) { matches = true; }
+                    if regex_check(name_wc, &name) { m = true; }
                 } else if regex_check(name_wc_lower, &name.to_lowercase()) {
-                    matches = true;
+                    m = true;
                 }
             }
-            if check_path {
+            if !m && check_path {
                 if case_sensitive {
-                    if regex_check(path_wc, &path) { matches = true; }
+                    if regex_check(path_wc, &path) { m = true; }
                 } else if regex_check(path_wc_lower, &path.to_lowercase()) {
-                    matches = true;
+                    m = true;
                 }
             }
-        }
+            m
+        };
         if matches {
             if select_things {
                 row.set_selection_button(true);

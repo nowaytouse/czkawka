@@ -257,69 +257,91 @@
                         </child>
                         <child>
                           <object class="GtkBox">
+                            <property name="orientation">vertical</property>
                             <property name="margin-end">5</property>
                             <property name="margin-start">5</property>
-                            <property name="spacing">5</property>
+                            <property name="spacing">4</property>
                             <child>
-                              <object class="GtkLabel" id="label_allowed_extensions">
-                                <property name="label" translatable="yes">Allowed Extensions</property>
+                              <object class="GtkBox">
+                                <property name="spacing">5</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_allowed_extensions">
+                                    <property name="label" translatable="yes">Allowed Extensions</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_allowed_extensions">
+                                    <property name="focusable">1</property>
+                                    <property name="hexpand">1</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="entry_allowed_extensions">
-                                <property name="focusable">1</property>
-                                <property name="hexpand">1</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="label_excluded_extensions">
-                                <property name="label" translatable="yes">Disabled Extensions</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkEntry" id="entry_excluded_extensions">
-                                <property name="focusable">1</property>
-                                <property name="hexpand">1</property>
+                              <object class="GtkBox">
+                                <property name="spacing">5</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_excluded_extensions">
+                                    <property name="label" translatable="yes">Disabled Extensions</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_excluded_extensions">
+                                    <property name="focusable">1</property>
+                                    <property name="hexpand">1</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>
                         </child>
                         <child>
                           <object class="GtkBox">
+                            <property name="orientation">vertical</property>
                             <property name="margin-end">5</property>
                             <property name="margin-start">5</property>
-                            <property name="spacing">8</property>
+                            <property name="spacing">4</property>
                             <child>
-                              <object class="GtkLabel" id="label_general_size_bytes">
-                                <property name="label" translatable="yes">File Size(bytes)</property>
+                              <object class="GtkBox">
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_general_size_bytes">
+                                    <property name="label" translatable="yes">File Size(bytes)</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="label_general_min_size">
+                                    <property name="label" translatable="yes">Min:</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_general_minimal_size">
+                                    <property name="focusable">1</property>
+                                    <property name="hexpand">1</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="max-length">15</property>
+                                    <property name="text" translatable="yes">8192</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="label_general_min_size">
-                                <property name="label" translatable="yes">Min:</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkEntry" id="entry_general_minimal_size">
-                                <property name="focusable">1</property>
-                                <property name="hexpand">1</property>
-                                <property name="input-purpose">number</property>
-                                <property name="max-length">15</property>
-                                <property name="text" translatable="yes">8192</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="label_general_max_size">
-                                <property name="label" translatable="yes">Max:</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkEntry" id="entry_general_maximal_size">
-                                <property name="focusable">1</property>
-                                <property name="hexpand">1</property>
-                                <property name="input-purpose">number</property>
-                                <property name="max-length">15</property>
-                                <property name="text" translatable="yes">1099512000000</property>
+                              <object class="GtkBox">
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_general_max_size">
+                                    <property name="label" translatable="yes">Max:</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_general_maximal_size">
+                                    <property name="focusable">1</property>
+                                    <property name="hexpand">1</property>
+                                    <property name="input-purpose">number</property>
+                                    <property name="max-length">15</property>
+                                    <property name="text" translatable="yes">1099512000000</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>

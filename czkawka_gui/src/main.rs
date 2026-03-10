@@ -78,6 +78,21 @@ mod taskbar_progress_win;
 pub const CZKAWKA_GTK_TOOL_NUMBER: usize = TOOLS_NUMBER - 3; // Missing exif, video optimizer, bad names tools
 
 fn main() {
+    // Suppress GTK's "Trying to measure GtkBox for width of X, but it needs at least Y" warnings.
+    // These are harmless noise from GTK4's height-for-width size negotiation when notebook pages
+    // are probed at the tab-strip width. The layout works correctly at runtime.
+    glib::log_set_handler(
+        Some("Gtk"),
+        glib::LogLevels::LEVEL_WARNING,
+        false,
+        false,
+        |domain, level, msg| {
+            if !msg.contains("Trying to measure") {
+                glib::log_default_handler(domain, level, Some(msg));
+            }
+        },
+    );
+
     register_image_decoding_hooks();
     let config_cache_path_set_result = set_config_cache_path("Czkawka", "Czkawka");
     let exists_krokiet_info_file = get_config_cache_path().is_some_and(|cache_config| {

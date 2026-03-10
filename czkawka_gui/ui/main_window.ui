@@ -379,34 +379,29 @@
                                 <property name="spacing">4</property>
                                 <child>
                                   <object class="GtkBox">
-                                    <property name="spacing">10</property>
+                                    <property name="spacing">5</property>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkLabel" id="label_duplicate_check_method">
-                                            <property name="label" translatable="yes">Check method</property>
-                                            <property name="margin-end">3</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="combo_box_duplicate_check_method"/>
-                                        </child>
+                                      <object class="GtkLabel" id="label_duplicate_check_method">
+                                        <property name="label" translatable="yes">Check method</property>
+                                        <property name="margin-end">3</property>
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkLabel" id="label_duplicate_hash_type">
-                                            <property name="label" translatable="yes">Hash type</property>
-                                            <property name="margin-end">2</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="combo_box_duplicate_hash_type"/>
-                                        </child>
+                                      <object class="GtkDropDown" id="combo_box_duplicate_check_method"/>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="spacing">5</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label_duplicate_hash_type">
+                                        <property name="label" translatable="yes">Hash type</property>
+                                        <property name="margin-end">2</property>
                                       </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDropDown" id="combo_box_duplicate_hash_type"/>
                                     </child>
                                   </object>
                                 </child>
@@ -570,72 +565,62 @@
                                 <property name="spacing">4</property>
                                 <child>
                                   <object class="GtkBox">
-                                    <property name="spacing">10</property>
+                                    <property name="spacing">5</property>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkLabel" id="label_image_resize_algorithm">
-                                            <property name="label" translatable="yes">Resize algorithm</property>
-                                            <property name="margin-end">2</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="combo_box_image_resize_algorithm"/>
-                                        </child>
+                                      <object class="GtkLabel" id="label_image_resize_algorithm">
+                                        <property name="label" translatable="yes">Resize algorithm</property>
+                                        <property name="margin-end">2</property>
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkLabel" id="label_image_hash_size">
-                                            <property name="label" translatable="yes">Hash size:</property>
-                                            <property name="margin-end">2</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="combo_box_image_hash_size"/>
-                                        </child>
-                                      </object>
+                                      <object class="GtkDropDown" id="combo_box_image_resize_algorithm"/>
                                     </child>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkBox">
-                                    <property name="spacing">10</property>
+                                    <property name="spacing">5</property>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkLabel" id="label_image_hash_type">
-                                            <property name="label" translatable="yes">Hash type:</property>
-                                            <property name="margin-end">2</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="combo_box_image_hash_algorithm"/>
-                                        </child>
+                                      <object class="GtkLabel" id="label_image_hash_size">
+                                        <property name="label" translatable="yes">Hash size:</property>
+                                        <property name="margin-end">2</property>
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
-                                        <property name="spacing">5</property>
-                                        <child>
-                                          <object class="GtkCheckButton" id="check_button_image_size_ratio">
-                                            <property name="focusable">1</property>
-                                            <property name="label" translatable="yes">Size Ratio Filter</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkEntry" id="entry_image_size_ratio">
-                                            <property name="focusable">1</property>
-                                            <property name="max-width-chars">6</property>
-                                            <property name="width-chars">6</property>
-                                            <property name="text">1.05</property>
-                                            <property name="tooltip-text">Max file size ratio within a group (1.0 = exact same size, 1.05 = within 5% difference, 1.5 = within 50%)</property>
-                                          </object>
-                                        </child>
+                                      <object class="GtkDropDown" id="combo_box_image_hash_size"/>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="spacing">5</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label_image_hash_type">
+                                        <property name="label" translatable="yes">Hash type:</property>
+                                        <property name="margin-end">2</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDropDown" id="combo_box_image_hash_algorithm"/>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="spacing">5</property>
+                                    <child>
+                                      <object class="GtkCheckButton" id="check_button_image_size_ratio">
+                                        <property name="focusable">1</property>
+                                        <property name="label" translatable="yes">Size Ratio Filter</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkEntry" id="entry_image_size_ratio">
+                                        <property name="focusable">1</property>
+                                        <property name="max-width-chars">6</property>
+                                        <property name="width-chars">6</property>
+                                        <property name="text">1.05</property>
+                                        <property name="tooltip-text">Max file size ratio within a group (1.0 = exact same size, 1.05 = within 5% difference, 1.5 = within 50%)</property>
                                       </object>
                                     </child>
                                   </object>

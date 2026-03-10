@@ -9,8 +9,8 @@
     <property name="upper">100</property>
   </object>
   <object class="GtkWindow" id="window_main">
-    <property name="default-height">600</property>
-    <property name="default-width">800</property>
+    <property name="default-height">700</property>
+    <property name="default-width">1200</property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>

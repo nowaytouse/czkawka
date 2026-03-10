@@ -532,13 +532,13 @@
                     <property name="child">
                       <object class="GtkPaned">
                         <property name="position">500</property>
-                        <property name="shrink-start-child">0</property>
+                        <property name="shrink-start-child">1</property>
                         <property name="wide-handle">True</property>
                         <child>
                           <object class="GtkBox">
                             <property name="hexpand">1</property>
                             <property name="orientation">vertical</property>
-                             <property name="width-request">500</property>
+
                             <child>
                               <object class="GtkBox">
                                 <property name="orientation">vertical</property>

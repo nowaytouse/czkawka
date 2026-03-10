@@ -3,13 +3,15 @@ use std::path::Path;
 use crate::common::regex_check;
 use crate::helpers::messages::Messages;
 
-#[cfg(target_family = "unix")]
+#[cfg(target_os = "macos")]
+pub const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &["/System", "/Library", "/private", "/Volumes/.timemachine"];
+#[cfg(all(target_family = "unix", not(target_os = "macos")))]
 pub const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &["/proc", "/dev", "/sys", "/snap"];
 #[cfg(not(target_family = "unix"))]
 pub const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &["C:\\Windows"];
 
 #[cfg(all(target_family = "unix", target_os = "macos"))]
-pub const DEFAULT_EXCLUDED_ITEMS: &str = "*/.git/*,*/node_modules/*,*/lost+found/*,*/Trash/*,*/.Trash-*/*,/Users/*/Library/Caches/*";
+pub const DEFAULT_EXCLUDED_ITEMS: &str = "*/.git/*,*/node_modules/*,*/lost+found/*,*/Trash/*,*/.Trash-*/*,/Users/*/Library/*,/Users/*/Pictures/*.photoslibrary/*";
 
 #[cfg(all(target_family = "unix", not(target_os = "macos")))]
 pub const DEFAULT_EXCLUDED_ITEMS: &str = "*/.git/*,*/node_modules/*,*/lost+found/*,*/Trash/*,*/.Trash-*/*,*/snap/*,/home/*/.cache/*,/home/*/.var/app/,/home/*/.*";

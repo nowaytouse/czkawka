@@ -1,7 +1,7 @@
 // Remove console window in Windows OS
 #![windows_subsystem = "windows"]
 #![allow(clippy::indexing_slicing)] // Too much used, to be able to ignore it in every place
-// TreeView/ListStore/CellRenderer 等仍为 GTK 4.10 弃用 API，后续将逐步迁移到 ColumnView/ListView
+// TreeView/ListStore/CellRenderer are deprecated since GTK 4.10; will be gradually migrated to ColumnView/ListView
 #![allow(deprecated)]
 use std::env;
 
@@ -130,6 +130,12 @@ fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_op
             opacity: 0.85;
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
+        button.suggested-action {
+            font-weight: 600;
+        }
+        button.destructive-action {
+            font-weight: 600;
+        }
         notebook tab {
             border-radius: 8px 8px 0 0;
             font-weight: 600;
@@ -139,18 +145,77 @@ fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_op
         notebook tab:checked {
             box-shadow: inset 0 -3px 0 0 #3584e4;
         }
+
+        /* ColumnView / ListView / TreeView rows */
         listview row, columnview row, treeview row {
             border-radius: 4px;
-            margin: 2px;
+            margin: 1px 2px;
+            padding: 2px 4px;
             transition: background-color 0.15s ease;
         }
         listview row:hover, columnview row:hover, treeview row:hover {
             background-color: rgba(128, 128, 128, 0.1);
         }
+        listview row:selected, columnview row:selected, treeview row:selected {
+            border-radius: 4px;
+        }
+
+        /* ColumnView header buttons */
+        columnview > listview > row > header > button {
+            font-weight: 600;
+            padding: 6px 8px;
+            border-radius: 0;
+            border-bottom: 2px solid alpha(currentColor, 0.15);
+        }
+
+        /* Scrollbar polish */
+        scrollbar slider {
+            border-radius: 9999px;
+            min-width: 6px;
+            min-height: 6px;
+            transition: min-width 0.2s ease, min-height 0.2s ease;
+        }
+        scrollbar:hover slider {
+            min-width: 10px;
+            min-height: 10px;
+        }
+
+        /* Popover & tooltip polish */
+        popover > contents {
+            border-radius: 12px;
+            padding: 6px;
+        }
+        tooltip {
+            border-radius: 8px;
+        }
+
+        /* Protected file visual */
         .protected-file {
             text-decoration-line: line-through;
             color: #d32f2f;
             opacity: 0.7;
+        }
+
+        /* Scale / slider */
+        scale trough {
+            border-radius: 9999px;
+        }
+        scale highlight {
+            border-radius: 9999px;
+        }
+
+        /* Entry fields */
+        entry {
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
+
+        /* Progress bar */
+        progressbar trough {
+            border-radius: 9999px;
+        }
+        progressbar progress {
+            border-radius: 9999px;
         }
         ",
     );

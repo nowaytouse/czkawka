@@ -1,4 +1,4 @@
-//! GObject 行类型，用于所有无分组（无 header 行）的 Tab：
+//! GObject row type for all non-grouped (no header row) tabs:
 //! EmptyFolders, BigFiles, EmptyFiles, Temporary,
 //! InvalidSymlinks, BrokenFiles, BadExtensions
 
@@ -34,26 +34,26 @@ mod imp {
         #[property(get, set)]
         pub modification_as_secs: Cell<u64>,
 
-        /// 显示用的文件大小字符串（仅 BigFiles 使用，其他 Tab 留空）
+        /// Human-readable file size string (only used by BigFiles, empty for other tabs)
         #[property(get, set)]
         pub size: RefCell<String>,
 
-        /// 原始字节大小（仅 BigFiles 使用，排序用，其他 Tab 为 0）
+        /// Raw byte size for sorting (only used by BigFiles, 0 for other tabs)
         #[property(get, set)]
         pub size_as_bytes: Cell<u64>,
 
-        /// 附加列1：
+        /// Extra column 1:
         /// - InvalidSymlinks → DestinationPath
         /// - BrokenFiles     → ErrorType
         /// - BadExtensions   → CurrentExtension
-        /// - 其他 Tab 留空
+        /// - Other tabs: empty
         #[property(get, set)]
         pub extra1: RefCell<String>,
 
-        /// 附加列2：
+        /// Extra column 2:
         /// - InvalidSymlinks → TypeOfError
         /// - BadExtensions   → ValidExtensions
-        /// - 其他 Tab 留空
+        /// - Other tabs: empty
         #[property(get, set)]
         pub extra2: RefCell<String>,
     }

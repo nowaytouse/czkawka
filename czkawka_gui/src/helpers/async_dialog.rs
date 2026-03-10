@@ -1,5 +1,5 @@
-//! GTK4 异步对话框辅助函数
-//! 使用 Window 替代已弃用的 Dialog，通过 futures-channel oneshot 传递结果。
+//! GTK4 async dialog helpers.
+//! Uses Window instead of the deprecated Dialog, passing results via futures-channel oneshot.
 
 use futures_channel::oneshot;
 use gtk4::prelude::*;
@@ -7,10 +7,10 @@ use gtk4::{Align, CheckButton, Orientation};
 
 use crate::flg;
 
-// ── 带 checkbox 的确认窗口 ────────────────────────────────────────────────────
+// ── Confirmation window with checkbox ─────────────────────────────────────────
 
-/// 弹出带 "下次再询问" checkbox 的模态确认窗口。
-/// 返回 `(confirmed, checkbox_active)`。
+/// Show a modal confirmation window with a "don't ask again" checkbox.
+/// Returns `(confirmed, checkbox_active)`.
 pub async fn confirm_window_with_checkbox(
     parent: &gtk4::Window,
     title: &str,
@@ -69,10 +69,10 @@ pub async fn confirm_window_with_checkbox(
     rx.await.unwrap_or((false, true))
 }
 
-// ── 带 checkbox 的简单 AlertDialog 式确认（无自定义 widget） ─────────────────
+// ── Simple AlertDialog-style confirmation (no custom widget) ─────────────────
 
-/// 使用 gtk4::AlertDialog（GTK 4.10+）弹出仅含文本的模态确认框。
-/// 返回是否点击了第一个按钮（通常是 OK）。
+/// Show a text-only modal confirmation using gtk4::AlertDialog (GTK 4.10+).
+/// Returns whether the first button (typically OK) was clicked.
 pub async fn alert_confirm(parent: &gtk4::Window, title: &str, detail: &str) -> bool {
     let dialog = gtk4::AlertDialog::builder()
         .modal(true)

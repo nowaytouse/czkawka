@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use gtk4::gio;
 use gtk4::prelude::*;
 
-/// 从 FileDialog::select_multiple_folders 返回的 ListModel 中收集路径。
+/// Collect paths from the ListModel returned by FileDialog::select_multiple_folders.
 pub fn paths_from_list_model(list_model: &gio::ListModel) -> Vec<PathBuf> {
     let mut folders = Vec::new();
     let n = list_model.n_items();

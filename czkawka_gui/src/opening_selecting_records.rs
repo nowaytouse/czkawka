@@ -55,7 +55,7 @@ pub(crate) fn opening_middle_mouse_function(gesture_click: &GestureClick, _numbe
             reverse_selection(&tree_view, column_header, nt_object.column_selection);
         }
     }
-    // ColumnView 中键反转选择暂未实现
+    // Middle-click selection reversal not yet implemented for ColumnView
 }
 
 pub(crate) fn opening_double_click_function_directories(gesture_click: &GestureClick, number_of_clicks: i32, _b: f64, _c: f64) {

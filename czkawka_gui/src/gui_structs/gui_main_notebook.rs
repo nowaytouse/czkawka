@@ -513,7 +513,7 @@ impl GuiMainNotebook {
         for (key_enum, columns_names) in names_of_columns {
             let s = &self.common_tree_views.get_subview(key_enum);
 
-            // 更新 ColumnView 列头（Duplicate + 简单 Tab）
+            // Update ColumnView column headers (Duplicate + simple tabs)
             let cv_opt = if key_enum == NotebookMainEnum::Duplicate {
                 s.duplicate_column_view.as_ref()
             } else {
@@ -533,7 +533,7 @@ impl GuiMainNotebook {
                 continue;
             }
 
-            // 仍使用 TreeView 的 Tab（SimilarImages / SimilarVideos / SameMusic）
+            // Tabs still using TreeView (SimilarImages / SimilarVideos / SameMusic)
             assert_eq!(
                 columns_names.len() + 1,
                 s.tree_view.columns().len(),

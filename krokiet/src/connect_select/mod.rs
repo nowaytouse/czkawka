@@ -13,8 +13,8 @@ use crate::{ActiveTab, Callabler, CustomSelectColumnModel, GuiState, MainWindow,
 
 type SelectionResult = (u64, u64, ModelRc<SingleMainListModel>);
 
-// TODO optimize this, not sure if it is possible to not copy entire model to just select item
-// https://github.com/slint-ui/slint/discussions/4595
+// TODO optimize this: Slint Model API requires copying the entire model to mutate checked state.
+// See https://github.com/slint-ui/slint/discussions/4595 — no in-place mutation API available yet.
 pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedModels>>) {
     set_select_buttons(app);
 

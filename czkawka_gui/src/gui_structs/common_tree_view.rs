@@ -113,7 +113,7 @@ impl GetTreeViewTrait for &GestureClick {
     }
 }
 
-/// 不含分组行的简单 Tab（EmptyFolders/BigFiles/EmptyFiles/Temporary/Symlinks/BrokenFiles/BadExtensions）
+/// Simple tabs without group rows (EmptyFolders/BigFiles/EmptyFiles/Temporary/Symlinks/BrokenFiles/BadExtensions)
 pub fn is_simple_tab(v: NotebookMainEnum) -> bool {
     matches!(
         v,
@@ -127,8 +127,8 @@ pub fn is_simple_tab(v: NotebookMainEnum) -> bool {
     )
 }
 
-/// 返回每个简单 Tab 的 ColumnView 文本列配置：(初始标题, SimpleRow 属性名)
-/// 不含第一列（勾选框）
+/// Returns the ColumnView text column config for each simple tab: (column title, SimpleRow property name)
+/// Excludes the first column (checkbox)
 fn simple_column_config(v: NotebookMainEnum) -> &'static [(&'static str, &'static str)] {
     match v {
         NotebookMainEnum::EmptyDirectories | NotebookMainEnum::EmptyFiles | NotebookMainEnum::Temporary => {
@@ -152,11 +152,11 @@ fn simple_column_config(v: NotebookMainEnum) -> &'static [(&'static str, &'stati
 pub struct SubView {
     pub scrolled_window: ScrolledWindow,
     pub tree_view: TreeView,
-    /// 重复项 Tab 使用 ColumnView 时的视图与模型（替代 TreeView/ListStore）
+    /// ColumnView, model, and selection for the Duplicate tab (replacing TreeView/ListStore)
     pub duplicate_column_view: Option<ColumnView>,
     pub duplicate_list_store: Option<GioListStore>,
     pub duplicate_selection: Option<MultiSelection>,
-    /// 简单 Tab（无分组行）使用 ColumnView 时的视图与模型
+    /// ColumnView, model for simple tabs (no group rows)
     pub simple_column_view: Option<ColumnView>,
     pub simple_list_store: Option<GioListStore>,
     pub gesture_click: GestureClick,
@@ -173,13 +173,14 @@ pub struct PreviewStruct {
     pub settings_show_preview: CheckButton,
 }
 
-/// 为重复项 Tab 创建 ColumnView + gio::ListStore\<DuplicateRow\> + MultiSelection，并设为 scrolled 子控件。
+/// Create a ColumnView + gio::ListStore\<DuplicateRow\> + MultiSelection for the Duplicate tab,
+/// and set it as the scrolled window child.
 fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView, GioListStore, MultiSelection) {
     let list_store = GioListStore::builder().item_type(DuplicateRow::static_type()).build();
     let selection = MultiSelection::new(Some(list_store.clone().upcast::<gtk4::gio::ListModel>()));
     let column_view = ColumnView::new(Some(selection.clone().upcast::<gtk4::SelectionModel>()));
 
-    // 选择列（勾选框）
+    // Checkbox column (selection)
     let factory_select = SignalListItemFactory::new();
     factory_select.connect_setup(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -216,7 +217,7 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     col_select.set_resizable(false);
     column_view.insert_column(0, &col_select);
 
-    // 文本列：Size, Name, Path, Modification
+    // Text columns: Size, Name, Path, Modification
     let mut col_idx = 1u32;
     for (title, prop_name) in [
         ("Size", "size"),
@@ -296,13 +297,14 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     (column_view, list_store, selection)
 }
 
-/// 为简单 Tab 创建 ColumnView + GioListStore\<SimpleRow\> + MultiSelection，并设为 scrolled 子控件。
+/// Create a ColumnView + GioListStore\<SimpleRow\> + MultiSelection for simple tabs,
+/// and set it as the scrolled window child.
 fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: NotebookMainEnum) -> (ColumnView, GioListStore, MultiSelection) {
     let list_store = GioListStore::builder().item_type(SimpleRow::static_type()).build();
     let selection = MultiSelection::new(Some(list_store.clone().upcast::<gtk4::gio::ListModel>()));
     let column_view = ColumnView::new(Some(selection.clone().upcast::<gtk4::SelectionModel>()));
 
-    // 勾选框列
+    // Checkbox column
     let factory_select = SignalListItemFactory::new();
     factory_select.connect_setup(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -340,7 +342,7 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
     col_select.set_resizable(false);
     column_view.insert_column(0, &col_select);
 
-    // 文本列：根据 Tab 类型配置
+    // Text columns: configured per tab type
     let mut col_idx = 1u32;
     for (title, prop_name) in simple_column_config(enum_value) {
         let factory = SignalListItemFactory::new();
@@ -520,7 +522,7 @@ impl SubView {
     fn _setup_gesture_click(&self) {
         self.gesture_click.set_button(0);
         self.gesture_click.connect_pressed(opening_double_click_function);
-        self.gesture_click.connect_released(opening_middle_mouse_function); // TODO GTK 4 - https://github.com/gtk-rs/gtk4-rs/issues/1043
+        self.gesture_click.connect_released(opening_middle_mouse_function); // NOTE: GTK 4 middle-click workaround — see https://github.com/gtk-rs/gtk4-rs/issues/1043
     }
 
     fn _setup_evk(&self, gui_data: &GuiData) {
@@ -536,8 +538,8 @@ impl SubView {
     }
 
     fn _connect_show_mouse_preview(&self, gui_data: &GuiData, preview_path: &Rc<RefCell<String>>) {
-        // TODO GTK 4, currently not works, connect_pressed shows previous thing - https://gitlab.gnome.org/GNOME/gtk/-/issues/4939
-        // Use connect_released when it will be fixed, currently using connect_row_activated workaround
+        // NOTE: GTK 4 connect_pressed shows previously selected item — https://gitlab.gnome.org/GNOME/gtk/-/issues/4939
+        // ColumnView tabs now use selection-changed signal instead; TreeView tabs still use connect_row_activated workaround.
         let use_rust_preview = gui_data.settings.check_button_settings_use_rust_preview.clone();
         let text_view_errors = gui_data.text_view_errors.clone();
         if let Some(preview_struct) = self.preview_struct.clone() {
@@ -913,7 +915,7 @@ pub(crate) fn show_preview(
     // Only show preview when selected is only one item, because there is no method to recognize current clicked item in multiselection
     if selected_rows.len() == 1 && check_button_settings_show_preview.is_active() {
         let tree_path = selected_rows[0].clone();
-        // TODO labels on {} are in testing stage, so we just ignore for now this warning until found better idea how to fix this
+        // NOTE: The labeled `'dir` block uses `break` for early exit (not a real loop); clippy::never_loop is suppressed intentionally.
         #[expect(clippy::never_loop)]
         'dir: loop {
             let path = tree_model.get::<String>(&tree_model.iter(&tree_path).expect("Invalid tree_path"), column_path);

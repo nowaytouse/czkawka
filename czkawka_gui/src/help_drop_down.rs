@@ -1,9 +1,9 @@
-//! 辅助函数：DropDown + StringList（替代已弃用的 ComboBoxText）
+//! Helper functions: DropDown + StringList (replacing the deprecated ComboBoxText)
 
 use gtk4::prelude::*;
 use gtk4::{DropDown, StringList};
 
-/// 用字符串列表填充 StringList 并设置 DropDown 选中第一项。
+/// Populate a StringList with the given items and select the first entry in the DropDown.
 pub fn set_drop_down_model_and_first<I, S>(drop_down: &DropDown, string_list: &StringList, items: I)
 where
     I: IntoIterator<Item = S>,
@@ -16,7 +16,7 @@ where
     drop_down.set_selected(0);
 }
 
-/// 获取当前选中项文本（模型为 StringList 时）。
+/// Get the text of the currently selected item (when the model is a StringList).
 pub fn drop_down_selected_text(drop_down: &DropDown) -> Option<String> {
     drop_down
         .selected_item()

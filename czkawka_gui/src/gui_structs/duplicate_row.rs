@@ -1,4 +1,4 @@
-//! 重复项行对象，用于 ColumnView + gio::ListStore 迁移（替代 TreeView/ListStore）。
+//! Duplicate row object for ColumnView + gio::ListStore migration (replacing TreeView/ListStore).
 
 use std::cell::RefCell;
 

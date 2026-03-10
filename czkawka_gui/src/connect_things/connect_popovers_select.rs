@@ -263,7 +263,7 @@ fn simple_reverse(store: &GioListStore) {
     }
 }
 
-/// 从平铺列表中选择所有条目，除了路径最短/最长的那个（无分组版本）
+/// Select all entries from a flat list except the one with the shortest/longest path (non-grouped version)
 fn simple_all_except_longest_shortest_path(store: &GioListStore, except_shortest: bool) {
     let n = store.n_items();
     if n == 0 {
@@ -291,7 +291,7 @@ fn simple_all_except_longest_shortest_path(store: &GioListStore, except_shortest
     }
 }
 
-/// 自定义选择（正则/通配符），无分组版本
+/// Custom select/unselect (regex/wildcard), non-grouped version
 fn simple_custom_select_unselect(
     store: &GioListStore,
     check_name: bool,

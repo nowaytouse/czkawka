@@ -25,6 +25,20 @@ export global ColorPalette {
 
     in-out property <color> hint_color: Settings.dark_theme ? #888888 : #888888;
 
+    // Semantic / accent colors
+    in-out property <color> accent_color: Settings.dark_theme ? #5b9bd5 : #3584e4;
+    in-out property <color> accent_hover_color: Settings.dark_theme ? #78b0e0 : #2a6fc2;
+    in-out property <color> success_color: Settings.dark_theme ? #4caf50 : #2e7d32;
+    in-out property <color> warning_color: Settings.dark_theme ? #ff9800 : #e65100;
+    in-out property <color> error_color: Settings.dark_theme ? #ef5350 : #c62828;
+
+    // Button states
+    in-out property <color> button_hover_color: Settings.dark_theme ? #404040 : #c8c8c8;
+    in-out property <color> button_pressed_color: Settings.dark_theme ? #505050 : #b0b0b0;
+
+    // Focus ring
+    in-out property <color> focus_ring_color: Settings.dark_theme ? #5b9bd580 : #3584e480;
+
     public pure function get_listview_color(selected: bool, hovered: bool) -> color {
         if (selected) {
             return hovered ? self.list_view_item_selected_hovered_color : self.list_view_item_selected_color;
@@ -40,3 +54,4 @@ export global ColorPalette {
         }
     }
 }
+

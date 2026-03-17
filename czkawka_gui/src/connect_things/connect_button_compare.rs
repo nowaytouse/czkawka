@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use czkawka_core::common::image::get_dynamic_image_from_path;
+use czkawka_core::common::image::{ImgResizeOptions, get_dynamic_image_from_path};
+use czkawka_core::re_exported::FirFilterType;
 use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gdk4::Texture;
 use gtk4::prelude::*;
@@ -18,7 +19,7 @@ use crate::helpers::image_operations::{get_pixbuf_from_dynamic_image, resize_pix
 use crate::helpers::list_store_operations::count_number_of_groups;
 use crate::notebook_info::NotebookObject;
 
-const BIG_PREVIEW_SIZE: i32 = 600;
+const BIG_PREVIEW_SIZE: i32 = 1024;
 const SMALL_PREVIEW_SIZE: i32 = 130;
 
 pub(crate) fn connect_button_compare(gui_data: &GuiData) {
@@ -390,7 +391,16 @@ fn generate_cache_for_results(vector_with_path: Vec<(String, String, TreePath)>,
         let mut pixbuf = get_pixbuf_from_dynamic_image(DynamicImage::new_rgb8(1, 1)).expect("Failed to create pixbuf");
 
         if use_rust_loader {
-            match get_dynamic_image_from_path(&full_path).and_then(get_pixbuf_from_dynamic_image) {
+            match get_dynamic_image_from_path(
+                &full_path,
+                Some(ImgResizeOptions {
+                    max_width: BIG_PREVIEW_SIZE as u32,
+                    max_height: BIG_PREVIEW_SIZE as u32,
+                    filter: FirFilterType::Bilinear,
+                }),
+            )
+            .and_then(|e| get_pixbuf_from_dynamic_image(e.image))
+            {
                 Ok(t) => {
                     pixbuf = t;
                 }

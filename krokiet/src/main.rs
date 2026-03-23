@@ -71,6 +71,7 @@ mod file_actions;
 mod file_protection;
 mod localizer_krokiet;
 mod model_operations;
+mod notification_manager;
 mod set_initial_gui_info;
 mod set_initial_scroll_list_data_indexes;
 mod settings;
@@ -113,6 +114,8 @@ fn main() {
 
     #[cfg(feature = "audio")]
     app.global::<GuiState>().set_audio_feature_enabled(true);
+
+    app.global::<GuiState>().set_notifications_feature_enabled(true);
 
     let (progress_sender, progress_receiver): (Sender<ProgressData>, Receiver<ProgressData>) = unbounded();
     let stop_flag: Arc<AtomicBool> = Arc::default();

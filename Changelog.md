@@ -1,5 +1,10 @@
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Upstream Sync (2026-03-24)
+Merged commits from upstream qarmin/czkawka:
+- **#1821 Experimental Android port**: Initial experimental Android port implementation
+- **#1837 Fixed panic when sorting, notification support, improving Cedinia, avif support**: Fixed panic when sorting results, added system notification support, improvements to Cedinia scan, added AVIF format support for prebuilt binaries
+
 ### Duplicate Performance Optimization (Cache Logic Fix)
 - **Fixed critical performance regression in Duplicate Finder**: Optimized the Prehash (`8192` bytes) merging logic. Previously, cached files were appended to the "potential duplicates" list without validating prehash uniqueness, causing redundant Full Hashing of unique files upon repeated searches.
 - **Implemented `combined_hash_map` grouping**: Both cached and newly computed prehashes are now grouped by `size` and `hash` string. Files are only promoted to the Full Hashing stage if they belong to a group with more than one entry, drastically reducing unnecessary I/O for 99% of unique files.

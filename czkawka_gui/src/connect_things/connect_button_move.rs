@@ -1,18 +1,18 @@
 use std::path::Path;
 
-use fs_extra::dir::CopyOptions;
-use gtk4::prelude::*;
-use gtk4::TreePath;
-use log::debug;
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::duplicate_row::DuplicateRow;
-use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::gui_data::GuiData;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::{add_text_to_text_view, get_full_name_from_path_name, reset_text_view};
 use crate::helpers::list_store_operations::{check_how_much_elements_is_selected, clean_invalid_headers};
 use crate::helpers::model_iter::iter_list;
+use fs_extra::dir::CopyOptions;
+use gtk4::TreePath;
+use gtk4::prelude::*;
+use log::debug;
 
 pub(crate) fn connect_button_move(gui_data: &GuiData) {
     let buttons_move = gui_data.bottom_buttons.buttons_move.clone();

@@ -11,14 +11,7 @@ use crate::flg;
 
 /// Show a modal confirmation window with a "don't ask again" checkbox.
 /// Returns `(confirmed, checkbox_active)`.
-pub async fn confirm_window_with_checkbox(
-    parent: &gtk4::Window,
-    title: &str,
-    messages: &[&str],
-    ok_label: &str,
-    cancel_label: &str,
-    checkbox_label: &str,
-) -> (bool, bool) {
+pub async fn confirm_window_with_checkbox(parent: &gtk4::Window, title: &str, messages: &[&str], ok_label: &str, cancel_label: &str, checkbox_label: &str) -> (bool, bool) {
     let (tx, rx) = oneshot::channel::<(bool, bool)>();
     let tx = std::cell::Cell::new(Some(tx));
 
@@ -30,7 +23,14 @@ pub async fn confirm_window_with_checkbox(
         .resizable(false)
         .build();
 
-    let main_box = gtk4::Box::builder().orientation(Orientation::Vertical).spacing(10).margin_top(15).margin_bottom(15).margin_start(15).margin_end(15).build();
+    let main_box = gtk4::Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(10)
+        .margin_top(15)
+        .margin_bottom(15)
+        .margin_start(15)
+        .margin_end(15)
+        .build();
 
     for msg in messages {
         main_box.append(&gtk4::Label::new(Some(msg)));
@@ -39,7 +39,12 @@ pub async fn confirm_window_with_checkbox(
     let checkbox = CheckButton::builder().label(checkbox_label).active(true).halign(Align::Center).margin_top(5).build();
     main_box.append(&checkbox);
 
-    let btn_box = gtk4::Box::builder().orientation(Orientation::Horizontal).halign(Align::Center).spacing(10).margin_top(5).build();
+    let btn_box = gtk4::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .halign(Align::Center)
+        .spacing(10)
+        .margin_top(5)
+        .build();
     let ok_btn = gtk4::Button::with_label(ok_label);
     let cancel_btn = gtk4::Button::with_label(cancel_label);
     btn_box.append(&cancel_btn);

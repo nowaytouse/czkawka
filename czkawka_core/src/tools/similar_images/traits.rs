@@ -20,11 +20,7 @@ pub fn format_size_exact(size: u64) -> String {
     } else if size < 1_000_000 {
         let whole = size / 1_000;
         let frac = size % 1_000;
-        if frac == 0 {
-            format!("{whole} KB")
-        } else {
-            format!("{whole}.{frac:03} KB")
-        }
+        if frac == 0 { format!("{whole} KB") } else { format!("{whole}.{frac:03} KB") }
     } else if size < 1_000_000_000 {
         let whole = size / 1_000_000;
         let frac = size % 1_000_000;

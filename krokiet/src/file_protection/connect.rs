@@ -35,15 +35,17 @@ fn connect_protect(app: &MainWindow) {
         // Collect paths of checked (selected) items and protect them
         for idx in 0..model.row_count() {
             if let Some(item) = model.row_data(idx)
-                && item.checked && !item.header_row {
-                    let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
-                    if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
-                        let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
-                        if pf.files.insert(full_path) {
-                            protected_count += 1;
-                        }
+                && item.checked
+                && !item.header_row
+            {
+                let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
+                if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
+                    let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
+                    if pf.files.insert(full_path) {
+                        protected_count += 1;
                     }
                 }
+            }
         }
 
         if protected_count > 0 {
@@ -75,15 +77,17 @@ fn connect_unprotect(app: &MainWindow) {
 
         for idx in 0..model.row_count() {
             if let Some(item) = model.row_data(idx)
-                && item.checked && !item.header_row {
-                    let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
-                    if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
-                        let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
-                        if pf.files.remove(&full_path) {
-                            unprotected_count += 1;
-                        }
+                && item.checked
+                && !item.header_row
+            {
+                let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
+                if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
+                    let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
+                    if pf.files.remove(&full_path) {
+                        unprotected_count += 1;
                     }
                 }
+            }
         }
 
         if unprotected_count > 0 {
@@ -133,11 +137,7 @@ pub fn is_file_protected(path: &str) -> bool {
 
 /// Remove protected files from the current model.
 /// This also removes groups that become empty or single-item after filtering.
-pub(crate) fn remove_protected_from_model(
-    app: &MainWindow,
-    active_tab: ActiveTab,
-    protected: &std::collections::HashSet<PathBuf>,
-) {
+pub(crate) fn remove_protected_from_model(app: &MainWindow, active_tab: ActiveTab, protected: &std::collections::HashSet<PathBuf>) {
     if protected.is_empty() {
         return;
     }

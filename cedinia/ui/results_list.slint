@@ -1,9 +1,9 @@
 import { CediniaColors } from "colors.slint";
-import { FileEntry, FileEntryIdx, ScanState } from "common.slint";
+import { ConfirmPopupAction, FileEntry, FileEntryIdx, ScanState } from "common.slint";
 import { AppState } from "app_state.slint";
 import { Translations } from "translations.slint";
 import { FileRow, StatusChip, TouchButton } from "components.slint";
-import { MomentumScrollView } from "momentum_scroll.slint";
+import { ListView } from "std-widgets.slint";
 
 export component ResultsList {
     in property <[FileEntry]> entries: [];
@@ -50,7 +50,7 @@ export component ResultsList {
                     label: "X";
                     min_h: 36px;
                     bg: CediniaColors.danger;
-                    fg: #ffffff;
+                    fg: CediniaColors.fg_on_danger;
                     clicked => { AppState.delete_selected(); }
                 }
 
@@ -106,14 +106,8 @@ export component ResultsList {
         }
 
 
-        if entries.length > 0 : scroll_view := MomentumScrollView {
+        if entries.length > 0 : ListView {
             vertical-stretch: 1.0;
-            scroll_y <=> AppState.list_scroll_y;
-            swiped(d, v, m) => {
-                AppState.list_max_scroll_f = m;
-                AppState.list_swiped(d, v);
-            }
-            stop_momentum => { AppState.list_stop_momentum(); }
 
             for entry[idx] in entries : FileRow {
                 name:           entry.val_str[FileEntryIdx.name_idx];
@@ -125,8 +119,6 @@ export component ResultsList {
                 is_reference:   entry.is_reference;
                 is_even:        mod(idx, 2) == 0;
                 extra_as_line2: root.extra_as_line2 && !entry.is_header;
-                // Cancel long-press when the scroll SGR claims the gesture.
-                scroll_swiping: scroll_view.is_swiping;
                 toggle_checked => { AppState.toggle_file_checked(idx); }
                 open_item   => { AppState.open_path(entry.val_str[FileEntryIdx.path_idx] == "" ? entry.val_str[FileEntryIdx.name_idx] : entry.val_str[FileEntryIdx.path_idx] + "/" + entry.val_str[FileEntryIdx.name_idx]); }
                 open_parent => { AppState.open_parent_folder(entry.val_str[FileEntryIdx.path_idx]); }
@@ -221,7 +213,7 @@ export component ResultsList {
         width: root.width;
         height: root.height;
         z: 55;
-        background: #00000099;
+        background: CediniaColors.scrim;
         TouchArea { clicked => { root.ctx_open_visible = false; } }
 
         Rectangle {
@@ -232,7 +224,7 @@ export component ResultsList {
             border-radius: 14px;
             background: CediniaColors.bg_elevated;
             drop-shadow-blur: 24px;
-            drop-shadow-color: #000000aa;
+            drop-shadow-color: CediniaColors.shadow_lg;
             clip: true;
 
             ctx_open_vl := VerticalLayout {
@@ -294,7 +286,7 @@ export component ResultsList {
         width: root.width;
         height: root.height;
         z: 50;
-        background: #00000099;
+        background: CediniaColors.scrim;
         TouchArea {}
 
         Rectangle {
@@ -305,7 +297,7 @@ export component ResultsList {
             border-radius: 14px;
             background: CediniaColors.bg_elevated;
             drop-shadow-blur: 24px;
-            drop-shadow-color: #000000aa;
+            drop-shadow-color: CediniaColors.shadow_lg;
             clip: true;
 
             popup_sel_vl := VerticalLayout {
@@ -439,7 +431,7 @@ export component ResultsList {
         width: root.width;
         height: root.height;
         z: 50;
-        background: #00000099;
+        background: CediniaColors.scrim;
         TouchArea {}
 
         Rectangle {
@@ -450,7 +442,7 @@ export component ResultsList {
             border-radius: 14px;
             background: CediniaColors.bg_elevated;
             drop-shadow-blur: 24px;
-            drop-shadow-color: #000000aa;
+            drop-shadow-color: CediniaColors.shadow_lg;
             clip: true;
 
             popup_desel_vl := VerticalLayout {
@@ -504,7 +496,7 @@ export component ResultsList {
         width: root.width;
         height: root.height;
         z: 40;
-        background: #000000bb;
+        background: CediniaColors.scrim_strong;
 
         TouchArea {}
 
@@ -516,7 +508,7 @@ export component ResultsList {
             border-radius: 14px;
             background: CediniaColors.bg_elevated;
             drop-shadow-blur: 24px;
-            drop-shadow-color: #000000cc;
+            drop-shadow-color: CediniaColors.shadow_xl;
 
             confirm-card := VerticalLayout {
                 padding: 20px;
@@ -544,11 +536,11 @@ export component ResultsList {
                     }
 
                     TouchButton {
-                        label: (AppState.confirm_popup_action == "rename" || AppState.confirm_popup_action == "rename_bad_names") ? Translations.rename_text : Translations.delete_text;
+                        label: (AppState.confirm_popup_action == ConfirmPopupAction.Rename || AppState.confirm_popup_action == ConfirmPopupAction.RenameBadNames) ? Translations.rename_text : Translations.delete_text;
                         horizontal-stretch: 1.0;
                         min_h: 44px;
-                        bg: (AppState.confirm_popup_action == "rename" || AppState.confirm_popup_action == "rename_bad_names") ? CediniaColors.accent_muted : CediniaColors.danger;
-                        fg: (AppState.confirm_popup_action == "rename" || AppState.confirm_popup_action == "rename_bad_names") ? CediniaColors.accent_light : #ffffff;
+                        bg: (AppState.confirm_popup_action == ConfirmPopupAction.Rename || AppState.confirm_popup_action == ConfirmPopupAction.RenameBadNames) ? CediniaColors.accent_muted : CediniaColors.danger;
+                        fg: (AppState.confirm_popup_action == ConfirmPopupAction.Rename || AppState.confirm_popup_action == ConfirmPopupAction.RenameBadNames) ? CediniaColors.accent_light : CediniaColors.fg_on_danger;
                         clicked => { AppState.confirm_popup_ok(); }
                     }
                 }
@@ -564,7 +556,7 @@ export component ResultsList {
         width: root.width;
         height: root.height;
         z: 30;
-        background: #000000bb;
+        background: CediniaColors.scrim_strong;
 
         TouchArea {}
 
@@ -576,7 +568,7 @@ export component ResultsList {
             border-radius: 14px;
             background: CediniaColors.bg_elevated;
             drop-shadow-blur: 24px;
-            drop-shadow-color: #000000cc;
+            drop-shadow-color: CediniaColors.shadow_xl;
 
             err-card := VerticalLayout {
                 padding: 20px;
@@ -626,7 +618,7 @@ export component ResultsList {
                     ? CediniaColors.warning.with-alpha(0.5)
                     : CediniaColors.accent;
         drop-shadow-blur: 12px;
-        drop-shadow-color: #00000088;
+        drop-shadow-color: CediniaColors.shadow_md;
         animate background { duration: 200ms; }
 
         TouchArea {
@@ -644,7 +636,7 @@ export component ResultsList {
             text: AppState.scan_state == ScanState.Scanning || AppState.scan_state == ScanState.Stopping
                 ? "⏹" : "▶";
             font-size: 22px;
-            color: (!AppState.storage_permission_granted || AppState.scan_state == ScanState.Stopping) ? #00000066 : #000000;
+            color: (!AppState.storage_permission_granted || AppState.scan_state == ScanState.Stopping) ? CediniaColors.fg_on_accent_disabled : CediniaColors.fg_on_accent;
             horizontal-alignment: TextHorizontalAlignment.center;
             vertical-alignment: TextVerticalAlignment.center;
         }

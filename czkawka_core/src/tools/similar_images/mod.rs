@@ -24,15 +24,15 @@ type ImHash = Vec<u8>;
 
 // 40 is a little useless in 8 similarity - but this value is kept to simplify harder Krokiet max value calculations
 pub const SIMILAR_VALUES: [[u32; 6]; 10] = [
-    [1, 2, 5, 7, 14, 40],       // 8
-    [2, 5, 15, 30, 40, 40],     // 16
-    [4, 10, 20, 40, 40, 40],    // 32
-    [6, 20, 40, 40, 40, 40],    // 64
-    [10, 40, 80, 120, 160, 200],    // 256
-    [20, 80, 160, 240, 320, 400],   // 512
-    [40, 160, 320, 480, 640, 800],  // 1024
-    [80, 320, 640, 960, 1280, 1600], // 2048
-    [160, 640, 1280, 1920, 2560, 3200], // 4096
+    [1, 2, 5, 7, 14, 40],                // 8
+    [2, 5, 15, 30, 40, 40],              // 16
+    [4, 10, 20, 40, 40, 40],             // 32
+    [6, 20, 40, 40, 40, 40],             // 64
+    [10, 40, 80, 120, 160, 200],         // 256
+    [20, 80, 160, 240, 320, 400],        // 512
+    [40, 160, 320, 480, 640, 800],       // 1024
+    [80, 320, 640, 960, 1280, 1600],     // 2048
+    [160, 640, 1280, 1920, 2560, 3200],  // 4096
     [320, 1280, 2560, 3840, 5120, 6400], // 8192
 ];
 
@@ -107,6 +107,7 @@ pub struct SimilarImagesParameters {
     pub only_images_with_same_size: bool,
     pub size_ratio_enabled: bool,
     pub size_ratio: f64,
+    pub exclude_images_with_same_resolution: bool,
 }
 
 impl SimilarImagesParameters {
@@ -119,6 +120,7 @@ impl SimilarImagesParameters {
         only_images_with_same_size: bool,
         size_ratio_enabled: bool,
         size_ratio: f64,
+        exclude_images_with_same_resolution: bool,
     ) -> Self {
         assert!([8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192].contains(&hash_size));
         Self {
@@ -130,6 +132,7 @@ impl SimilarImagesParameters {
             only_images_with_same_size,
             size_ratio_enabled,
             size_ratio,
+            exclude_images_with_same_resolution,
         }
     }
 }

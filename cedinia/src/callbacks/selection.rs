@@ -6,7 +6,7 @@ use slint::{ComponentHandle, Model, ModelRc, VecModel};
 
 use crate::common::{INT_IDX_SIZE_HI, INT_IDX_SIZE_LO, IntDataSimilarImages, STR_IDX_NAME, STR_IDX_PATH, StrDataBadExtensions, StrDataBadNames};
 use crate::model::{count_checked, toggle_row};
-use crate::{ActiveTool, AppState, FileEntry, MainWindow, SimilarGroupCard, SimilarImageItem};
+use crate::{ActiveTool, AppState, ConfirmPopupAction, FileEntry, MainWindow, SimilarGroupCard, SimilarImageItem};
 
 #[cfg(not(target_os = "android"))]
 fn delete_path(path: &str) -> Result<(), String> {
@@ -41,11 +41,16 @@ fn size_from_entry(e: &FileEntry) -> u64 {
 }
 
 fn get_val_str(e: &FileEntry, idx: usize) -> String {
-    e.val_str.row_data(idx).map(|s| s.to_string()).unwrap_or_default()
+    e.val_str
+        .row_data(idx)
+        .unwrap_or_else(|| panic!("get_val_str: val_str[{idx}] missing, full val_str={:?}", e.val_str.iter().collect::<Vec<_>>()))
+        .to_string()
 }
 
 fn get_val_int(e: &FileEntry, idx: usize) -> i32 {
-    e.val_int.row_data(idx).unwrap_or(0)
+    e.val_int
+        .row_data(idx)
+        .unwrap_or_else(|| panic!("get_val_int: val_int[{idx}] missing, full val_int={:?}", e.val_int.iter().collect::<Vec<_>>()))
 }
 
 fn full_path_of(e: &FileEntry) -> String {
@@ -257,7 +262,7 @@ pub(crate) fn wire_selection(window: &MainWindow, delete_tx: std::sync::mpsc::Se
             }
             let state = win.global::<AppState>();
             state.set_confirm_popup_message(slint::SharedString::from(crate::flc!("confirm_clean_exif", n = n)));
-            state.set_confirm_popup_action(slint::SharedString::from("clean_exif"));
+            state.set_confirm_popup_action(ConfirmPopupAction::CleanExif);
             state.set_confirm_popup_visible(true);
             let _ = tx.clone();
         });
@@ -275,7 +280,7 @@ pub(crate) fn wire_selection(window: &MainWindow, delete_tx: std::sync::mpsc::Se
             }
             let state = win.global::<AppState>();
             state.set_confirm_popup_message(slint::SharedString::from(crate::flc!("confirm_delete_items", n = n)));
-            state.set_confirm_popup_action(slint::SharedString::from("delete"));
+            state.set_confirm_popup_action(ConfirmPopupAction::Delete);
             state.set_confirm_popup_visible(true);
             let _ = tx.clone();
         });
@@ -551,8 +556,12 @@ pub(crate) fn wire_selection(window: &MainWindow, delete_tx: std::sync::mpsc::Se
             }
             let state = win.global::<AppState>();
             state.set_confirm_popup_message(slint::SharedString::from(crate::flc!("confirm_rename_items", n = n)));
-            let action = if tool == ActiveTool::BadNames { "rename_bad_names" } else { "rename" };
-            state.set_confirm_popup_action(slint::SharedString::from(action));
+            let action = if tool == ActiveTool::BadNames {
+                ConfirmPopupAction::RenameBadNames
+            } else {
+                ConfirmPopupAction::Rename
+            };
+            state.set_confirm_popup_action(action);
             state.set_confirm_popup_visible(true);
             let _ = tx.clone();
         });
@@ -562,14 +571,14 @@ pub(crate) fn wire_selection(window: &MainWindow, delete_tx: std::sync::mpsc::Se
         let tx_confirm = delete_tx;
         window.global::<AppState>().on_confirm_popup_ok(move || {
             let win = weak.upgrade().expect("MainWindow dropped in on_confirm_popup_ok");
-            let action = win.global::<AppState>().get_confirm_popup_action().to_string();
+            let action = win.global::<AppState>().get_confirm_popup_action();
             win.global::<AppState>().set_confirm_popup_visible(false);
-            match action.as_str() {
-                "delete" => execute_delete_selected(&win, tx_confirm.clone()),
-                "rename" => execute_rename_selected(&win, tx_confirm.clone()),
-                "rename_bad_names" => execute_rename_bad_names(&win, tx_confirm.clone()),
-                "clean_exif" => execute_clean_exif_selected(&win, tx_confirm.clone()),
-                _ => {}
+            match action {
+                ConfirmPopupAction::Delete => execute_delete_selected(&win, tx_confirm.clone()),
+                ConfirmPopupAction::Rename => execute_rename_selected(&win, tx_confirm.clone()),
+                ConfirmPopupAction::RenameBadNames => execute_rename_bad_names(&win, tx_confirm.clone()),
+                ConfirmPopupAction::CleanExif => execute_clean_exif_selected(&win, tx_confirm.clone()),
+                ConfirmPopupAction::None => {}
             }
         });
     }
@@ -638,12 +647,7 @@ pub(crate) fn select_except_one_per_group(model: &ModelRc<FileEntry>, select: bo
             if e.is_reference {
                 continue;
             }
-            e.checked = if first_non_ref_in_group {
-                first_non_ref_in_group = false;
-                false
-            } else {
-                true
-            };
+            e.checked = !std::mem::take(&mut first_non_ref_in_group);
         }
     } else {
         let mut i = 0;

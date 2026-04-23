@@ -68,12 +68,7 @@ pub const DEFAULT_MINIMAL_FILE_SIZE: &str = "16384";
 pub const DEFAULT_MAXIMAL_FILE_SIZE: &str = "999999999999";
 
 #[cfg(target_os = "macos")]
-const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &[
-    "/System",
-    "/Library",
-    "/private",
-    "/Volumes/.timemachine",
-];
+const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &["/System", "/Library", "/private", "/Volumes/.timemachine"];
 #[cfg(all(target_family = "unix", not(target_os = "macos")))]
 const DEFAULT_EXCLUDED_DIRECTORIES: &[&str] = &["/proc", "/dev", "/sys", "/snap"];
 #[cfg(not(target_family = "unix"))]

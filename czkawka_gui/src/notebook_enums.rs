@@ -55,4 +55,3 @@ pub enum NotebookUpperEnum {
     ExcludedDirectories,
     ItemsConfiguration,
 }
-

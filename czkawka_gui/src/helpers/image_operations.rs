@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 use std::io::{BufReader, Cursor};
 
-use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gdk4::Texture;
+use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use glib::Bytes;
 use gtk4::gdk_pixbuf::Colorspace;
 use gtk4::prelude::*;

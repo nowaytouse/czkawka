@@ -276,6 +276,23 @@ pub(crate) fn set_base_settings_to_gui(app: &MainWindow, basic_settings: &BasicS
     settings.set_play_audio_on_scan_completion(basic_settings.play_audio_on_scan_completion);
     settings.set_show_notification_on_scan_completion(basic_settings.show_notification_on_scan_completion);
 
+    settings.set_select_show_oldest(basic_settings.select_show_oldest);
+    settings.set_select_show_newest(basic_settings.select_show_newest);
+    settings.set_select_show_smallest_size(basic_settings.select_show_smallest_size);
+    settings.set_select_show_biggest_size(basic_settings.select_show_biggest_size);
+    settings.set_select_show_smallest_resolution(basic_settings.select_show_smallest_resolution);
+    settings.set_select_show_biggest_resolution(basic_settings.select_show_biggest_resolution);
+    settings.set_select_show_shortest_path(basic_settings.select_show_shortest_path);
+    settings.set_select_show_longest_path(basic_settings.select_show_longest_path);
+    settings.set_select_show_except_oldest(basic_settings.select_show_except_oldest);
+    settings.set_select_show_except_newest(basic_settings.select_show_except_newest);
+    settings.set_select_show_except_smallest_size(basic_settings.select_show_except_smallest_size);
+    settings.set_select_show_except_biggest_size(basic_settings.select_show_except_biggest_size);
+    settings.set_select_show_except_smallest_resolution(basic_settings.select_show_except_smallest_resolution);
+    settings.set_select_show_except_biggest_resolution(basic_settings.select_show_except_biggest_resolution);
+    settings.set_select_show_except_shortest_path(basic_settings.select_show_except_shortest_path);
+    settings.set_select_show_except_longest_path(basic_settings.select_show_except_longest_path);
+
     set_combobox_basic_settings_items(&settings, basic_settings);
 }
 
@@ -354,6 +371,22 @@ pub(crate) fn set_combobox_custom_settings_items(settings: &Settings, custom_set
     let (idx, display_names) = StringComboBoxItems::get_item_and_idx_from_config_name(&custom_settings.video_optimizer_video_codec, &collected_items.video_optimizer_video_codec);
     settings.set_video_optimizer_sub_video_codec_index(idx as i32);
     settings.set_video_optimizer_sub_video_codec_value(display_names[idx].clone());
+
+    // Video Optimizer noise reduction
+    let (idx, display_names) =
+        StringComboBoxItems::get_item_and_idx_from_config_name(&custom_settings.video_optimizer_noise_reduction, &collected_items.video_optimizer_noise_reduction);
+    settings.set_video_optimizer_sub_noise_reduction_index(idx as i32);
+    settings.set_video_optimizer_sub_noise_reduction_value(display_names[idx].clone());
+
+    // Video Optimizer hardware encoder (static list; config names are lowercase variants of display names)
+    let hw_encoder_config_names = ["none", "nvenc", "vaapi", "qsv", "videotoolbox", "amf"];
+    let hw_encoder_display_names = ["None", "NVENC", "VAAPI", "QSV", "VideoToolbox", "AMF"];
+    let hw_idx = hw_encoder_config_names
+        .iter()
+        .position(|&s| s == custom_settings.video_optimizer_hardware_encoder.to_lowercase().as_str())
+        .unwrap_or(0);
+    settings.set_video_optimizer_sub_hardware_encoder_index(hw_idx as i32);
+    settings.set_video_optimizer_sub_hardware_encoder_value(hw_encoder_display_names[hw_idx].into());
 }
 
 pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCustom, base_settings: &BasicSettings, cli_args: Option<CliResult>) {
@@ -384,7 +417,6 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     settings.set_maximum_file_size(custom_settings.maximum_file_size.to_string().into());
     settings.set_use_cache(custom_settings.use_cache);
     settings.set_save_as_json(custom_settings.save_also_as_json);
-    settings.set_move_to_trash(custom_settings.move_deleted_files_to_trash);
     settings.set_ignore_other_filesystems(custom_settings.ignore_other_file_systems);
     settings.set_thread_number(custom_settings.thread_number as f32);
 
@@ -407,12 +439,14 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     settings.set_similar_images_sub_only_same_size(custom_settings.similar_images_sub_only_same_size);
     settings.set_similar_images_sub_size_ratio_enabled(custom_settings.similar_images_sub_size_ratio_enabled);
     settings.set_similar_images_sub_size_ratio(custom_settings.similar_images_sub_size_ratio as f32);
+    settings.set_similar_images_sub_ignore_same_resolution(custom_settings.similar_images_sub_ignore_same_resolution);
     settings.set_similar_images_sub_max_similarity(MAX_HASH_SIZE);
     settings.set_similar_images_sub_current_similarity(custom_settings.similar_images_sub_similarity as f32);
 
     settings.set_biggest_files_sub_number_of_files(custom_settings.biggest_files_sub_number_of_files.to_string().into());
 
     settings.set_similar_videos_sub_ignore_same_size(custom_settings.similar_videos_sub_ignore_same_size);
+    settings.set_similar_videos_sub_ignore_same_resolution(custom_settings.similar_videos_sub_ignore_same_resolution);
     settings.set_similar_videos_sub_current_similarity(custom_settings.similar_videos_sub_similarity as f32);
     settings.set_similar_videos_sub_max_similarity(20.0);
     settings.set_similar_videos_skip_forward_amount(
@@ -457,7 +491,8 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     settings.set_broken_files_sub_pdf(custom_settings.broken_files_sub_pdf);
     settings.set_broken_files_sub_archive(custom_settings.broken_files_sub_archive);
     settings.set_broken_files_sub_image(custom_settings.broken_files_sub_image);
-    settings.set_broken_files_sub_video(custom_settings.broken_files_sub_video);
+    settings.set_broken_files_sub_video_ffprobe(custom_settings.broken_files_sub_video_ffprobe);
+    settings.set_broken_files_sub_video_ffmpeg(custom_settings.broken_files_sub_video_ffmpeg);
 
     settings.set_bad_names_sub_uppercase_extension(custom_settings.bad_names_sub_uppercase_extension);
     settings.set_bad_names_sub_emoji_used(custom_settings.bad_names_sub_emoji_used);
@@ -479,8 +514,12 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     settings.set_video_optimizer_sub_max_width(custom_settings.video_optimizer_max_width.to_string().into());
     settings.set_video_optimizer_sub_max_height(custom_settings.video_optimizer_max_height.to_string().into());
     settings.set_video_optimizer_sub_image_threshold(custom_settings.video_optimizer_image_threshold as f32);
+    settings.set_video_optimizer_sub_noise_reduction_strength(custom_settings.video_optimizer_noise_reduction_strength.clamp(1, 10) as f32);
+    settings.set_video_optimizer_sub_use_custom_command(custom_settings.video_optimizer_use_custom_command);
+    settings.set_video_optimizer_sub_custom_command(custom_settings.video_optimizer_custom_command.clone().into());
 
     settings.set_ignored_exif_tags(custom_settings.ignored_exif_tags.clone().into());
+    settings.set_temporary_files_sub_extensions(custom_settings.temporary_files_extensions.clone().into());
 
     // Popup-specific settings
     settings.set_popup_move_preserve_folder_structure(custom_settings.popup_move_preserve_folder_structure);
@@ -559,7 +598,6 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let recursive_search = settings.get_recursive_search();
     let use_cache = settings.get_use_cache();
     let save_also_as_json = settings.get_save_as_json();
-    let move_deleted_files_to_trash = settings.get_move_to_trash();
     let ignore_other_file_systems = settings.get_ignore_other_filesystems();
     let thread_number = settings.get_thread_number().round() as i32;
 
@@ -588,6 +626,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let similar_images_sub_only_same_size = settings.get_similar_images_sub_only_same_size();
     let similar_images_sub_size_ratio_enabled = settings.get_similar_images_sub_size_ratio_enabled();
     let similar_images_sub_size_ratio = settings.get_similar_images_sub_size_ratio() as f64;
+    let similar_images_sub_ignore_same_resolution = settings.get_similar_images_sub_ignore_same_resolution();
     let similar_images_sub_similarity = settings.get_similar_images_sub_current_similarity().round() as i32;
 
     let duplicates_sub_check_method = combo_box_items.duplicates_check_method.config_name.clone();
@@ -596,6 +635,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let biggest_files_sub_number_of_files = settings.get_biggest_files_sub_number_of_files().parse().unwrap_or(DEFAULT_BIGGEST_FILES);
 
     let similar_videos_sub_ignore_same_size = settings.get_similar_videos_sub_ignore_same_size();
+    let similar_videos_sub_ignore_same_resolution = settings.get_similar_videos_sub_ignore_same_resolution();
     let similar_videos_sub_similarity = settings.get_similar_videos_sub_current_similarity().round() as i32;
     let similar_videos_crop_detect = combo_box_items.videos_crop_detect.config_name.clone();
     let similar_videos_skip_forward_amount = settings.get_similar_videos_skip_forward_amount() as u32;
@@ -621,7 +661,8 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let broken_files_sub_pdf = settings.get_broken_files_sub_pdf();
     let broken_files_sub_archive = settings.get_broken_files_sub_archive();
     let broken_files_sub_image = settings.get_broken_files_sub_image();
-    let broken_files_sub_video = settings.get_broken_files_sub_video();
+    let broken_files_sub_video_ffprobe = settings.get_broken_files_sub_video_ffprobe();
+    let broken_files_sub_video_ffmpeg = settings.get_broken_files_sub_video_ffmpeg();
 
     let bad_names_sub_uppercase_extension = settings.get_bad_names_sub_uppercase_extension();
     let bad_names_sub_emoji_used = settings.get_bad_names_sub_emoji_used();
@@ -633,7 +674,8 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
 
     let video_optimizer_mode = combo_box_items.video_optimizer_mode.config_name.clone();
     let video_optimizer_crop_type = combo_box_items.video_optimizer_crop_type.config_name.clone();
-    let video_optimizer_video_codec = combo_box_items.video_optimizer_video_codec.config_name;
+    let video_optimizer_video_codec = combo_box_items.video_optimizer_video_codec.config_name.clone();
+    let video_optimizer_noise_reduction = combo_box_items.video_optimizer_noise_reduction.config_name;
     let video_optimizer_excluded_codecs = settings.get_video_optimizer_sub_excluded_codecs().to_string();
     let video_optimizer_black_pixel_threshold = settings
         .get_video_optimizer_sub_black_pixel_threshold()
@@ -662,8 +704,17 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let video_optimizer_max_width = settings.get_video_optimizer_sub_max_width().parse::<u32>().unwrap_or(1920);
     let video_optimizer_max_height = settings.get_video_optimizer_sub_max_height().parse::<u32>().unwrap_or(1920);
     let video_optimizer_image_threshold = settings.get_video_optimizer_sub_image_threshold().round() as u8;
+    let video_optimizer_noise_reduction_strength = settings.get_video_optimizer_sub_noise_reduction_strength().round() as u32;
+    let video_optimizer_use_custom_command = settings.get_video_optimizer_sub_use_custom_command();
+    let video_optimizer_custom_command = settings.get_video_optimizer_sub_custom_command().to_string();
+    let hw_encoder_config_names = ["none", "nvenc", "vaapi", "qsv", "videotoolbox", "amf"];
+    let video_optimizer_hardware_encoder = hw_encoder_config_names
+        .get(settings.get_video_optimizer_sub_hardware_encoder_index() as usize)
+        .unwrap_or(&"none")
+        .to_string();
 
     let ignored_exif_tags = settings.get_ignored_exif_tags().to_string();
+    let temporary_files_extensions = settings.get_temporary_files_sub_extensions().to_string();
 
     let column_sizes = BTreeMap::from([
         ("duplicates".to_string(), settings.get_duplicates_column_size().iter().collect::<Vec<_>>()),
@@ -695,7 +746,6 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         recursive_search,
         use_cache,
         save_also_as_json,
-        move_deleted_files_to_trash,
         ignore_other_file_systems,
         thread_number,
         duplicate_image_preview,
@@ -714,6 +764,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         similar_images_sub_only_same_size,
         similar_images_sub_size_ratio_enabled,
         similar_images_sub_size_ratio,
+        similar_images_sub_ignore_same_resolution,
         similar_images_sub_similarity,
         duplicates_sub_check_method,
         duplicates_sub_available_hash_type,
@@ -721,6 +772,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         biggest_files_sub_method,
         biggest_files_sub_number_of_files,
         similar_videos_sub_ignore_same_size,
+        similar_videos_sub_ignore_same_resolution,
         similar_videos_sub_similarity,
         similar_music_sub_audio_check_type,
         similar_music_sub_approximate_comparison,
@@ -737,7 +789,8 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         broken_files_sub_pdf,
         broken_files_sub_archive,
         broken_files_sub_image,
-        broken_files_sub_video,
+        broken_files_sub_video_ffprobe,
+        broken_files_sub_video_ffmpeg,
         bad_names_sub_uppercase_extension,
         bad_names_sub_emoji_used,
         bad_names_sub_space_at_start_end,
@@ -767,7 +820,13 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         video_optimizer_max_width,
         video_optimizer_max_height,
         video_optimizer_image_threshold,
+        video_optimizer_noise_reduction,
+        video_optimizer_noise_reduction_strength,
+        video_optimizer_use_custom_command,
+        video_optimizer_custom_command,
+        video_optimizer_hardware_encoder,
         ignored_exif_tags,
+        temporary_files_extensions,
         column_sizes,
         popup_move_preserve_folder_structure: settings.get_popup_move_preserve_folder_structure(),
         popup_move_copy_mode: settings.get_popup_move_copy_mode(),
@@ -800,6 +859,7 @@ pub(crate) fn collect_combo_box_settings(app: &MainWindow) -> ComboBoxItems {
     let video_optimizer_crop_type_idx = settings.get_video_optimizer_sub_crop_type_index() as usize;
     let video_optimizer_mode_idx = settings.get_video_optimizer_sub_mode_index() as usize;
     let video_optimizer_video_codec_idx = settings.get_video_optimizer_sub_video_codec_index() as usize;
+    let video_optimizer_noise_reduction_idx = settings.get_video_optimizer_sub_noise_reduction_index() as usize;
 
     ComboBoxItems {
         language: collected_combo_boxes.languages[language_idx].clone(),
@@ -814,6 +874,7 @@ pub(crate) fn collect_combo_box_settings(app: &MainWindow) -> ComboBoxItems {
         video_optimizer_crop_type: collected_combo_boxes.video_optimizer_crop_type[video_optimizer_crop_type_idx].clone(),
         video_optimizer_mode: collected_combo_boxes.video_optimizer_mode[video_optimizer_mode_idx].clone(),
         video_optimizer_video_codec: collected_combo_boxes.video_optimizer_video_codec[video_optimizer_video_codec_idx].clone(),
+        video_optimizer_noise_reduction: collected_combo_boxes.video_optimizer_noise_reduction[video_optimizer_noise_reduction_idx].clone(),
     }
 }
 
@@ -854,5 +915,21 @@ pub(crate) fn collect_base_settings(app: &MainWindow) -> BasicSettings {
         use_manual_application_scale,
         play_audio_on_scan_completion,
         show_notification_on_scan_completion,
+        select_show_oldest: settings.get_select_show_oldest(),
+        select_show_newest: settings.get_select_show_newest(),
+        select_show_smallest_size: settings.get_select_show_smallest_size(),
+        select_show_biggest_size: settings.get_select_show_biggest_size(),
+        select_show_smallest_resolution: settings.get_select_show_smallest_resolution(),
+        select_show_biggest_resolution: settings.get_select_show_biggest_resolution(),
+        select_show_shortest_path: settings.get_select_show_shortest_path(),
+        select_show_longest_path: settings.get_select_show_longest_path(),
+        select_show_except_oldest: settings.get_select_show_except_oldest(),
+        select_show_except_newest: settings.get_select_show_except_newest(),
+        select_show_except_smallest_size: settings.get_select_show_except_smallest_size(),
+        select_show_except_biggest_size: settings.get_select_show_except_biggest_size(),
+        select_show_except_smallest_resolution: settings.get_select_show_except_smallest_resolution(),
+        select_show_except_biggest_resolution: settings.get_select_show_except_biggest_resolution(),
+        select_show_except_shortest_path: settings.get_select_show_except_shortest_path(),
+        select_show_except_longest_path: settings.get_select_show_except_longest_path(),
     }
 }

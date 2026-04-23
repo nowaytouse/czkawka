@@ -24,8 +24,8 @@ use connect_things::connect_progress_window::connect_progress_window;
 use connect_things::connect_selection_of_directories::connect_selection_of_directories;
 use connect_things::connect_settings::connect_settings;
 use connect_things::connect_show_hide_ui::connect_show_hide_ui;
-use connect_things::connect_similar_image_size_change::connect_similar_image_size_change;
 use connect_things::connect_similar_image_mutual_exclusion::connect_similar_image_mutual_exclusion;
+use connect_things::connect_similar_image_size_change::connect_similar_image_size_change;
 use crossbeam_channel::{Receiver, Sender, unbounded};
 use czkawka_core::common::basic_gui_cli::{CliResult, process_cli_args};
 use czkawka_core::common::config_cache_path::{get_config_cache_path, print_infos_and_warnings, set_config_cache_path};
@@ -81,17 +81,11 @@ fn main() {
     // Suppress GTK's "Trying to measure GtkBox for width of X, but it needs at least Y" warnings.
     // These are harmless noise from GTK4's height-for-width size negotiation when notebook pages
     // are probed at the tab-strip width. The layout works correctly at runtime.
-    glib::log_set_handler(
-        Some("Gtk"),
-        glib::LogLevels::LEVEL_WARNING,
-        false,
-        false,
-        |domain, level, msg| {
-            if !msg.contains("Trying to measure") {
-                glib::log_default_handler(domain, level, Some(msg));
-            }
-        },
-    );
+    glib::log_set_handler(Some("Gtk"), glib::LogLevels::LEVEL_WARNING, false, false, |domain, level, msg| {
+        if !msg.contains("Trying to measure") {
+            glib::log_default_handler(domain, level, Some(msg));
+        }
+    });
 
     register_image_decoding_hooks();
     let config_cache_path_set_result = set_config_cache_path("Czkawka", "Czkawka");
@@ -235,11 +229,7 @@ fn build_ui(application: &Application, cli_args: Option<&CliResult>, needs_to_op
         ",
     );
     if let Some(display) = gtk4::gdk::Display::default() {
-        gtk4::style_context_add_provider_for_display(
-            &display,
-            &provider,
-            gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
-        );
+        gtk4::style_context_add_provider_for_display(&display, &provider, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
 
     let gui_data: GuiData = GuiData::new_with_application(application);

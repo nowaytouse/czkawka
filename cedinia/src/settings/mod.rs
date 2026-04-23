@@ -27,7 +27,7 @@ fn default_search_mode() -> String {
     "biggest".to_string()
 }
 fn default_big_files_count() -> String {
-    "50".to_string()
+    "10000".to_string()
 }
 fn default_min_file_size() -> String {
     "none".to_string()
@@ -80,6 +80,8 @@ pub struct CediniaSettings {
     pub allowed_extensions: String,
     #[serde(default)]
     pub excluded_extensions: String,
+    #[serde(default = "ttrue")]
+    pub use_dark_theme: bool,
 
     #[serde(default = "default_check_method")]
     pub duplicates_check_method: String,
@@ -96,6 +98,8 @@ pub struct CediniaSettings {
     pub similar_images_image_filter: String,
     #[serde(default)]
     pub similar_images_ignore_same_size: bool,
+    #[serde(default)]
+    pub similar_images_ignore_same_resolution: bool,
     #[serde(default)]
     pub gallery_image_fit_cover: bool,
 
@@ -292,12 +296,13 @@ pub fn apply_settings_to_gui(win: &MainWindow, s: &CediniaSettings) {
     win.global::<GeneralSettings>().set_max_file_size_idx(max_idx as i32);
     let lang_idx = crate::localizer_cedinia::LANGUAGE_LIST
         .iter()
-        .position(|&c| c == s.language.as_str())
+        .position(|&(code, _)| code == s.language.as_str())
         .unwrap_or_else(|| crate::localizer_cedinia::detect_os_language_idx() as usize) as i32;
     win.global::<GeneralSettings>().set_language_idx(lang_idx);
     win.global::<GeneralSettings>().set_excluded_items(s.excluded_items.clone().into());
     win.global::<GeneralSettings>().set_allowed_extensions(s.allowed_extensions.clone().into());
     win.global::<GeneralSettings>().set_excluded_extensions(s.excluded_extensions.clone().into());
+    win.global::<GeneralSettings>().set_use_dark_theme(s.use_dark_theme);
 
     let cm_idx = StringComboBoxItems::idx_from_config_name(&s.duplicates_check_method, &items.duplicates_check_method);
     win.global::<DuplicateSettings>().set_check_method(cm_idx as i32);
@@ -325,6 +330,7 @@ pub fn apply_settings_to_gui(win: &MainWindow, s: &CediniaSettings) {
     win.global::<SimilarImagesSettings>().set_image_filter_value(s.similar_images_image_filter.clone().into());
 
     win.global::<SimilarImagesSettings>().set_ignore_same_size(s.similar_images_ignore_same_size);
+    win.global::<SimilarImagesSettings>().set_ignore_same_resolution(s.similar_images_ignore_same_resolution);
     win.global::<SimilarImagesSettings>().set_gallery_image_fit_cover(s.gallery_image_fit_cover);
 
     let sm_idx = StringComboBoxItems::idx_from_config_name(&s.big_files_search_mode, &items.biggest_files_method);
@@ -380,10 +386,11 @@ pub fn collect_settings_from_gui(win: &MainWindow) -> CediniaSettings {
         max_file_size: StringComboBoxItems::config_name_from_idx(&items.max_file_size, g.get_max_file_size_idx(), "unlimited"),
         language: crate::localizer_cedinia::LANGUAGE_LIST
             .get(g.get_language_idx() as usize)
-            .map_or_else(|| "en".to_string(), |&s| s.to_string()),
+            .map_or_else(|| "en".to_string(), |&(code, _)| code.to_string()),
         excluded_items: g.get_excluded_items().to_string(),
         allowed_extensions: g.get_allowed_extensions().to_string(),
         excluded_extensions: g.get_excluded_extensions().to_string(),
+        use_dark_theme: g.get_use_dark_theme(),
         duplicates_check_method: items
             .duplicates_check_method
             .get(d.get_check_method() as usize)
@@ -409,6 +416,7 @@ pub fn collect_settings_from_gui(win: &MainWindow) -> CediniaSettings {
             .get(si.get_image_filter_idx() as usize)
             .map_or_else(|| panic!("Invalid image_filter_idx {} in GUI", si.get_image_filter_idx()), |e| e.config_name.clone()),
         similar_images_ignore_same_size: si.get_ignore_same_size(),
+        similar_images_ignore_same_resolution: si.get_ignore_same_resolution(),
         gallery_image_fit_cover: si.get_gallery_image_fit_cover(),
         big_files_search_mode: items
             .biggest_files_method

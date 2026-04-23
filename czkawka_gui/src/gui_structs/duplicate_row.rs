@@ -6,7 +6,7 @@ use glib::prelude::*;
 use glib::subclass::prelude::*;
 
 mod imp {
-    use super::{RefCell, ObjectSubclass, ObjectExt, ObjectImpl, DerivedObjectProperties};
+    use super::{DerivedObjectProperties, ObjectExt, ObjectImpl, ObjectSubclass, RefCell};
 
     #[derive(glib::Properties, Default)]
     #[properties(wrapper_type = super::DuplicateRow)]

@@ -8,12 +8,12 @@ use rayon::prelude::*;
 
 use crate::file_protection::PROTECTED_FILES;
 use crate::flg;
-use crate::helpers::async_dialog::confirm_window_with_checkbox;
 use crate::gui_structs::common_tree_view::SubView;
 use crate::gui_structs::duplicate_row::DuplicateRow;
-use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::gui_data::GuiData;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::get_full_name_from_path_name;
+use crate::helpers::async_dialog::confirm_window_with_checkbox;
 use crate::helpers::list_store_operations::{check_how_much_elements_is_selected, clean_invalid_headers};
 use crate::helpers::model_iter::iter_list;
 use crate::notebook_enums::NotebookMainEnum;
@@ -99,7 +99,6 @@ pub async fn check_if_can_delete_files(
     }
     true
 }
-
 
 pub async fn check_if_deleting_all_files_in_group(sv: &SubView, window_main: &gtk4::Window, check_button_settings_confirm_group_deletion: &CheckButton) -> bool {
     if sv.get_duplicate_model().is_some() {
@@ -292,10 +291,9 @@ fn common_file_remove_duplicate(
     for pos in 0..n {
         let Some(item) = store.item(pos) else { continue };
         let Ok(row) = item.downcast::<DuplicateRow>() else { continue };
-        if column_header.is_some()
-            && row.is_header() {
-                continue;
-            }
+        if column_header.is_some() && row.is_header() {
+            continue;
+        }
         if !row.selection_button() {
             continue;
         }
@@ -339,12 +337,7 @@ fn common_file_remove_duplicate(
     for pos in positions_to_remove {
         store.remove(pos);
     }
-    debug!(
-        "Deleted {}/{} items (duplicate tab) in {:?}",
-        removed.len(),
-        selected.len(),
-        start_time.elapsed()
-    );
+    debug!("Deleted {}/{} items (duplicate tab) in {:?}", removed.len(), selected.len(), start_time.elapsed());
     text_view_errors.buffer().set_text(messages.as_str());
 }
 

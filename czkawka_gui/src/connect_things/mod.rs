@@ -21,6 +21,6 @@ pub mod connect_same_music_mode_changed;
 pub mod connect_selection_of_directories;
 pub mod connect_settings;
 pub mod connect_show_hide_ui;
-pub mod connect_similar_image_size_change;
 pub mod connect_similar_image_mutual_exclusion;
+pub mod connect_similar_image_size_change;
 pub mod file_chooser_helpers;

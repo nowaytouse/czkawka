@@ -96,7 +96,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_empty_folder_finder",
     },
     NotebookObject {
@@ -121,7 +128,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::U64,    // SizeAsBytes
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_big_files_finder",
     },
     NotebookObject {
@@ -144,7 +158,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_empty_files_finder",
     },
     NotebookObject {
@@ -167,7 +188,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_temporary_files_finder",
     },
     NotebookObject {
@@ -345,7 +373,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_invalid_symlinks",
     },
     NotebookObject {
@@ -369,7 +404,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_broken_files",
     },
     NotebookObject {
@@ -394,7 +436,14 @@ pub static NOTEBOOKS_INFO: [NotebookObject; CZKAWKA_GTK_TOOL_NUMBER] = [
             Type::STRING, // Modification
             Type::U64,    // ModificationAsSecs
         ],
-        bottom_buttons: &[BottomButtonsEnum::Save, BottomButtonsEnum::Delete, BottomButtonsEnum::Select, BottomButtonsEnum::Move, BottomButtonsEnum::Protect, BottomButtonsEnum::Unprotect],
+        bottom_buttons: &[
+            BottomButtonsEnum::Save,
+            BottomButtonsEnum::Delete,
+            BottomButtonsEnum::Select,
+            BottomButtonsEnum::Move,
+            BottomButtonsEnum::Protect,
+            BottomButtonsEnum::Unprotect,
+        ],
         tree_view_name: "tree_view_bad_extensions",
     },
 ];

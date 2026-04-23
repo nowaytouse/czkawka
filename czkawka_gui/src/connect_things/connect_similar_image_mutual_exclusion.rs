@@ -1,5 +1,5 @@
-use gtk4::prelude::*;
 use crate::gui_structs::gui_data::GuiData;
+use gtk4::prelude::*;
 
 pub(crate) fn connect_similar_image_mutual_exclusion(gui_data: &GuiData) {
     let check_button_image_only_same_size = gui_data.main_notebook.check_button_image_only_same_size.clone();

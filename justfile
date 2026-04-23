@@ -83,8 +83,11 @@ clip:
     cargo clippy --fix --allow-dirty --allow-staged --no-default-features --features winit_software --all-targets
 
 fix:
-    ruff format --line-length 120 --no-cache
-    mypy misc --strict
+    cp misc/pyproject.toml .
+    uv sync
+
+    uv run ruff format --line-length 120 --no-cache
+    uv run mypy misc --strict
 
     bash misc/run_checks.sh
 
@@ -127,24 +130,45 @@ gen_cedinia_licenses:
 keystore_dir := "cedinia/android/keystore"
 
 gen_keystores:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PASS=$(cat keystore_pass)
     mkdir -p {{keystore_dir}}
     [ -f {{keystore_dir}}/debug.keystore ] || keytool -genkey -v \
         -keystore {{keystore_dir}}/debug.keystore \
         -alias debug -keyalg RSA -keysize 2048 -validity 10000 \
-        -storepass 123456 -keypass 123456 \
+        -storepass "$PASS" -keypass "$PASS" \
         -dname "CN=Debug, OU=Debug, O=Debug, L=Debug, S=Debug, C=US" \
+        -noprompt
+    [ -f {{keystore_dir}}/rdebug.keystore ] || keytool -genkey -v \
+        -keystore {{keystore_dir}}/rdebug.keystore \
+        -alias rdebug -keyalg RSA -keysize 2048 -validity 10000 \
+        -storepass "$PASS" -keypass "$PASS" \
+        -dname "CN=Release, OU=Release, O=Release, L=Release, S=Release, C=US" \
         -noprompt
     [ -f {{keystore_dir}}/release.keystore ] || keytool -genkey -v \
         -keystore {{keystore_dir}}/release.keystore \
         -alias release -keyalg RSA -keysize 2048 -validity 10000 \
-        -storepass 123456 -keypass 123456 \
+        -storepass "$PASS" -keypass "$PASS" \
         -dname "CN=Release, OU=Release, O=Release, L=Release, S=Release, C=US" \
         -noprompt
 
-android_build: gen_keystores
+android_build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PASS=$(cat keystore_pass)
+    sed -i "s|TO_REPLACE_KEYSTORE_PASSWORD|$PASS|g" cedinia/Cargo.toml
+    trap 'sed -i "s|$PASS|TO_REPLACE_KEYSTORE_PASSWORD|g" cedinia/Cargo.toml' EXIT
+
     cargo apk build -p cedinia --lib
 
-android_build_release: gen_keystores
+android_build_release:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    PASS=$(cat keystore_pass)
+    sed -i "s|TO_REPLACE_KEYSTORE_PASSWORD|$PASS|g" cedinia/Cargo.toml
+    trap 'sed -i "s|$PASS|TO_REPLACE_KEYSTORE_PASSWORD|g" cedinia/Cargo.toml' EXIT
+
     cargo apk build -p cedinia --lib --release
 
 android_install:
@@ -173,12 +197,29 @@ androidr: android_build_release android_install_release android_run
 # Requires gradle 8.9+ in PATH (e.g. sdk install gradle 8.9 via sdkman).
 # The libcedinia.so is compiled by cargo-apk and the DEX is already embedded
 # in the .so via include_bytes! – no separate Java compilation is needed.
-android_build_aab: android_build_release
-    mkdir -p cedinia/android/app/src/main/jniLibs/arm64-v8a
-    cp target/aarch64-linux-android/release/libcedinia.so cedinia/android/app/src/main/jniLibs/arm64-v8a/
-    cd cedinia/android && gradle bundleRelease
-    cp cedinia/android/app/build/outputs/bundle/release/app-release.aab cedinia.aab
-    @echo "AAB built: cedinia.aab"
+android_build_aab:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ROOT="$(pwd)"
+    PASS=$(cat keystore_pass)
+    CARGO_TOML="$ROOT/cedinia/Cargo.toml"
+    sed -i "s|TO_REPLACE_KEYSTORE_PASSWORD|$PASS|g" "$CARGO_TOML"
+    trap 'sed -i "s|$PASS|TO_REPLACE_KEYSTORE_PASSWORD|g" "$CARGO_TOML"' EXIT
+    export KEYSTORE_PASSWORD="$PASS"
+    export KEY_PASSWORD="$PASS"
+
+    rm -rf "$ROOT/cedinia/android/app/src/main/jniLibs"
+    rm -f "$ROOT/cedinia.aab"
+    rm -rf "$ROOT/cedinia/android/.gradle"
+    rm -rf "$ROOT/cedinia/android/app/build"
+    rm -rf "$ROOT/cedinia/android/build"
+
+    cargo apk build -p cedinia --lib --release
+    mkdir -p "$ROOT/cedinia/android/app/src/main/jniLibs/arm64-v8a"
+    cp "$ROOT/target/aarch64-linux-android/release/libcedinia.so" "$ROOT/cedinia/android/app/src/main/jniLibs/arm64-v8a/"
+    cd "$ROOT/cedinia/android" && gradle bundleRelease
+    cp "$ROOT/cedinia/android/app/build/outputs/bundle/release/app-release.aab" "$ROOT/cedinia.aab"
+    echo "AAB built: $ROOT/cedinia.aab"
 
 ##################### BENCHMARKS #####################
 
@@ -210,11 +251,12 @@ install:
     cargo install --path krokiet --locked
     cargo install --path czkawka_gui --locked
 
+##################### TRANSLATIONS #####################
 
 prepare_translations_deps:
     @command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
     @command -v ollama >/dev/null 2>&1 || curl -fsSL https://ollama.com/install.sh | sh
-    cd misc/ai_translate; uv sync
+    uv sync
     # qwen2.5:7b - fast, but quite bad quality
     # qwen2.5:32b - very slow, still not good quality
     # zongwei/gemma3-translator:4b - not so fast, but looks quite good
@@ -222,15 +264,17 @@ prepare_translations_deps:
     export OLLAMA_VULKAN=1; export HSA_OVERRIDE_GFX_VERSION=10.3.0; ollama pull translategemma:12b
 
 translate:
-    cd misc/ai_translate; uv run translate.py ../../czkawka_gui/i18n
-    cd misc/ai_translate; uv run translate.py ../../czkawka_core/i18n
-    cd misc/ai_translate; uv run translate.py ../../krokiet/i18n
+    uv run misc/ai_translate/translate.py czkawka_gui/i18n
+    uv run misc/ai_translate/translate.py czkawka_core/i18n
+    uv run misc/ai_translate/translate.py krokiet/i18n
+    uv run misc/ai_translate/translate.py cedinia/i18n
     just pack_translations
 
 validate_translations *args: # Available --fix argument, which removes invalid translations
-    cd misc/ai_translate; uv run validate_translations.py ../../czkawka_gui/i18n {{args}}
-    cd misc/ai_translate; uv run validate_translations.py ../../czkawka_core/i18n {{args}}
-    cd misc/ai_translate; uv run validate_translations.py ../../krokiet/i18n {{args}}
+    uv run misc/ai_translate/validate_translations.py czkawka_gui/i18n {{args}}
+    uv run misc/ai_translate/validate_translations.py czkawka_core/i18n {{args}}
+    uv run misc/ai_translate/validate_translations.py krokiet/i18n {{args}}
+    uv run misc/ai_translate/validate_translations.py cedinia/i18n {{args}}
 
 # Crowdin allows to import zip file with structured translations
 pack_translations:
@@ -243,6 +287,7 @@ pack_translations:
         [ -f "czkawka_gui/i18n/$lang_code/czkawka_gui.ftl" ] && cp "czkawka_gui/i18n/$lang_code/czkawka_gui.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
         [ -f "czkawka_core/i18n/$lang_code/czkawka_core.ftl" ] && cp "czkawka_core/i18n/$lang_code/czkawka_core.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
         [ -f "krokiet/i18n/$lang_code/krokiet.ftl" ] && cp "krokiet/i18n/$lang_code/krokiet.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
+        [ -f "cedinia/i18n/$lang_code/cedinia.ftl" ] && cp "cedinia/i18n/$lang_code/cedinia.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
     done
     cd /tmp/czkawka_i18n && zip -r - i18n > "{{justfile_directory()}}/i18n_translations.zip"
     rm -rf /tmp/czkawka_i18n
@@ -257,6 +302,7 @@ unpack_translations path_to_file:
         [ -f "$lang_dir/czkawka_gui.ftl" ] && mkdir -p "czkawka_gui/i18n/$lang_code" && cp "$lang_dir/czkawka_gui.ftl" "czkawka_gui/i18n/$lang_code/" && echo "Copied czkawka_gui.ftl to czkawka_gui/i18n/$lang_code/" || true; \
         [ -f "$lang_dir/czkawka_core.ftl" ] && mkdir -p "czkawka_core/i18n/$lang_code" && cp "$lang_dir/czkawka_core.ftl" "czkawka_core/i18n/$lang_code/" && echo "Copied czkawka_core.ftl to czkawka_core/i18n/$lang_code/" || true; \
         [ -f "$lang_dir/krokiet.ftl" ] && mkdir -p "krokiet/i18n/$lang_code" && cp "$lang_dir/krokiet.ftl" "krokiet/i18n/$lang_code/" && echo "Copied krokiet.ftl to krokiet/i18n/$lang_code/" || true; \
+        [ -f "$lang_dir/cedinia.ftl" ] && mkdir -p "cedinia/i18n/$lang_code" && cp "$lang_dir/cedinia.ftl" "cedinia/i18n/$lang_code/" && echo "Copied cedinia.ftl to cedinia/i18n/$lang_code/" || true; \
     done
     rm -rf /tmp/czkawka_unpack
     @echo "Translations unpacked successfully"
@@ -346,3 +392,13 @@ time_passes:
     cd czkawka_cli; RUSTFLAGS="-Ztime-passes" cargo +nightly rustc; cd ..;
     cargo clean
     cd krokiet; RUSTFLAGS="-Ztime-passes" cargo +nightly rustc; cd ..;
+
+test_heaptrack:
+    cd test && cargo build --profile rdebug
+    heaptrack test/target/rdebug/TEST
+    heaptrack_gui --appimage-extract-and-run "$(ls -t *.zst | head -n1)"
+
+heaptrack bin:
+    cargo build --profile rdebug --bin {{bin}}
+    heaptrack target/rdebug/{{bin}}
+    heaptrack_gui --appimage-extract-and-run "$(ls -t *.zst | head -n1)"

@@ -4,7 +4,7 @@ export global Settings {
     in-out property <int> settings_preset_idx: 0;
     in-out property <[string]> settings_presets: ["Preset 1", "Preset 2"];
 
-    in-out property <[string]> languages_list: ["English", "Polski (Polish)", "Français (French)", "Italiano (Italian)", "Русский (Russian)", "український (Ukrainian)", "한국어 (Korean)", "Česky (Czech)", "Deutsch (German)", "日本語 (Japanese)", "Português (Portuguese)", "Português Brasileiro (Brazilian Portuguese)", "简体中文 (Simplified Chinese)", "繁體中文 (Traditional Chinese)", "Español (Spanish)", "Norsk (Norwegian)", "Svenska (Swedish)", "العربية (Arabic)", "Български (Bulgarian)", "Ελληνικά (Greek)", "Nederlands (Dutch)", "Română (Romanian)", "Türkçe (Turkish)"];
+    in-out property <[string]> languages_list: ["English", "Polski (Polish)", "Français (French)", "Italiano (Italian)", "Русский (Russian)", "український (Ukrainian)", "한국어 (Korean)", "Česky (Czech)", "Deutsch (German)", "日本語 (Japanese)", "Português (Portuguese)", "Português Brasileiro (Brazilian Portuguese)", "简体中文 (Simplified Chinese)", "繁體中文 (Traditional Chinese)", "Español (Spanish)", "Norsk (Norwegian)", "Svenska (Swedish)", "العربية (Arabic)", "Български (Bulgarian)", "Ελληνικά (Greek)", "Nederlands (Dutch)", "Română (Romanian)", "Türkçe (Turkish)", "فارسی (Persian)", "हिंदी (Hindi)", "Bahasa Indonesia (Indonesian)", "Tiếng Việt (Vietnamese)"];
     in-out property <int> language_index: 0;
     in-out property <string> language_value: "English";
 
@@ -29,7 +29,6 @@ export global Settings {
     in-out property <bool> recursive_search: true;
     in-out property <bool> use_cache: false;
     in-out property <bool> save_as_json: false;
-    in-out property <bool> move_to_trash: false;
     in-out property <bool> ignore_other_filesystems: false;
     in-out property <bool> delete_outdated_cache_entries: false;
     in-out property <bool> hide_hard_links: false;
@@ -74,6 +73,7 @@ export global Settings {
     in-out property <float> similar_images_sub_size_ratio: 2.0;
     in-out property <float> similar_images_sub_size_ratio_max: 10.0;
     in-out property <float> similar_images_sub_size_ratio_min: 1.0;
+    in-out property <bool> similar_images_sub_ignore_same_resolution: false;
 
     // Duplicates
     in-out property <[string]> duplicates_sub_check_method: ["Hash", "Size", "Name", "Size and Name"];
@@ -92,6 +92,7 @@ export global Settings {
 
     // Similar Videos
     in-out property <bool> similar_videos_sub_ignore_same_size;
+    in-out property <bool> similar_videos_sub_ignore_same_resolution;
     in-out property <float> similar_videos_sub_max_similarity: 20;
     in-out property <float> similar_videos_sub_current_similarity: 15;
 
@@ -130,7 +131,8 @@ export global Settings {
     in-out property <bool> broken_files_sub_pdf: false;
     in-out property <bool> broken_files_sub_archive: false;
     in-out property <bool> broken_files_sub_image: false;
-    in-out property <bool> broken_files_sub_video: false;
+    in-out property <bool> broken_files_sub_video_ffprobe: false;
+    in-out property <bool> broken_files_sub_video_ffmpeg: false;
 
     // Bad Names
     in-out property <bool> bad_names_sub_uppercase_extension: true;
@@ -177,8 +179,26 @@ export global Settings {
     in-out property <string> video_optimizer_sub_max_width: "1920";
     in-out property <string> video_optimizer_sub_max_height: "1920";
 
+    // Video noise reduction
+    in-out property <[string]> video_optimizer_sub_noise_reduction: ["None", "hqdn3d (fast)"];
+    in-out property <int>      video_optimizer_sub_noise_reduction_index: 0;
+    in-out property <string>   video_optimizer_sub_noise_reduction_value: "none";
+    in-out property <float>    video_optimizer_sub_noise_reduction_strength: 5;
+
+    // Video hardware encoder
+    in-out property <[string]> video_optimizer_sub_hardware_encoder_config: ["None", "NVENC", "VAAPI", "QSV", "VideoToolbox", "AMF"];
+    in-out property <int>      video_optimizer_sub_hardware_encoder_index: 0;
+    in-out property <string>   video_optimizer_sub_hardware_encoder_value: "none";
+
+    // Custom FFmpeg command
+    in-out property <bool>   video_optimizer_sub_use_custom_command: false;
+    in-out property <string> video_optimizer_sub_custom_command: "";
+
     // Exif Finder
     in-out property <string> ignored_exif_tags: "";
+
+    // Temporary Files
+    in-out property <string> temporary_files_sub_extensions: "#,thumbs.db,.bak,~,.tmp,.temp,.ds_store,.crdownload,.part,.cache,.dmp,.download,.partial";
 
     // Move/Copy popup settings
     in-out property <bool> popup_move_preserve_folder_structure: false;
@@ -206,6 +226,23 @@ export global Settings {
     // Notifications
     in-out property <bool> show_notification_on_scan_completion: false;
 
+    // Select popup visibility – global (not per-preset)
+    in-out property <bool> select_show_oldest: true;
+    in-out property <bool> select_show_newest: true;
+    in-out property <bool> select_show_smallest_size: true;
+    in-out property <bool> select_show_biggest_size: true;
+    in-out property <bool> select_show_smallest_resolution: true;
+    in-out property <bool> select_show_biggest_resolution: true;
+    in-out property <bool> select_show_shortest_path: true;
+    in-out property <bool> select_show_longest_path: true;
+    in-out property <bool> select_show_except_oldest: true;
+    in-out property <bool> select_show_except_newest: true;
+    in-out property <bool> select_show_except_smallest_size: true;
+    in-out property <bool> select_show_except_biggest_size: true;
+    in-out property <bool> select_show_except_smallest_resolution: true;
+    in-out property <bool> select_show_except_biggest_resolution: true;
+    in-out property <bool> select_show_except_shortest_path: true;
+    in-out property <bool> select_show_except_longest_path: true;
     out property <length> path_px: 350px;
     out property <length> name_px: 100px;
     out property <length> mod_px: 125px;

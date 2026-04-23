@@ -139,6 +139,10 @@ settings_music_length = Length
 settings_music_genre = Genre
 settings_music_bitrate = Bitrate
 settings_music_approx = Approximate tag comparison
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = BROKEN FILES
 settings_broken_files_note = Resource-intensive scan. For best performance use Krokiet on desktop.
 settings_broken_files_types_label = CHECKED TYPES
@@ -153,6 +157,12 @@ settings_bad_names_emoji = Emoji in name
 settings_bad_names_space = Spaces at start/end
 settings_bad_names_non_ascii = Non-ASCII characters
 settings_bad_names_duplicated = Repeated characters
+settings_ignore_same_resolution = Ignore images with the same resolution
+
+# Settings - Appearance section
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 
 # Settings - Diagnostics tab
 diagnostics_header = DIAGNOSTICS
@@ -277,6 +287,7 @@ stage_hardlinking = Creating hard links
 stage_symlinking = Creating symlinks
 stage_optimizing_videos = Optimizing videos
 stage_cleaning_exif = Cleaning EXIF
+stage_all_hiding_links = Hiding hard links
 
 # Group headers in scan results
 duplicates_group_header = { $count } files  x  { $per_file } / file  =  { $total } total
@@ -302,14 +313,6 @@ option_check_method_size = Size
 option_music_method_tags = Tags
 option_music_method_audio = Audio
 option_min_size_none = None
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Unlimited
 
 # Volume labels (shown in the directories screen)
@@ -342,4 +345,16 @@ path_edit_no_newlines = Paths cannot contain newlines — Enter key is not allow
 ctx_menu_title = Open
 ctx_open_file = Open item
 ctx_open_folder = Open parent folder
+dir_open_folder = Open folder
+
+# Compare view
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
 

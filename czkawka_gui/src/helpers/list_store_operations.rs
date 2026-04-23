@@ -4,8 +4,8 @@ use gtk4::prelude::*;
 use gtk4::{ListStore, TreeView};
 
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
-use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::duplicate_row::DuplicateRow;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::helpers::model_iter::{iter_list, iter_list_with_break, iter_list_with_break_init};
 
 pub(crate) fn get_string_from_list_store(tree_view: &TreeView, column_full_path: i32, column_selection: Option<i32>) -> Vec<String> {

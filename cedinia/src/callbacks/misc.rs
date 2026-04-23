@@ -141,11 +141,7 @@ fn dir_size_recursive(path: &Path) -> u64 {
             .flatten()
             .map(|e| {
                 let p = e.path();
-                if p.is_dir() {
-                    dir_size_recursive(&p)
-                } else {
-                    e.metadata().map(|m| m.len()).unwrap_or(0)
-                }
+                if p.is_dir() { dir_size_recursive(&p) } else { e.metadata().map_or(0, |m| m.len()) }
             })
             .sum()
     })
@@ -244,8 +240,8 @@ pub(crate) fn wire_language_change(window: &MainWindow) {
     let weak = window.as_weak();
     window.global::<AppState>().on_apply_language_change(move || {
         let win = weak.upgrade().expect("MainWindow dropped in on_apply_language_change");
-        let idx = win.global::<GeneralSettings>().get_language_idx();
-        let lang = if idx == 1 { "pl" } else { "en" };
+        let idx = win.global::<GeneralSettings>().get_language_idx() as usize;
+        let lang = crate::localizer_cedinia::LANGUAGE_LIST.get(idx).map_or("en", |&(code, _)| code);
         crate::localizer_cedinia::apply_language_preference(lang);
         crate::translations::translate_items(&win);
     });

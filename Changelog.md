@@ -1,88 +1,46 @@
+## Version ? - ??.??.????r 
+### Core
+- Switched AV1 encoding from the very slow `libaom-av1` to `libsvtav1` - [#1888](https://github.com/qarmin/czkawka/pull/1888)  
+- Added a noise reduction option to Video Optimizer mode, which can significantly reduce file size for noisy videos - [#1888](https://github.com/qarmin/czkawka/pull/1888)  
+- Added support for custom optimization commands in Video Optimizer mode - [#1888](https://github.com/qarmin/czkawka/pull/1888)  
+- Added experimental hardware-accelerated video encoding - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Broken files now allows to check file with multiple different checkers - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Checking for broken videos was split into fast(ffprobe - only headers) and slow(ffmpeg - full decoding) checks - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Added ability to stop ignoring hardlinks search and added progress tracking for this operation - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Added ability to exclude images/videos with the same resolution - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+
+### CLI
+
+### GTK GUI
+- Fixed a crash when using the sort button - [#1837](https://github.com/qarmin/czkawka/pull/1837)  
+
+### Krokiet
+- Added separate buttons for moving files to trash and permanently deleting them - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Added a new custom selection popup - [#1809](https://github.com/qarmin/czkawka/pull/1809)  
+- Added an image comparison tool to detect visual differences between similar images - [#1888](https://github.com/qarmin/czkawka/pull/1888)  
+- Added a context menu (right-click) - [#1888](https://github.com/qarmin/czkawka/pull/1888)  
+- File/folder selection dialogs no longer block the main thread - [#1809](https://github.com/qarmin/czkawka/pull/1809)  
+- Fixed an issue where thumbnail generation settings were not respected in Similar Videos mode - [#1809](https://github.com/qarmin/czkawka/pull/1809)  
+- Added notification support - [#1837](https://github.com/qarmin/czkawka/pull/1837)  
+- Femtovg backend no longer have blurry fonts - [#1900](https://github.com/qarmin/czkawka/pull/1900)  
+- Changed default select buttons from "select one item" to "select all except one item" - [#1913](https://github.com/qarmin/czkawka/pull/1913)
+- Added ability to choose which select buttons are visible in UI - [#1913](https://github.com/qarmin/czkawka/pull/1913)
+
+### Cedinia
+- Initial experimental release of Cedinia, a new Android app with touch support - [#1821](https://github.com/qarmin/czkawka/pull/1821)  
+
+### Prebuilt binaries
+- Linux prebuilt binaries now include AVIF support (requires `libavif` and `libdav1d` installed on the system)  
+- Windows ZIP package now includes Krokiet binaries and a README to simplify migration to the new frontend
+- All backends Krokiet binaries on all systems, are now packed into zip files, with additional scripts to open them with selected backend
+- Mac Intel binaries are no longer provided, due very long build times on GitHub CI
+
 ## Fork Modifications (nowaytouse/czkawka)
-
-### Upstream Sync (2026-03-24)
-Merged commits from upstream qarmin/czkawka:
-- **#1821 Experimental Android port**: Initial experimental Android port implementation
-- **#1837 Fixed panic when sorting, notification support, improving Cedinia, avif support**: Fixed panic when sorting results, added system notification support, improvements to Cedinia scan, added AVIF format support for prebuilt binaries
-
-### Duplicate Performance Optimization (Cache Logic Fix)
-- **Fixed critical performance regression in Duplicate Finder**: Optimized the Prehash (`8192` bytes) merging logic. Previously, cached files were appended to the "potential duplicates" list without validating prehash uniqueness, causing redundant Full Hashing of unique files upon repeated searches.
-- **Implemented `combined_hash_map` grouping**: Both cached and newly computed prehashes are now grouped by `size` and `hash` string. Files are only promoted to the Full Hashing stage if they belong to a group with more than one entry, drastically reducing unnecessary I/O for 99% of unique files.
-
-### GUI Modernization and Visual Polish
-- **Modernized App Aesthetics**: Injected a global `CssProvider` with rounded buttons, hover transitions, shadows, and improved Notebook tab styling to replace the legacy "retro" look.
-- **Improved File Protection Feedback**: Protected files are now clearly marked in red (`#d32f2f`). In migrated ColumnView tabs, this is achieved via dynamic CSS class binding (`.protected-file`) which adds a strikethrough. In legacy TreeView tabs (Similar Images, Similar Videos, Same Music), the `TextColor` attribute is dynamically modified during search and protection toggles to provide immediate visual feedback.
-- **Improved Batch Selection**: Replaced manual signal handling with bidirectional property bindings for `ColumnView` checkboxes. This fixes the issue where batch actions like "Select All" had no visual effect in Duplicates and simple folder tabs.
-- **Improved Similar Images Filter**: Added "Only show same size" filter to find similar images that also share exact byte dimensions.
-- **Implemented Mutual Exclusivity**: Toggling "Only same size" now automatically disables and unchecks "Ignore same size" and "Size Ratio Filter" to ensure consistent scan logic.
-- **Fixed UI layout issues**: Adjusted `main_window.ui` minimum width requests (520px -> 350px) and wrapped dense Similar Images settings in stacked `GtkBox` layouts to prevent GTK `width-request` measurement warnings.
-
-### Infrastructure and Stability Improvements
-- **Increased Memory/Allocation Limits for Massive Hashes**: 
-  - Raised `MEMORY_LIMIT` for Bincode cache serialization to **14 GB** in `czkawka_core/src/common/cache.rs`.
-  - Raised image decoding allocation limit to **14 GB** in `czkawka_core/src/common/image.rs` using `reader.limits()`.
-  - These changes prevent "failed to fill whole buffer" and "failed to allocate X bytes" errors when using massive perceptual hash sizes (up to 8192).
-- **Fixed Similar Images Hash Size Support**: Reverted accidental removal of 1024-8192 hash sizes in the UI and core logic.
-- **Code Quality and Stability**: Cleared 30+ Clippy warnings and resolved multiple compiler errors in `czkawka_gui` and `krokiet`. Fixed `manual_let_else`, `useless_let_if_seq`, `undocumented_unsafe_blocks`, `needless_for_each`, and `branches_sharing_code` lints to ensure high-quality code.
-
-### GTK4 API Migration — Deprecated API Removal (ongoing)
-
-Progress towards removing all deprecated GTK4 usages in `czkawka_gui`.
-
-#### Completed migrations
-
-**Dialogs (`gtk4::Dialog` → `gtk4::Window` / `gtk4::AlertDialog`)**
-- `progress.ui`: migrated `GtkDialog` to `GtkWindow`.
-- All modal confirmation dialogs (delete, hardlink, selection, settings cache-clear, directory input, krokiet info) are now implemented with `gtk4::Window` + manual button layout or `gtk4::AlertDialog`, removing all `Dialog::run_future().await` and `Dialog::connect_response` usage.
-- Added `async_dialog.rs` helper module providing `confirm_window_with_checkbox` and `alert_confirm` for reusable async modal dialogs using `futures-channel/oneshot`.
-
-**Widget visibility (`show()`/`hide()` → `set_visible()`)**
-- Replaced all deprecated `WidgetExt::show()` and `WidgetExt::hide()` calls with `widget.set_visible(true/false)`.
-
-**Dead code and deprecated trait cleanup**
-- Removed deprecated `ComboBoxTraits` and `DialogTraits` from `gtk_traits.rs` along with all associated `ComboBoxText` and `Dialog` usages.
-- Removed unused constants (`CZK_ICON_HIDE_DOWN/UP`), unused function (`to_notebook_upper_enum`), and stale `#[expect(unused)]` attributes.
-
-**Results list: `TreeView`/`ListStore` → `ColumnView`/`GioListStore` (partial)**
-
-All result-list tabs have been migrated from the deprecated `gtk4::TreeView` + `gtk4::ListStore` pair to the modern `gtk4::ColumnView` + `gio::ListStore<GObject>` pair:
-
-- **Duplicates tab**: migrated with `DuplicateRow` GObject (supports header rows, color coding, grouped selection logic).
-- **7 flat-list tabs** (no grouped results): migrated with a shared `SimpleRow` GObject.
-  - Empty Folders
-  - Big Files
-  - Empty Files
-  - Temporary Files
-  - Invalid Symlinks
-  - Broken Files
-  - Bad Extensions
-- All file operations (delete, move, protect/unprotect, select/unselect/reverse, custom regex selection, path-length selection, double-click/Enter to open) updated for the new model.
-- **Stability and UI Improvements (Recent)**:
-  - Fixed a critical panic in `clean_tree_view` by introducing `clean_subview`, which correctly handles `GioListStore::remove_all()` for ColumnView tabs.
-  - Implemented image preview for the Duplicates tab's ColumnView using `MultiSelection::selection-changed` signal.
-  - Resolved ColumnView UI truncation issues: assigned proper widths per column and enabled horizontal expansion for the "Path" column.
-  - Added `pango::EllipsizeMode::End` to ColumnView labels for graceful overflow handling.
-  - Guarded legacy sorting popovers to prevent panics on migrated ColumnView tabs.
-  - Cleaned up compiler warnings related to unused imports and deprecated field usages.
-
-**Remaining deprecated usages (suppressed by `#![allow(deprecated)]`)**
-- `SimilarImages`, `SimilarVideos`, and `SameMusic` tabs still use `TreeView`/`ListStore` — these require grouped-result row types and will be migrated in a future step.
-
----
-
-### Similar Images - Enhanced Features
-- **Hash size expanded**: Supported hash sizes now include 256, 512, 1024, 2048, 4096, and 8192 in addition to the original 8, 16, 32, 64. Internal type changed from `u8` to `u16` to accommodate larger values.
-- **File size ratio filter**: Added `size_ratio_enabled` and `size_ratio` parameters to `SimilarImagesParameters`. When enabled, groups where the ratio of max/min file size exceeds the configured threshold are excluded from results.
-- **Ignore same size improved**: Changed behavior from removing individual duplicate-sized files within a group to discarding the entire group when all files have identical sizes.
-- **Precise file size display**: Similar images results now show exact file sizes (e.g., `1.234567 MB`) instead of binary-formatted sizes (e.g., `1.18 MiB`). Uses a custom `format_size_exact()` function with KB/MB/GB/TB units.
-
-### Changes Applied To
-- Core library (`czkawka_core`)
-- CLI (`czkawka_cli`)
-- GTK GUI (`czkawka_gui`)
-- Krokiet/Slint GUI (`krokiet`)
-
----
+### Local additions kept during upstream sync
+- Extended Similar Images hash sizes up to `8192`, added `only same size` and `size ratio` filters, and kept exact size display in results.
+- Preserved the GTK4 migration work in `czkawka_gui`, including the ColumnView-based simple tabs, image preview improvements, and related stability fixes.
+- Kept the fork-specific file protection UX and batch-selection improvements in the GTK frontend.
+- Retained the raised cache/image allocation limits used for very large Similar Images hashes.
 
 ## Version 11.0.1 - 20.02.2026r
 ### Core

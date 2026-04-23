@@ -37,11 +37,7 @@ pub fn show_krokiet_info_dialog(window_main: &gtk4::Window) {
         .margin_bottom(5)
         .build();
 
-    let ok_btn = gtk4::Button::builder()
-        .label(flg!("general_ok_button"))
-        .halign(Align::Center)
-        .margin_top(5)
-        .build();
+    let ok_btn = gtk4::Button::builder().label(flg!("general_ok_button")).halign(Align::Center).margin_top(5).build();
     ok_btn.add_css_class("suggested-action");
 
     main_box.append(&label);

@@ -26,15 +26,40 @@ pub struct FileItem {
     pub val_int: Vec<i32>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct CommonFilters {
     pub excluded_items: Vec<String>,
     pub allowed_extensions: Vec<String>,
     pub excluded_extensions: Vec<String>,
+    pub excluded_paths: Vec<PathBuf>,
     pub min_file_size_bytes: u64,
     pub max_file_size_bytes: Option<u64>,
+    pub recursive_search: bool,
+    pub use_cache: bool,
+    pub hide_hard_links: bool,
+    pub delete_outdated_cache: bool,
+    pub save_also_as_json: bool,
 
     pub referenced_dirs: Vec<PathBuf>,
+}
+
+impl Default for CommonFilters {
+    fn default() -> Self {
+        Self {
+            excluded_items: Vec::new(),
+            allowed_extensions: Vec::new(),
+            excluded_extensions: Vec::new(),
+            excluded_paths: Vec::new(),
+            min_file_size_bytes: 0,
+            max_file_size_bytes: None,
+            recursive_search: true,
+            use_cache: true,
+            hide_hard_links: true,
+            delete_outdated_cache: true,
+            save_also_as_json: false,
+            referenced_dirs: Vec::new(),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -43,7 +68,6 @@ pub enum ScanRequest {
         dirs: Vec<PathBuf>,
         check_method: CheckingMethod,
         hash_type: HashType,
-        use_cache: bool,
         filters: CommonFilters,
     },
     EmptyFolders {
@@ -57,6 +81,7 @@ pub enum ScanRequest {
         hash_alg: HashAlg,
         image_filter: FilterType,
         ignore_same_size: bool,
+        ignore_same_resolution: bool,
         filters: CommonFilters,
     },
     EmptyFiles {
@@ -65,6 +90,7 @@ pub enum ScanRequest {
     },
     TemporaryFiles {
         dirs: Vec<PathBuf>,
+        extensions: Vec<String>,
         filters: CommonFilters,
     },
     BigFiles {
@@ -163,11 +189,10 @@ fn worker_loop<H: ScanResultHandler + Sync>(req_rx: &Receiver<ScanRequest>, hand
                 dirs,
                 check_method,
                 hash_type,
-                use_cache,
                 filters,
             } => {
                 scan_id += 1;
-                let items = scan_duplicate_files(dirs, check_method, hash_type, use_cache, &filters, stop_flag, &handler, scan_id);
+                let items = scan_duplicate_files(dirs, check_method, hash_type, &filters, stop_flag, &handler, scan_id);
                 handler.on_result(ScanResult::DuplicateFiles(items));
                 handler.on_result(ScanResult::Finished(scan_id));
             }
@@ -184,6 +209,7 @@ fn worker_loop<H: ScanResultHandler + Sync>(req_rx: &Receiver<ScanRequest>, hand
                 hash_alg,
                 image_filter,
                 ignore_same_size,
+                ignore_same_resolution,
                 filters,
             } => {
                 scan_id += 1;
@@ -194,6 +220,7 @@ fn worker_loop<H: ScanResultHandler + Sync>(req_rx: &Receiver<ScanRequest>, hand
                     hash_alg,
                     image_filter,
                     ignore_same_size,
+                    ignore_same_resolution,
                     &filters,
                     stop_flag,
                     &handler,
@@ -208,9 +235,9 @@ fn worker_loop<H: ScanResultHandler + Sync>(req_rx: &Receiver<ScanRequest>, hand
                 handler.on_result(ScanResult::EmptyFiles(items));
                 handler.on_result(ScanResult::Finished(scan_id));
             }
-            ScanRequest::TemporaryFiles { dirs, filters } => {
+            ScanRequest::TemporaryFiles { dirs, extensions, filters } => {
                 scan_id += 1;
-                let items = scan_temporary_files(dirs, &filters, stop_flag, &handler, scan_id);
+                let items = scan_temporary_files(dirs, extensions, &filters, stop_flag, &handler, scan_id);
                 handler.on_result(ScanResult::TemporaryFiles(items));
                 handler.on_result(ScanResult::Finished(scan_id));
             }
@@ -329,6 +356,7 @@ fn stage_label(stage: CurrentStage) -> String {
         CurrentStage::SymlinkingFiles => flc!("stage_symlinking"),
         CurrentStage::OptimizingVideos => flc!("stage_optimizing_videos"),
         CurrentStage::CleaningExif => flc!("stage_cleaning_exif"),
+        CurrentStage::DuplicateHidingHardLinks | CurrentStage::SimilarImagesHidingHardLinks | CurrentStage::SimilarVideosHidingHardLinks => flc!("stage_all_hiding_links"),
     }
 }
 
@@ -356,13 +384,20 @@ pub(crate) fn apply_filters<T: CommonData>(tool: &mut T, filters: &CommonFilters
     if !filters.excluded_extensions.is_empty() {
         tool.set_excluded_extensions(filters.excluded_extensions.clone());
     }
+    if !filters.excluded_paths.is_empty() {
+        tool.set_excluded_paths(filters.excluded_paths.clone());
+    }
     if filters.min_file_size_bytes > 0 {
         tool.set_minimal_file_size(filters.min_file_size_bytes);
     }
     if let Some(max) = filters.max_file_size_bytes {
         tool.set_maximal_file_size(max);
     }
-
+    tool.set_recursive_search(filters.recursive_search);
+    tool.set_use_cache(filters.use_cache);
+    tool.set_hide_hard_links(filters.hide_hard_links);
+    tool.set_delete_outdated_cache(filters.delete_outdated_cache);
+    tool.set_save_also_as_json(filters.save_also_as_json);
     tool.set_reference_paths(filters.referenced_dirs.clone());
 }
 

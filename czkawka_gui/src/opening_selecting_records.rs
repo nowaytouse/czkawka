@@ -92,9 +92,10 @@ pub(crate) fn opening_enter_function_ported(event_controller: &gtk4::EventContro
             nt_object.column_header,
         );
     } else if let Ok(column_view) = widget.downcast::<ColumnView>()
-        && key_code == KEY_ENTER {
-            common_open_function_column_view(&column_view, &OpenMode::PathAndName);
-        }
+        && key_code == KEY_ENTER
+    {
+        common_open_function_column_view(&column_view, &OpenMode::PathAndName);
+    }
     glib::Propagation::Proceed
 }
 
@@ -160,7 +161,9 @@ fn common_open_function(tree_view: &gtk4::TreeView, column_name: i32, column_pat
 }
 
 fn common_open_function_column_view(column_view: &ColumnView, opening_mode: &OpenMode) {
-    let Some(selection) = column_view.model().and_downcast::<MultiSelection>() else { return };
+    let Some(selection) = column_view.model().and_downcast::<MultiSelection>() else {
+        return;
+    };
     let Some(store) = selection.model() else { return };
     let n = store.n_items();
     for pos in 0..n {
@@ -304,7 +307,7 @@ pub(crate) fn select_function_header(header_id: i32) -> Box<dyn Fn(&TreeSelectio
 }
 
 // pub(crate) fn select_function_always_true_no_args() -> Box<dyn Fn(&TreeSelection, &TreeModel, &TreePath, bool) -> bool> {
-//     Box::new(|_tree_selection: &gtk4::TreeSelection, _tree_model: &gtk4::TreeModel, _tree_path: &gtk4::TreePath, _is_path_currently_selected: bool| true)
+//    Box::new(|_tree_selection: &gtk4::TreeSelection, _tree_model: &gtk4::TreeModel, _tree_path: &gtk4::TreePath, _is_path_currently_selected: bool| true)
 // }
 
 pub(crate) fn select_function_always_true(

@@ -11,7 +11,7 @@ use czkawka_core::re_exported::{Cropdetect, FilterType, HashAlg};
 use czkawka_core::tools::broken_files::CheckedTypes;
 use czkawka_core::tools::same_music::MusicSimilarity;
 use czkawka_core::tools::similar_videos::{ALLOWED_SKIP_FORWARD_AMOUNT, ALLOWED_VID_HASH_DURATION, DEFAULT_SKIP_FORWARD_AMOUNT, crop_detect_from_str_opt};
-use czkawka_core::tools::video_optimizer::VideoCodec;
+use czkawka_core::tools::video_optimizer::{NoiseReductionMethod, VideoCodec};
 
 #[cfg(not(feature = "no_colors"))]
 pub const CLAP_STYLING: Styles = Styles::styled()
@@ -235,6 +235,16 @@ pub struct TemporaryArgs {
     pub common_cli_items: CommonCliItems,
     #[clap(flatten)]
     pub delete_method: SDMethod,
+    #[clap(
+        short = 'L',
+        long,
+        help = "Temporary file extension(s)",
+        long_help = "Extensions/suffixes to treat as temporary files (e.g. .log .swp). \
+If not specified, the built-in default list is used. \
+If specified, the provided list replaces the defaults entirely. \
+Matched using ends_with on the lowercased filename."
+    )]
+    pub extensions: Vec<String>,
 }
 
 #[derive(Debug, clap::Args)]
@@ -276,6 +286,8 @@ pub struct SimilarImagesArgs {
     pub allow_hard_links: AllowHardLinks,
     #[clap(flatten)]
     pub ignore_same_size: IgnoreSameSize,
+    #[clap(flatten)]
+    pub ignore_same_resolution: IgnoreSameResolution,
     #[clap(
         short = 'g',
         long,
@@ -310,12 +322,7 @@ pub struct SimilarImagesArgs {
         long_help = "Show only images with exactly the same file size, ignoring similarity threshold"
     )]
     pub only_same_size: bool,
-    #[clap(
-        short = 'R',
-        long,
-        help = "Enable size ratio filter",
-        long_help = "Filter results by file size ratio"
-    )]
+    #[clap(short = 'R', long, help = "Enable size ratio filter", long_help = "Filter results by file size ratio")]
     pub size_ratio_enabled: bool,
     #[clap(
         short = 'r',
@@ -453,8 +460,8 @@ pub struct BrokenFilesArgs {
         long,
         default_value = "PDF",
         value_parser = parse_broken_files,
-        help = "Checking file types (PDF, AUDIO, IMAGE, ARCHIVE, VIDEO)",
-        long_help = "Methods to search files - default PDF.\nPDF - finds broken PDF files,\nAUDIO - finds broken audio files,\nIMAGE - finds broken image files,\nARCHIVE - finds broken archive files,\nVIDEO - finds broken video files"
+        help = "Checking file types (PDF, AUDIO, IMAGE, ARCHIVE, VIDEO_FFPROBE, VIDEO_FFMPEG)",
+        long_help = "Methods to search files - default PDF.\nPDF - finds broken PDF files,\nAUDIO - finds broken audio files,\nIMAGE - finds broken image files,\nARCHIVE - finds broken archive files,\nVIDEO_FFPROBE - quick video check using ffprobe (header validation),\nVIDEO_FFMPEG - deep video check using ffmpeg (full decode)"
     )]
     pub checked_types: Vec<CheckedTypes>,
 }
@@ -679,6 +686,28 @@ pub struct TranscodeArgs {
         long_help = "Maximum video height in pixels when limit_video_size is enabled"
     )]
     pub max_height: u32,
+    #[clap(
+        long,
+        default_value = "none",
+        value_parser = parse_noise_reduction,
+        help = "Noise reduction method (none, hqdn3d)",
+        long_help = "Noise reduction filter to apply during transcoding.\nnone - disabled\nhqdn3d - general-purpose temporal/spatial denoiser; higher strength = more aggressive noise removal"
+    )]
+    pub noise_reduction: NoiseReductionMethod,
+    #[clap(
+        long,
+        default_value = "5",
+        value_parser = clap::value_parser!(u32).range(1..=10),
+        help = "Noise reduction strength (1-10)",
+        long_help = "Strength of the noise reduction filter (1-10). Higher values remove more noise but may soften fine details. Only used when --noise-reduction is not 'none'."
+    )]
+    pub noise_reduction_strength: u32,
+    #[clap(
+        long,
+        help = "Custom ffmpeg command",
+        long_help = "Custom ffmpeg command-line arguments to pass to ffmpeg during transcoding. When set, most other encoding options are ignored."
+    )]
+    pub custom_ffmpeg_command: Option<String>,
 }
 
 #[derive(Debug, clap::Args)]
@@ -1018,6 +1047,17 @@ pub struct IgnoreSameSize {
     pub ignore_same_size: bool,
 }
 
+#[derive(Debug, clap::Args)]
+pub struct IgnoreSameResolution {
+    #[clap(
+        short = 'Z',
+        long,
+        help = "Ignore images with same resolution",
+        long_help = "Skips images that have identical resolution (width x height), keeping only one image per resolution group."
+    )]
+    pub ignore_same_resolution: bool,
+}
+
 impl FileToSave {
     pub(crate) fn file_name(&self) -> Option<&str> {
         if let Some(file_name) = &self.file_to_save {
@@ -1116,8 +1156,9 @@ fn parse_broken_files(src: &str) -> Result<CheckedTypes, &'static str> {
         "audio" => Ok(CheckedTypes::AUDIO),
         "image" => Ok(CheckedTypes::IMAGE),
         "archive" => Ok(CheckedTypes::ARCHIVE),
-        "video" => Ok(CheckedTypes::VIDEO),
-        _ => Err("Couldn't parse the broken files type (allowed: PDF, AUDIO, IMAGE, ARCHIVE, VIDEO)"),
+        "video_ffprobe" => Ok(CheckedTypes::VIDEO_FFPROBE),
+        "video_ffmpeg" => Ok(CheckedTypes::VIDEO_FFMPEG),
+        _ => Err("Couldn't parse the broken files type (allowed: PDF, AUDIO, IMAGE, ARCHIVE, VIDEO_FFPROBE, VIDEO_FFMPEG)"),
     }
 }
 
@@ -1273,6 +1314,10 @@ fn parse_crop_mechanism(src: &str) -> Result<String, String> {
         "blackbars" | "staticcontent" => Ok(src.to_lowercase()),
         _ => Err("Invalid crop mechanism. Allowed values: blackbars, staticcontent".to_string()),
     }
+}
+
+fn parse_noise_reduction(src: &str) -> Result<NoiseReductionMethod, String> {
+    src.parse::<NoiseReductionMethod>()
 }
 
 const HELP_TEMPLATE: &str = r#"

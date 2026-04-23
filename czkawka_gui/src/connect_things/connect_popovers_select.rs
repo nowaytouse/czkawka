@@ -9,8 +9,8 @@ use regex::Regex;
 use crate::flg;
 use crate::gui_structs::common_tree_view::{SubView, TreeViewListStoreTrait};
 use crate::gui_structs::duplicate_row::DuplicateRow;
-use crate::gui_structs::simple_row::SimpleRow;
 use crate::gui_structs::gui_data::GuiData;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::{change_dimension_to_krotka, get_full_name_from_path_name};
 use crate::helpers::model_iter::iter_list;
 
@@ -19,27 +19,30 @@ use crate::helpers::model_iter::iter_list;
 fn dup_select_all(store: &GioListStore) {
     for i in 0..store.n_items() {
         if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
-            && !row.is_header() {
-                row.set_selection_button(true);
-            }
+            && !row.is_header()
+        {
+            row.set_selection_button(true);
+        }
     }
 }
 
 fn dup_unselect_all(store: &GioListStore) {
     for i in 0..store.n_items() {
         if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
-            && !row.is_header() {
-                row.set_selection_button(false);
-            }
+            && !row.is_header()
+        {
+            row.set_selection_button(false);
+        }
     }
 }
 
 fn dup_reverse(store: &GioListStore) {
     for i in 0..store.n_items() {
         if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
-            && !row.is_header() {
-                row.set_selection_button(!row.selection_button());
-            }
+            && !row.is_header()
+        {
+            row.set_selection_button(!row.selection_button());
+        }
     }
 }
 
@@ -52,9 +55,10 @@ fn dup_for_each_group(store: &GioListStore, mut f: impl FnMut(&GioListStore, u32
         let is_boundary = i == n || store.item(i).and_downcast::<DuplicateRow>().is_some_and(|r| r.is_header());
         if is_boundary {
             if let Some(start) = group_start
-                && start < i {
-                    f(store, start, i);
-                }
+                && start < i
+            {
+                f(store, start, i);
+            }
             group_start = if i < n { Some(i + 1) } else { None };
         }
         i += 1;
@@ -198,14 +202,18 @@ fn dup_custom_select_unselect(
                     let mut m = false;
                     if check_name {
                         if case_sensitive {
-                            if regex_check(name_wc, &name) { m = true; }
+                            if regex_check(name_wc, &name) {
+                                m = true;
+                            }
                         } else if regex_check(name_wc_lower, &name.to_lowercase()) {
                             m = true;
                         }
                     }
                     if !m && check_path {
                         if case_sensitive {
-                            if regex_check(path_wc, &path) { m = true; }
+                            if regex_check(path_wc, &path) {
+                                m = true;
+                            }
                         } else if regex_check(path_wc_lower, &path.to_lowercase()) {
                             m = true;
                         }
@@ -277,7 +285,13 @@ fn simple_all_except_longest_shortest_path(store: &GioListStore, except_shortest
         let len = full.len();
         let is_better = match extremal_len {
             None => true,
-            Some(cur) => if except_shortest { len < cur } else { len > cur },
+            Some(cur) => {
+                if except_shortest {
+                    len < cur
+                } else {
+                    len > cur
+                }
+            }
         };
         if is_better {
             extremal_len = Some(len);
@@ -318,14 +332,18 @@ fn simple_custom_select_unselect(
             let mut m = false;
             if check_name {
                 if case_sensitive {
-                    if regex_check(name_wc, &name) { m = true; }
+                    if regex_check(name_wc, &name) {
+                        m = true;
+                    }
                 } else if regex_check(name_wc_lower, &name.to_lowercase()) {
                     m = true;
                 }
             }
             if !m && check_path {
                 if case_sensitive {
-                    if regex_check(path_wc, &path) { m = true; }
+                    if regex_check(path_wc, &path) {
+                        m = true;
+                    }
                 } else if regex_check(path_wc_lower, &path.to_lowercase()) {
                     m = true;
                 }
@@ -542,11 +560,7 @@ fn popover_all_except_oldest_newest(
     popover.popdown();
 }
 
-fn popover_one_oldest_newest(
-    popover: &gtk4::Popover,
-    sv: &SubView,
-    check_oldest: bool,
-) {
+fn popover_one_oldest_newest(popover: &gtk4::Popover, sv: &SubView, check_oldest: bool) {
     if let Some(store) = sv.get_duplicate_model() {
         dup_one_oldest_newest(store, check_oldest);
         popover.popdown();
@@ -637,7 +651,13 @@ fn popover_custom_select_unselect(
 
     // Window for select/unselect items
     {
-        let dialog = gtk4::Window::builder().title(window_title).transient_for(window_main).modal(true).destroy_with_parent(true).resizable(false).build();
+        let dialog = gtk4::Window::builder()
+            .title(window_title)
+            .transient_for(window_main)
+            .modal(true)
+            .destroy_with_parent(true)
+            .resizable(false)
+            .build();
         let ok_button = gtk4::Button::with_label(&flg!("general_ok_button"));
         let cancel_button = gtk4::Button::with_label(&flg!("general_close_button"));
         ok_button.add_css_class("suggested-action");
@@ -745,11 +765,23 @@ fn popover_custom_select_unselect(
                 grid.attach(&check_button_select_not_all_results, 0, 6, 2, 1);
             }
 
-            let btn_box = gtk4::Box::builder().orientation(Orientation::Horizontal).halign(Align::Center).spacing(8).margin_top(8).build();
+            let btn_box = gtk4::Box::builder()
+                .orientation(Orientation::Horizontal)
+                .halign(Align::Center)
+                .spacing(8)
+                .margin_top(8)
+                .build();
             btn_box.append(&cancel_button);
             btn_box.append(&ok_button);
 
-            let outer_box = gtk4::Box::builder().orientation(Orientation::Vertical).spacing(6).margin_top(10).margin_bottom(10).margin_start(10).margin_end(10).build();
+            let outer_box = gtk4::Box::builder()
+                .orientation(Orientation::Vertical)
+                .spacing(6)
+                .margin_top(10)
+                .margin_bottom(10)
+                .margin_start(10)
+                .margin_end(10)
+                .build();
             outer_box.append(&grid);
             outer_box.append(&btn_box);
 
@@ -950,10 +982,7 @@ fn popover_custom_select_unselect(
 /// "Highest quality" = largest resolution (pixels), then largest file size as tiebreaker.
 /// When all metrics are equal, the first file (by path+name lexicographic order) is kept (stable).
 /// For Duplicate tab (no dimensions): falls back to biggest-file logic.
-fn popover_all_except_highest_quality(
-    popover: &gtk4::Popover,
-    sv: &SubView,
-) {
+fn popover_all_except_highest_quality(popover: &gtk4::Popover, sv: &SubView) {
     if let Some(store) = sv.get_duplicate_model() {
         // Duplicates don't have dimensions – keep the biggest file.
         dup_all_except_biggest_smallest(store, true);
@@ -1036,11 +1065,7 @@ fn popover_all_except_highest_quality(
     popover.popdown();
 }
 
-fn popover_all_except_biggest_smallest(
-    popover: &gtk4::Popover,
-    sv: &SubView,
-    except_biggest: bool,
-) {
+fn popover_all_except_biggest_smallest(popover: &gtk4::Popover, sv: &SubView, except_biggest: bool) {
     if let Some(store) = sv.get_duplicate_model() {
         dup_all_except_biggest_smallest(store, except_biggest);
         popover.popdown();

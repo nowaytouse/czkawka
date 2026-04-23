@@ -221,9 +221,13 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
         if let Some(row) = store.item(i).and_downcast::<DuplicateRow>() {
             if row.is_header() {
                 if let Some(orig) = current_original.take()
-                    && !current_targets.is_empty() {
-                        groups.push(GroupData { original: orig, targets: std::mem::take(&mut current_targets) });
-                    }
+                    && !current_targets.is_empty()
+                {
+                    groups.push(GroupData {
+                        original: orig,
+                        targets: std::mem::take(&mut current_targets),
+                    });
+                }
                 current_targets.clear();
                 in_group = true;
                 continue;
@@ -242,9 +246,13 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
         }
     }
     if let Some(orig) = current_original.take()
-        && !current_targets.is_empty() {
-            groups.push(GroupData { original: orig, targets: current_targets });
-        }
+        && !current_targets.is_empty()
+    {
+        groups.push(GroupData {
+            original: orig,
+            targets: current_targets,
+        });
+    }
 
     if groups.is_empty() {
         return;
@@ -258,11 +266,9 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
             let mut errors = Vec::new();
             for (pos, target) in g.targets {
                 let result = if hardlinking == TypeOfTool::Symlinking {
-                    make_file_symlink(&g.original, &target)
-                        .map_err(|e| flg!("symlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
+                    make_file_symlink(&g.original, &target).map_err(|e| flg!("symlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
                 } else {
-                    make_hard_link(&g.original, &target)
-                        .map_err(|e| flg!("hardlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
+                    make_hard_link(&g.original, &target).map_err(|e| flg!("hardlink_failed", name = g.original.clone(), target = target.clone(), reason = e.to_string()))
                 };
                 match result {
                     Ok(()) => positions.push(pos),
@@ -286,7 +292,6 @@ fn hardlink_symlink_duplicate(store: &GioListStore, hardlinking: TypeOfTool, tex
         store.remove(pos);
     }
 }
-
 
 pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, window_main: &gtk4::Window) -> bool {
     let only_one_in_group = if let Some(store) = sv.get_duplicate_model() {
@@ -347,7 +352,12 @@ pub async fn check_if_changing_one_item_in_group_and_continue(sv: &SubView, wind
     };
 
     if only_one_in_group {
-        let detail = format!("{}\n{}\n{}", flg!("hard_sym_invalid_selection_label_1"), flg!("hard_sym_invalid_selection_label_2"), flg!("hard_sym_invalid_selection_label_3"));
+        let detail = format!(
+            "{}\n{}\n{}",
+            flg!("hard_sym_invalid_selection_label_1"),
+            flg!("hard_sym_invalid_selection_label_2"),
+            flg!("hard_sym_invalid_selection_label_3")
+        );
         if !alert_confirm(window_main, &flg!("hard_sym_invalid_selection_title_dialog"), &detail).await {
             return false;
         }
@@ -360,9 +370,11 @@ pub(crate) fn check_if_anything_is_selected_async(sv: &SubView) -> bool {
     if let Some(store) = sv.get_duplicate_model() {
         for i in 0..store.n_items() {
             if let Some(row) = store.item(i).and_downcast::<DuplicateRow>()
-                && !row.is_header() && row.selection_button() {
-                    return true;
-                }
+                && !row.is_header()
+                && row.selection_button()
+            {
+                return true;
+            }
         }
         return false;
     }

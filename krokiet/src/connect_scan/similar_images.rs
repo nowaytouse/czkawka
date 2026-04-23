@@ -7,8 +7,8 @@ use czkawka_core::common::traits::{ResultEntry, Search};
 use czkawka_core::common::{format_time, split_path};
 use czkawka_core::tools::similar_images;
 use czkawka_core::tools::similar_images::core::get_string_from_similarity;
-use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters};
 use czkawka_core::tools::similar_images::traits::format_size_exact;
+use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters};
 use rayon::prelude::*;
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
 
@@ -37,6 +37,7 @@ pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
                 sd.custom_settings.similar_images_sub_only_same_size,
                 sd.custom_settings.similar_images_sub_size_ratio_enabled,
                 sd.custom_settings.similar_images_sub_size_ratio,
+                sd.custom_settings.similar_images_sub_ignore_same_resolution,
             );
             let mut tool = SimilarImages::new(params);
 

@@ -16,8 +16,8 @@ use image::imageops::FilterType;
 use log::error;
 
 use crate::flg;
-use crate::helpers::async_dialog::alert_confirm;
 use crate::gui_structs::gui_data::GuiData;
+use crate::helpers::async_dialog::alert_confirm;
 use crate::saving_loading::{load_configuration, reset_configuration, save_configuration};
 
 pub(crate) fn connect_settings(gui_data: &GuiData) {
@@ -166,8 +166,21 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                     if alert_confirm(&settings_window, &title, &detail).await {
                         let mut messages: Messages = Messages::new();
                         for hash_size in [8, 16, 32, 64] {
-                            for image_filter in [FilterType::Lanczos3, FilterType::CatmullRom, FilterType::Gaussian, FilterType::Nearest, FilterType::Triangle] {
-                                for hash_alg in [HashAlg::Blockhash, HashAlg::Gradient, HashAlg::DoubleGradient, HashAlg::VertGradient, HashAlg::Mean, HashAlg::Median] {
+                            for image_filter in [
+                                FilterType::Lanczos3,
+                                FilterType::CatmullRom,
+                                FilterType::Gaussian,
+                                FilterType::Nearest,
+                                FilterType::Triangle,
+                            ] {
+                                for hash_alg in [
+                                    HashAlg::Blockhash,
+                                    HashAlg::Gradient,
+                                    HashAlg::DoubleGradient,
+                                    HashAlg::VertGradient,
+                                    HashAlg::Mean,
+                                    HashAlg::Median,
+                                ] {
                                     let file_name = get_similar_images_cache_file(hash_size, hash_alg, image_filter);
                                     let (mut messages, loaded_items) =
                                         load_cache_from_file_generalized_by_path::<czkawka_core::tools::similar_images::ImagesEntry>(&file_name, true, &Default::default());
@@ -218,5 +231,11 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
 }
 
 fn cache_clear_detail() -> String {
-    format!("{}\n{}\n{}\n{}", flg!("cache_clear_message_label_1"), flg!("cache_clear_message_label_2"), flg!("cache_clear_message_label_3"), flg!("cache_clear_message_label_4"))
+    format!(
+        "{}\n{}\n{}\n{}",
+        flg!("cache_clear_message_label_1"),
+        flg!("cache_clear_message_label_2"),
+        flg!("cache_clear_message_label_3"),
+        flg!("cache_clear_message_label_4")
+    )
 }

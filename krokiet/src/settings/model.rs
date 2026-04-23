@@ -7,7 +7,8 @@ use czkawka_core::common::model::{CheckingMethod, HashType};
 use czkawka_core::re_exported::{Cropdetect, HashAlg};
 use czkawka_core::tools::big_file::SearchMode;
 use czkawka_core::tools::similar_videos::{DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, DEFAULT_VIDEO_PERCENTAGE_FOR_THUMBNAIL};
-use czkawka_core::tools::video_optimizer::{VideoCodec, VideoCroppingMechanism, VideoOptimizerMode};
+use czkawka_core::tools::temporary::DEFAULT_TEMP_EXTENSIONS_STR;
+use czkawka_core::tools::video_optimizer::{NoiseReductionMethod, VideoCodec, VideoCroppingMechanism, VideoOptimizerMode};
 use home::home_dir;
 use image::imageops::FilterType;
 use serde::{Deserialize, Serialize};
@@ -59,8 +60,6 @@ pub struct SettingsCustom {
     pub use_cache: bool,
     #[serde(default)]
     pub save_also_as_json: bool,
-    #[serde(default = "ttrue")]
-    pub move_deleted_files_to_trash: bool,
     #[serde(default)]
     pub ignore_other_file_systems: bool,
     #[serde(default)]
@@ -97,6 +96,8 @@ pub struct SettingsCustom {
     pub similar_images_sub_size_ratio_enabled: bool,
     #[serde(default = "default_size_ratio")]
     pub similar_images_sub_size_ratio: f64,
+    #[serde(default)]
+    pub similar_images_sub_ignore_same_resolution: bool,
     #[serde(default = "default_image_similarity")]
     pub similar_images_sub_similarity: i32,
     #[serde(default = "default_duplicates_check_method")]
@@ -111,6 +112,8 @@ pub struct SettingsCustom {
     pub biggest_files_sub_number_of_files: i32,
     #[serde(default)]
     pub similar_videos_sub_ignore_same_size: bool,
+    #[serde(default)]
+    pub similar_videos_sub_ignore_same_resolution: bool,
     #[serde(default = "default_video_similarity")]
     pub similar_videos_sub_similarity: i32,
     #[serde(default = "default_audio_check_type")]
@@ -144,7 +147,9 @@ pub struct SettingsCustom {
     #[serde(default = "ttrue")]
     pub broken_files_sub_image: bool,
     #[serde(default)]
-    pub broken_files_sub_video: bool,
+    pub broken_files_sub_video_ffprobe: bool,
+    #[serde(default)]
+    pub broken_files_sub_video_ffmpeg: bool,
     #[serde(default = "ttrue")]
     pub bad_names_sub_uppercase_extension: bool,
     #[serde(default = "ttrue")]
@@ -203,8 +208,20 @@ pub struct SettingsCustom {
     pub video_optimizer_max_height: u32,
     #[serde(default = "default_video_optimizer_image_threshold")]
     pub video_optimizer_image_threshold: u8,
+    #[serde(default = "default_video_optimizer_noise_reduction")]
+    pub video_optimizer_noise_reduction: String,
+    #[serde(default = "default_video_optimizer_noise_reduction_strength")]
+    pub video_optimizer_noise_reduction_strength: u32,
+    #[serde(default)]
+    pub video_optimizer_use_custom_command: bool,
+    #[serde(default)]
+    pub video_optimizer_custom_command: String,
+    #[serde(default = "default_video_optimizer_hardware_encoder")]
+    pub video_optimizer_hardware_encoder: String,
     #[serde(default = "default_ignored_exif_tags")]
     pub ignored_exif_tags: String,
+    #[serde(default = "default_temporary_files_extensions")]
+    pub temporary_files_extensions: String,
     #[serde(default)]
     pub column_sizes: BTreeMap<String, Vec<f32>>,
 
@@ -253,6 +270,7 @@ pub struct ComboBoxItems {
     pub video_optimizer_crop_type: StringComboBoxItem<VideoCroppingMechanism>,
     pub video_optimizer_mode: StringComboBoxItem<VideoOptimizerMode>,
     pub video_optimizer_video_codec: StringComboBoxItem<VideoCodec>,
+    pub video_optimizer_noise_reduction: StringComboBoxItem<NoiseReductionMethod>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -285,6 +303,39 @@ pub struct BasicSettings {
     pub play_audio_on_scan_completion: bool,
     #[serde(default)]
     pub show_notification_on_scan_completion: bool,
+    // Select popup visibility – global (not per-preset)
+    #[serde(default)]
+    pub select_show_oldest: bool,
+    #[serde(default)]
+    pub select_show_newest: bool,
+    #[serde(default)]
+    pub select_show_smallest_size: bool,
+    #[serde(default)]
+    pub select_show_biggest_size: bool,
+    #[serde(default)]
+    pub select_show_smallest_resolution: bool,
+    #[serde(default)]
+    pub select_show_biggest_resolution: bool,
+    #[serde(default)]
+    pub select_show_shortest_path: bool,
+    #[serde(default)]
+    pub select_show_longest_path: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_oldest: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_newest: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_smallest_size: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_biggest_size: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_smallest_resolution: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_biggest_resolution: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_shortest_path: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_longest_path: bool,
 }
 
 impl Default for BasicSettings {
@@ -444,6 +495,12 @@ pub(crate) fn default_video_optimizer_max_height() -> u32 {
 pub(crate) fn default_video_optimizer_image_threshold() -> u8 {
     1
 }
+pub(crate) fn default_video_optimizer_noise_reduction() -> String {
+    "none".to_string()
+}
+pub(crate) fn default_video_optimizer_noise_reduction_strength() -> u32 {
+    5
+}
 pub(crate) fn default_manual_application_scale() -> f32 {
     1.0
 }
@@ -453,7 +510,12 @@ pub(crate) fn default_use_manual_application_scale() -> bool {
 pub(crate) fn default_ignored_exif_tags() -> String {
     "Orientation".to_string()
 }
-
 pub(crate) fn default_size_ratio() -> f64 {
     1.05
+}
+pub(crate) fn default_temporary_files_extensions() -> String {
+    DEFAULT_TEMP_EXTENSIONS_STR.to_string()
+}
+pub(crate) fn default_video_optimizer_hardware_encoder() -> String {
+    "none".to_string()
 }

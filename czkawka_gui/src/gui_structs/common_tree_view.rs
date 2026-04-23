@@ -15,18 +15,20 @@ use czkawka_core::tools::same_music::SameMusic;
 use czkawka_core::tools::similar_images::SimilarImages;
 use czkawka_core::tools::similar_videos::SimilarVideos;
 use czkawka_core::tools::temporary::Temporary;
-use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gdk4::Texture;
+use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gtk4::gio::ListStore as GioListStore;
 use gtk4::prelude::*;
 use gtk4::{
-    Builder, CellRendererText, CellRendererToggle, CheckButton, ColumnView, ColumnViewColumn, EventControllerKey, GestureClick, Label, ListStore, MultiSelection,
-    Notebook, Picture, ScrolledWindow, SelectionMode, SignalListItemFactory, TextView, TreeModel, TreeSelection, TreeView, TreeViewColumn,
+    Builder, CellRendererText, CellRendererToggle, CheckButton, ColumnView, ColumnViewColumn, EventControllerKey, GestureClick, Label, ListStore, MultiSelection, Notebook,
+    Picture, ScrolledWindow, SelectionMode, SignalListItemFactory, TextView, TreeModel, TreeSelection, TreeView, TreeViewColumn,
 };
 
 use crate::connect_things::connect_button_delete::delete_things;
 use crate::flg;
+use crate::gui_structs::duplicate_row::DuplicateRow;
 use crate::gui_structs::gui_data::GuiData;
+use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::{KEY_DELETE, SharedState, add_text_to_text_view, get_full_name_from_path_name};
 use crate::helpers::enums::{
     ColumnsBadExtensions, ColumnsBigFiles, ColumnsBrokenFiles, ColumnsDuplicates, ColumnsEmptyFiles, ColumnsEmptyFolders, ColumnsInvalidSymlinks, ColumnsSameMusic,
@@ -34,8 +36,6 @@ use crate::helpers::enums::{
 };
 use crate::helpers::image_operations::{get_pixbuf_from_dynamic_image, resize_pixbuf_dimension};
 use crate::notebook_enums::NotebookMainEnum;
-use crate::gui_structs::duplicate_row::DuplicateRow;
-use crate::gui_structs::simple_row::SimpleRow;
 use crate::notebook_info::{NOTEBOOKS_INFO, NotebookObject};
 use crate::opening_selecting_records::{opening_double_click_function, opening_enter_function_ported, opening_middle_mouse_function, select_function_header};
 
@@ -132,9 +132,7 @@ pub fn is_simple_tab(v: NotebookMainEnum) -> bool {
 /// Excludes the first column (checkbox)
 fn simple_column_config(v: NotebookMainEnum) -> &'static [(&'static str, &'static str)] {
     match v {
-        NotebookMainEnum::EmptyDirectories | NotebookMainEnum::EmptyFiles | NotebookMainEnum::Temporary => {
-            &[("Name", "name"), ("Path", "path"), ("Modification", "modification")]
-        }
+        NotebookMainEnum::EmptyDirectories | NotebookMainEnum::EmptyFiles | NotebookMainEnum::Temporary => &[("Name", "name"), ("Path", "path"), ("Modification", "modification")],
         NotebookMainEnum::BigFiles => &[("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")],
         NotebookMainEnum::Symlinks => &[
             ("Name", "name"),
@@ -193,13 +191,8 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
         let Some(item) = list_item.item() else { return };
         let Ok(row) = item.downcast::<DuplicateRow>() else { return };
         let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
-        row.bind_property("selection-button", &child, "active")
-            .sync_create()
-            .bidirectional()
-            .build();
-        row.bind_property("activatable-select-button", &child, "sensitive")
-            .sync_create()
-            .build();
+        row.bind_property("selection-button", &child, "active").sync_create().bidirectional().build();
+        row.bind_property("activatable-select-button", &child, "sensitive").sync_create().build();
     });
     factory_select.connect_unbind(move |_factory, obj| {
         let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -220,12 +213,7 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
 
     // Text columns: Size, Name, Path, Modification
     let mut col_idx = 1u32;
-    for (title, prop_name) in [
-        ("Size", "size"),
-        ("Name", "name"),
-        ("Path", "path"),
-        ("Modification", "modification"),
-    ] {
+    for (title, prop_name) in [("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")] {
         let factory = SignalListItemFactory::new();
         factory.connect_setup(move |_f, obj| {
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -317,10 +305,7 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
         let Some(item) = list_item.item() else { return };
         let Ok(row) = item.downcast::<SimpleRow>() else { return };
         let child = list_item.child().and_downcast::<CheckButton>().expect("child is CheckButton");
-        row.bind_property("selection-button", &child, "active")
-            .sync_create()
-            .bidirectional()
-            .build();
+        row.bind_property("selection-button", &child, "active").sync_create().bidirectional().build();
         row.bind_property("protected", &child, "sensitive")
             .transform_to(|_b, protected: bool| Some(!protected)) // Sensitive if NOT protected
             .sync_create()
@@ -608,14 +593,15 @@ impl SubView {
             let bitset = sel.selection();
             let file_name = if let Some((_iter, first_pos)) = gtk4::BitsetIter::init_first(&bitset)
                 && let Some(item) = store.item(first_pos)
-                    && let Ok(row) = item.downcast::<DuplicateRow>()
-                        && !row.is_header() {
-                            let path = row.path();
-                            let name = row.name();
-                            get_full_name_from_path_name(&path, &name)
-                        } else {
-                            String::new()
-                        };
+                && let Ok(row) = item.downcast::<DuplicateRow>()
+                && !row.is_header()
+            {
+                let path = row.path();
+                let name = row.name();
+                get_full_name_from_path_name(&path, &name)
+            } else {
+                String::new()
+            };
 
             if file_name.is_empty() {
                 preview_struct.image_preview.set_visible(false);
@@ -1020,7 +1006,7 @@ pub(crate) fn show_preview_for_file(
     }
 
     let pixbuf = if use_rust_preview {
-        match get_dynamic_image_from_path(file_name).and_then(get_pixbuf_from_dynamic_image) {
+        match get_dynamic_image_from_path(file_name, None).and_then(|image| get_pixbuf_from_dynamic_image(image.image)) {
             Ok(p) => p,
             Err(e) => {
                 add_text_to_text_view(text_view_errors, &flg!("preview_image_opening_failure", name = file_name.to_string(), reason = e));
@@ -1033,7 +1019,10 @@ pub(crate) fn show_preview_for_file(
         match Pixbuf::from_file(file_name) {
             Ok(p) => p,
             Err(e) => {
-                add_text_to_text_view(text_view_errors, &flg!("preview_image_opening_failure", name = file_name.to_string(), reason = e.to_string()));
+                add_text_to_text_view(
+                    text_view_errors,
+                    &flg!("preview_image_opening_failure", name = file_name.to_string(), reason = e.to_string()),
+                );
                 image_preview.set_visible(false);
                 *preview_path.borrow_mut() = String::new();
                 return;

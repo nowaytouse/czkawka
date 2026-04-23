@@ -3,11 +3,11 @@ use czkawka_core::tools::similar_videos::MAX_TOLERANCE;
 use gtk4::prelude::*;
 
 use crate::gui_structs::gui_data::GuiData;
-use crate::help_drop_down::set_drop_down_model_and_first;
 use crate::help_combo_box::{
     AUDIO_TYPE_CHECK_METHOD_COMBO_BOX, BIG_FILES_CHECK_METHOD_COMBO_BOX, DUPLICATES_CHECK_METHOD_COMBO_BOX, DUPLICATES_HASH_TYPE_COMBO_BOX, IMAGES_HASH_SIZE_COMBO_BOX,
     IMAGES_HASH_TYPE_COMBO_BOX, IMAGES_RESIZE_ALGORITHM_COMBO_BOX,
 };
+use crate::help_drop_down::set_drop_down_model_and_first;
 use crate::help_functions::scale_set_min_max_values;
 use crate::language_functions::LANGUAGES_ALL;
 

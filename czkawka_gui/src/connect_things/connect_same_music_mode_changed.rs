@@ -67,14 +67,26 @@ pub(crate) fn connect_same_music_change_mode(gui_data: &GuiData) {
 fn disable_enable_buttons(buttons: &[CheckButton; 7], reverse_buttons: &[CheckButton; 1], scales: &[Widget; 4], current_mode: CheckingMethod) {
     match current_mode {
         CheckingMethod::AudioTags => {
-            for w in buttons { w.set_visible(true); }
-            for w in reverse_buttons { w.set_visible(false); }
-            for w in scales { w.set_visible(false); }
+            for w in buttons {
+                w.set_visible(true);
+            }
+            for w in reverse_buttons {
+                w.set_visible(false);
+            }
+            for w in scales {
+                w.set_visible(false);
+            }
         }
         CheckingMethod::AudioContent => {
-            for w in buttons { w.set_visible(false); }
-            for w in reverse_buttons { w.set_visible(true); }
-            for w in scales { w.set_visible(true); }
+            for w in buttons {
+                w.set_visible(false);
+            }
+            for w in reverse_buttons {
+                w.set_visible(true);
+            }
+            for w in scales {
+                w.set_visible(true);
+            }
         }
         _ => panic!(),
     }

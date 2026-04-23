@@ -10,7 +10,7 @@ use slint::{ComponentHandle, Weak};
 use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
-use crate::{ActiveTab, Callabler, GuiState, MainWindow, Settings};
+use crate::{ActiveTab, Callabler, GuiState, MainWindow};
 
 pub(crate) fn connect_delete_button(app: &MainWindow, progress_sender: Sender<ProgressData>, stop_flag: Arc<AtomicBool>) {
     let a = app.as_weak();
@@ -21,10 +21,24 @@ pub(crate) fn connect_delete_button(app: &MainWindow, progress_sender: Sender<Pr
         stop_flag.store(false, Ordering::Relaxed);
         let app = a.upgrade().expect("Failed to upgrade app :(");
         let active_tab = app.global::<GuiState>().get_active_tab();
-        let settings = app.global::<Settings>();
 
         let processor = ModelProcessor::new(active_tab);
-        processor.delete_selected_items(settings.get_move_to_trash(), progress_sender, weak_app, stop_flag);
+        processor.delete_selected_items(false, progress_sender, weak_app, stop_flag);
+    });
+}
+
+pub(crate) fn connect_trash_button(app: &MainWindow, progress_sender: Sender<ProgressData>, stop_flag: Arc<AtomicBool>) {
+    let a = app.as_weak();
+    app.global::<Callabler>().on_trash_selected_items(move || {
+        let weak_app = a.clone();
+        let progress_sender = progress_sender.clone();
+        let stop_flag = stop_flag.clone();
+        stop_flag.store(false, Ordering::Relaxed);
+        let app = a.upgrade().expect("Failed to upgrade app :(");
+        let active_tab = app.global::<GuiState>().get_active_tab();
+
+        let processor = ModelProcessor::new(active_tab);
+        processor.delete_selected_items(true, progress_sender, weak_app, stop_flag);
     });
 }
 
@@ -42,11 +56,7 @@ impl ModelProcessor {
                 if is_file_protected(&full_path) {
                     return Err(format!("File is protected: {full_path}"));
                 }
-                remove_single_item(
-                    &full_path,
-                    is_empty_folder_tab,
-                    remove_to_trash,
-                )
+                remove_single_item(&full_path, is_empty_folder_tab, remove_to_trash)
             };
 
             self.process_and_update_gui_state(

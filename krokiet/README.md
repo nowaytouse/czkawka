@@ -12,18 +12,59 @@ Prebuilt binaries are available for Windows 10/11, Mac and Ubuntu 22.04(base)/24
 
 You can download them from https://github.com/qarmin/czkawka/releases/, which contains recommendations, which variant to use depending on your needs.
 
+## Requirements
+
+Prebuilt binaries have no mandatory runtime dependencies.
+
+Optional features require native libraries installed before compilation:
+
+| Feature   | Library               | Purpose                  |
+|-----------|-----------------------|--------------------------|
+| `heif`    | `libheif`             | HEIF/HEIC image support  |
+| `libraw`  | `libraw`              | RAW camera image support |
+| `libavif` | `libavif`, `libdav1d` | AVIF image support       |
+
+The similar videos tool requires **ffmpeg** at runtime.
+
+### Linux (Ubuntu / Debian)
+
+```shell
+# Runtime: similar videos
+sudo apt install ffmpeg
+
+# Optional build + runtime: extra image formats
+sudo apt install libheif-dev libraw-dev libavif-dev libdav1d-dev
+```
+
+### macOS
+
+```shell
+brew install ffmpeg libraw libheif libavif dav1d
+```
+
+### Windows
+
+- ffmpeg: `choco install ffmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html#build-windows) and place `ffmpeg.exe` in your `PATH`.
+- `heif` and `libraw` features are very hard to set up on Windows and are not available in prebuild binaries(there are some unofficial builds, that enables this features)
+
 ## Compilation
 
 Another option is to compile it yourself.
 
-The easiest way is to install newest run and run
+The easiest way is to compile newest Krokiet, is to run
 ```
-cargo install krokiet
+cargo install krokiet --locked
 ```
 
 which will install, the latest and optimized version of Krokiet.
 
 Compilation with `cargo build --release` should produce a working binary, that without any additional dependencies should run on user os.
+
+To enable support for extra image formats, compile with optional features:
+
+```shell
+cargo build --release --bin krokiet --features "heif,libraw,libavif"
+```
 
 If you have installed new `cargo`, you can easily compile and install it via `cargo install krokiet`
 
@@ -68,24 +109,6 @@ You should see output like:
 Slint: Build config: debug; Backend: software
 ```
 
-## Scaling the Application
-
-By default, the Slint application will automatically scale to match your system settings, but you can also manually set the scaling factor with the `SLINT_SCALE_FACTOR` environment variable:
-
-```
-SLINT_SCALE_FACTOR=2 cargo run 
-```
-
-## Different Theme
-
-By default, Czkawka was created with the `fluent` theme in mind, but Slint also supports other themes, which are not officially supported by this app and may look broken.
-
-```
-SLINT_STYLE=cupertino-light cargo run -- --path .
-SLINT_STYLE=cupertino-dark cargo run -- --path .
-SLINT_STYLE=material-light cargo run -- --path .
-SLINT_STYLE=material-dark cargo run -- --path .
-```
 
 ## Why create a new frontend instead of improving the existing Czkawka GTK 4 app?
 

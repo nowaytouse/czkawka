@@ -5,10 +5,7 @@ use crate::gtk_traits::WidgetTraits;
 use crate::gui_structs::gui_data::CZK_ICON_SORT;
 use crate::helpers::enums::BottomButtonsEnum;
 use crate::helpers::image_operations::set_icon_of_button;
-use crate::{
-    CZK_ICON_COMPARE, CZK_ICON_HARDLINK, CZK_ICON_MOVE, CZK_ICON_SAVE, CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SYMLINK, CZK_ICON_TRASH,
-    flg,
-};
+use crate::{CZK_ICON_COMPARE, CZK_ICON_HARDLINK, CZK_ICON_MOVE, CZK_ICON_SAVE, CZK_ICON_SEARCH, CZK_ICON_SELECT, CZK_ICON_SYMLINK, CZK_ICON_TRASH, flg};
 
 #[derive(Clone)]
 pub struct GuiBottomButtons {

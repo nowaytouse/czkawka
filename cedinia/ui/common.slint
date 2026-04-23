@@ -4,6 +4,14 @@ export enum SettingsTab {
     Diagnostics,
 }
 
+export enum ConfirmPopupAction {
+    None,
+    Delete,
+    Rename,
+    RenameBadNames,
+    CleanExif,
+}
+
 export enum ActiveTool {
     Home,
     DuplicateFiles,
@@ -47,6 +55,20 @@ export struct SimilarImageItem {
 export struct SimilarGroupCard {
     label: string,
     items: [SimilarImageItem],
+}
+
+export struct CompareImageData {
+    path:      string,
+    dir:       string,
+    name:      string,
+    size:      string,
+    dims:      string,
+    modified:  string,
+    checked:   bool,
+    thumbnail: image,
+    flat_idx:  int,
+    group_idx: int,
+    item_idx:  int,
 }
 export struct ProgressData {
     step_name: string,

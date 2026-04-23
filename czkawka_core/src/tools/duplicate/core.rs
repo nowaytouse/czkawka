@@ -88,8 +88,8 @@ impl DuplicateFinder {
                 // Reference - only use in size, because later hash will be counted differently
                 if self.common_data.use_reference_folders {
                     let vec = mem::take(&mut self.files_with_identical_names)
-                        .into_iter()
-                        .filter_map(|(_name, vec_file_entry)| {
+                        .into_values()
+                        .filter_map(|vec_file_entry| {
                             let (mut files_from_referenced_folders, normal_files): (Vec<_>, Vec<_>) = vec_file_entry
                                 .into_iter()
                                 .partition(|e| self.common_data.directories.is_in_referenced_directory(e.get_path()));
@@ -180,8 +180,8 @@ impl DuplicateFinder {
                 // Reference - only use in size, because later hash will be counted differently
                 if self.common_data.use_reference_folders {
                     let vec = mem::take(&mut self.files_with_identical_size_names)
-                        .into_iter()
-                        .filter_map(|(_size, vec_file_entry)| {
+                        .into_values()
+                        .filter_map(|vec_file_entry| {
                             let (mut files_from_referenced_folders, normal_files): (Vec<_>, Vec<_>) = vec_file_entry
                                 .into_iter()
                                 .partition(|e| self.common_data.directories.is_in_referenced_directory(e.get_path()));
@@ -247,9 +247,19 @@ impl DuplicateFinder {
                     .iter()
                     .map(|(_size, vec)| if vec.len() > 1 { vec.len() as u64 } else { 0 })
                     .sum::<u64>();
+
+                let progress_handler = prepare_thread_handler_common(progress_sender, CurrentStage::DuplicateHidingHardLinks, grouped_file_entries.len(), self.get_test_type(), 0);
                 self.files_with_identical_size = grouped_file_entries
                     .into_par_iter()
                     .with_max_len(rayon_max_len)
+                    .map(|(size, vec)| {
+                        if check_if_stop_received(stop_flag) {
+                            return None;
+                        }
+                        progress_handler.increase_items(1);
+                        Some((size, vec))
+                    })
+                    .while_some()
                     .filter_map(|(size, vec)| {
                         if vec.len() <= 1 {
                             return None;
@@ -264,6 +274,13 @@ impl DuplicateFinder {
                         }
                     })
                     .collect();
+
+                progress_handler.join_thread();
+
+                if check_if_stop_received(stop_flag) {
+                    return WorkContinueStatus::Stop;
+                }
+
                 let filtered_size = self.files_with_identical_size.values().map(|v| v.len() as u64).sum::<u64>();
                 debug!(
                     "check_file_size - filtered hard links in {:?}, removed {} hardlinks ({} -> {})",
@@ -311,8 +328,8 @@ impl DuplicateFinder {
     fn filter_reference_folders_by_size(&mut self) {
         if self.common_data.use_reference_folders && self.get_params().check_method == CheckingMethod::Size {
             let vec = mem::take(&mut self.files_with_identical_size)
-                .into_iter()
-                .filter_map(|(_size, vec_file_entry)| {
+                .into_values()
+                .filter_map(|vec_file_entry| {
                     let (mut files_from_referenced_folders, normal_files): (Vec<_>, Vec<_>) = vec_file_entry
                         .into_iter()
                         .partition(|e| self.common_data.directories.is_in_referenced_directory(e.get_path()));
@@ -336,7 +353,7 @@ impl DuplicateFinder {
         // - Load data from cache
         // - Convert from BT<u64,Vec<DuplicateEntry>> to BT<String,DuplicateEntry>
         // - Save to proper values
-        let loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>;
+        let loaded_hash_map;
         let mut records_already_cached: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
         let mut non_cached_files_to_check: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
 
@@ -364,11 +381,7 @@ impl DuplicateFinder {
     }
 
     #[fun_time(message = "prehash_save_cache_at_exit", level = "debug")]
-    fn prehash_save_cache_at_exit(
-        &mut self,
-        loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>,
-        pre_hash_results: Vec<(u64, BTreeMap<String, Vec<DuplicateEntry>>, Vec<String>)>,
-    ) {
+    fn prehash_save_cache_at_exit(&mut self, loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>, combined: &BTreeMap<u64, BTreeMap<String, Vec<DuplicateEntry>>>) {
         if self.get_params().use_prehash_cache {
             // All results = records already cached + computed results
             let mut save_cache_to_hashmap: BTreeMap<String, DuplicateEntry> = Default::default();
@@ -381,11 +394,11 @@ impl DuplicateFinder {
                 }
             }
 
-            for (size, hash_map, _errors) in pre_hash_results {
+            for (&size, hash_map) in combined {
                 if size >= self.get_params().minimal_prehash_cache_file_size {
-                    for vec_file_entry in hash_map.into_values() {
+                    for vec_file_entry in hash_map.values() {
                         for file_entry in vec_file_entry {
-                            save_cache_to_hashmap.insert(file_entry.path.to_string_lossy().to_string(), file_entry);
+                            save_cache_to_hashmap.insert(file_entry.path.to_string_lossy().to_string(), file_entry.clone());
                         }
                     }
                 }
@@ -474,35 +487,35 @@ impl DuplicateFinder {
         // Saving into cache
         let progress_handler = prepare_thread_handler_common(progress_sender, CurrentStage::DuplicatePreHashCacheSaving, 0, self.get_test_type(), 0);
 
-        // Add data from cache and combine with pre_hash_results
-        let mut combined_hash_map: BTreeMap<u64, BTreeMap<String, Vec<DuplicateEntry>>> = Default::default();
-
+        // Merge cached and freshly-computed entries into (size -> hash -> files) groups,
+        // then only pass groups with >1 file to full hashing.  Merging is required so that
+        // a cached file and a freshly-computed file sharing the same prehash are recognised
+        // as a collision even when neither set alone has more than one entry for that hash.
+        // pre_hash_results is consumed here so entries are moved, not cloned.
+        let mut combined: BTreeMap<u64, BTreeMap<String, Vec<DuplicateEntry>>> = BTreeMap::new();
         for (size, vec_file_entry) in records_already_cached {
             for file_entry in vec_file_entry {
-                combined_hash_map.entry(size).or_default().entry(file_entry.hash.clone()).or_default().push(file_entry);
+                combined.entry(size).or_default().entry(file_entry.hash.clone()).or_default().push(file_entry);
             }
         }
-
-        // Check results
-        for (size, hash_map, errors) in &pre_hash_results {
+        for (size, hash_map, errors) in pre_hash_results {
             if !errors.is_empty() {
-                self.common_data.text_messages.warnings.append(&mut errors.clone());
+                self.common_data.text_messages.warnings.extend(errors);
             }
             for (hash, vec_file_entry) in hash_map {
-                combined_hash_map.entry(*size).or_default().entry(hash.clone()).or_default().extend(vec_file_entry.clone());
+                combined.entry(size).or_default().entry(hash).or_default().extend(vec_file_entry);
             }
         }
 
-        // Only pass to full hashing if multiple files share the prehash
-        for (size, hash_map) in combined_hash_map {
-            for vec_file_entry in hash_map.into_values() {
-                if vec_file_entry.len() > 1 {
-                    pre_checked_map.entry(size).or_default().extend(vec_file_entry);
+        self.prehash_save_cache_at_exit(loaded_hash_map, &combined);
+
+        for (size, hash_groups) in combined {
+            for group in hash_groups.into_values() {
+                if group.len() > 1 {
+                    pre_checked_map.entry(size).or_default().extend(group);
                 }
             }
         }
-
-        self.prehash_save_cache_at_exit(loaded_hash_map, pre_hash_results);
 
         progress_handler.join_thread();
 
@@ -554,7 +567,7 @@ impl DuplicateFinder {
         &mut self,
         mut pre_checked_map: BTreeMap<u64, Vec<DuplicateEntry>>,
     ) -> (BTreeMap<u64, Vec<DuplicateEntry>>, BTreeMap<u64, Vec<DuplicateEntry>>, BTreeMap<u64, Vec<DuplicateEntry>>) {
-        let loaded_hash_map: BTreeMap<u64, Vec<DuplicateEntry>>;
+        let loaded_hash_map;
         let mut records_already_cached: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
         let mut non_cached_files_to_check: BTreeMap<u64, Vec<DuplicateEntry>> = Default::default();
 
@@ -731,8 +744,8 @@ impl DuplicateFinder {
         // Reference - only use in size, because later hash will be counted differently
         if self.common_data.use_reference_folders {
             let vec = mem::take(&mut self.files_with_identical_hashes)
-                .into_iter()
-                .filter_map(|(_size, vec_vec_file_entry)| {
+                .into_values()
+                .filter_map(|vec_vec_file_entry| {
                     let mut all_results_with_same_size = Vec::new();
                     for vec_file_entry in vec_vec_file_entry {
                         let (mut files_from_referenced_folders, normal_files): (Vec<_>, Vec<_>) = vec_file_entry

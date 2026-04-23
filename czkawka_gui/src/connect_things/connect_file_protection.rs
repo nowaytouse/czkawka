@@ -33,7 +33,9 @@ fn connect_protect(gui_data: &GuiData) {
             let n = store.n_items();
             for pos in 0..n {
                 let Some(item) = store.item(pos) else { continue };
-                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else {
+                    continue;
+                };
                 if row.is_header() || !row.selection_button() {
                     continue;
                 }
@@ -69,9 +71,10 @@ fn connect_protect(gui_data: &GuiData) {
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
                     if let Some(column_header) = sv.nb_object.column_header
-                        && m.get::<bool>(i, column_header) {
-                            return;
-                        }
+                        && m.get::<bool>(i, column_header)
+                    {
+                        return;
+                    }
                     let name = m.get::<String>(i, sv.nb_object.column_name);
                     let path = m.get::<String>(i, sv.nb_object.column_path);
                     let full_path = get_full_name_from_path_name(&path, &name);
@@ -110,7 +113,9 @@ fn connect_unprotect(gui_data: &GuiData) {
             let n = store.n_items();
             for pos in 0..n {
                 let Some(item) = store.item(pos) else { continue };
-                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+                let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else {
+                    continue;
+                };
                 if row.is_header() || !row.selection_button() {
                     continue;
                 }
@@ -146,9 +151,10 @@ fn connect_unprotect(gui_data: &GuiData) {
             iter_list(&model, |m, i| {
                 if m.get::<bool>(i, sv.nb_object.column_selection) {
                     if let Some(column_header) = sv.nb_object.column_header
-                        && m.get::<bool>(i, column_header) {
-                            return;
-                        }
+                        && m.get::<bool>(i, column_header)
+                    {
+                        return;
+                    }
                     let name = m.get::<String>(i, sv.nb_object.column_name);
                     let path = m.get::<String>(i, sv.nb_object.column_path);
                     let full_path = get_full_name_from_path_name(&path, &name);
@@ -213,7 +219,9 @@ pub(crate) fn filter_protected_from_model(sv: &SubView) {
         let n = store.n_items();
         for pos in 0..n {
             let Some(item) = store.item(pos) else { continue };
-            let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else { continue };
+            let Ok(row) = item.downcast::<crate::gui_structs::duplicate_row::DuplicateRow>() else {
+                continue;
+            };
             if row.is_header() {
                 continue;
             }
@@ -252,9 +260,10 @@ pub(crate) fn filter_protected_from_model(sv: &SubView) {
     let mut rows_to_remove = Vec::new();
     iter_list(&model, |m, i| {
         if let Some(column_header) = sv.nb_object.column_header
-            && m.get::<bool>(i, column_header) {
-                return;
-            }
+            && m.get::<bool>(i, column_header)
+        {
+            return;
+        }
         let name = m.get::<String>(i, sv.nb_object.column_name);
         let path = m.get::<String>(i, sv.nb_object.column_path);
         let full_path = get_full_name_from_path_name(&path, &name);

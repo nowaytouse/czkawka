@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 use czkawka_core::common::image::{ImgResizeOptions, get_dynamic_image_from_path};
 use czkawka_core::re_exported::FirFilterType;
-use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gdk4::Texture;
+use gdk4::gdk_pixbuf::{InterpType, Pixbuf};
 use gtk4::prelude::*;
 use gtk4::{Align, CheckButton, Orientation, Picture, ScrolledWindow, TreeIter, TreeModel, TreePath, Widget};
 use image::DynamicImage;

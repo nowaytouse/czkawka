@@ -83,7 +83,7 @@ options to choose than other).
 |      Similar videos       |      ✔      |        ✔         |         |        |                   |             |
 |  Music duplicates(tags)   |      ✔      |        ✔         |    ✔    |        |         ✔         |             |
 | Music duplicates(content) |      ✔      |        ✔         |    ✔    |        |                   |             |
-|     Invalid symlinks      |      ✔      |        ✔         |    ✔    |   ✔    |                   |             |
+|     Invalid symlinks      |      ✔      |        ✔         |         |   ✔    |                   |             |
 |       Broken files        |      ✔      |        ✔         |    ✔    |        |                   |             |
 | Invalid names/extensions  |      ✔      |        ✔         |    ✔    |   ✔    |                   |             |
 |       Exif cleaner        |      ✔      |                  |    ✔    |        |                   |             |
@@ -110,7 +110,7 @@ There are many similar applications to Czkawka on the Internet, which do some th
 
 ### GUI
 
-- [DupeGuru](https://github.com/arsenetar/dupeguru) - Many options to customize; great photo compare tool
+- [DupeGuru](https://github.com/arsenetar/dupeguru) - Many options to customize
 - [FSlint](https://github.com/pixelb/fslint) - A little outdated, but still have some tools not available in Czkawka
 - [AntiDupl.NET](https://github.com/ermig1979/AntiDupl) - Shows a lot of metadata of compared images
 - [Video Duplicate Finder](https://github.com/0x90d/videoduplicatefinder) - Finds similar videos(surprising, isn't it)
@@ -156,7 +156,7 @@ Also, I really appreciate work of people that create crates on which Czkawka is 
 ## How to help?
 
 - **Creating issues** - Mainly related to bugs, oddly behaving functionality, etc. As you can see from the issue tracker, there are plenty of ideas for new features, but most of them are either difficult to implement or not aligned with the vision of the project, which evolves slightly over time.
-- **Creating pull requests** - Bug fixes are of course very welcome. Regarding new features, it is best to consult with me before implementing them to confirm they align with the project vision.
+- **Creating pull requests** - Bug fixes are of course very welcome. Regarding new features, it is best to consult with me before implementing them to confirm they align with the project vision. A POC implemented in Rust as external script/project would be useful, especially for more complex features, to ensure there are no technical limitations.
 - **Updating translations** - The project uses the Crowdin platform, where translations can be created and updated. In the case of a new release and missing translations, I use machine translation, which is often inaccurate, so updating translations is highly appreciated.
 - **Creating packages for various platforms** - Due to the difficulties related to adding and maintaining support for each new platform, such as learning package formats like deb or rpm, creating installers and packages, I decided to mainly focus on providing prebuilt binaries. However, having the project available in distribution repositories or in projects such as Chocolatey, Homebrew or Winget would be beneficial for users who prefer centralized repositories.
 - **Creating articles, videos, tutorials, etc.** - Any material that helps people better understand this program and its capabilities is welcome.
@@ -182,7 +182,7 @@ Also, I really appreciate work of people that create crates on which Czkawka is 
 
 
 ## AI Policy
-The vast majority of the code in this project was written by me(qarmin), without using AI. However, as AI tools have improved and can significantly simplify development and reduce boilerplate, I see no reason to forbid their use.
+The vast majority of the code in this project was written by me (qarmin) without using AI. However, as AI tools have improved and can significantly simplify development and reduce boilerplate, I see no reason to forbid their use. I have also added a AGENTS.md file to the repo to make it easier to provide AI tools with context about the project’s style and code structure.
 
 That said, every pull request, whether created with AI or not, must meet proper quality standards. The author must be able to clearly explain what the code does, without relying on AI for that explanation. I manually review every PR and test each change, so the risk of incorrect code slipping through is low. Still, to avoid wasting time, please refrain from submitting AI Slop PRs.
 
@@ -199,7 +199,7 @@ The entire code in this repository is licensed under the [MIT](https://mit-licen
 
 All images and audio files are licensed under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
 
-The Czkawka GTK GUI and CLI applications are licensed under the [MIT](https://mit-license.org/) license, while the Krokiet/Cedinia(due Slint license requirements) are licensed under the [GPL-3.0-only](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
+The Czkawka GTK GUI and CLI applications are licensed under the [MIT](https://mit-license.org/) license, while the Krokiet and Cedinia(due Slint license requirements) are licensed under the [GPL-3.0-only](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
 ## Donations
 

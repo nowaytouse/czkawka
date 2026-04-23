@@ -28,7 +28,7 @@ public class CediniaFilePicker {
     static final int REQ_INCLUDE = 0x4345_0001;
     static final int REQ_EXCLUDE = 0x4345_0002;
 
-    // ── permission helpers ────────────────────────────────────────────────
+    // permission helpers
 
     /**
      * Returns true if the app currently has broad file read access.
@@ -87,7 +87,7 @@ public class CediniaFilePicker {
         // Below API 23: permissions are granted at install time, nothing to do
     }
 
-    // ── nav bar visibility ────────────────────────────────────────────────
+    // nav bar visibility
 
     /**
      * Enables the "swipe from bottom edge to temporarily reveal the system nav bar"
@@ -136,7 +136,7 @@ public class CediniaFilePicker {
         });
     }
 
-    // ── called from Rust ──────────────────────────────────────────────────
+    // called from Rust
 
     /** Open a URL in the system browser. */
     public static void openUrl(final Activity activity, final String url) {
@@ -154,7 +154,7 @@ public class CediniaFilePicker {
         });
     }
 
-    // ── MIME type helper ──────────────────────────────────────────────────
+    // MIME type helper
 
     private static String getMimeType(String path) {
         int dot = path.lastIndexOf('.');
@@ -251,26 +251,38 @@ public class CediniaFilePicker {
 
     private static void openFolderInternal(Activity activity, String path) {
         try {
-            // Strip known prefixes to get the path relative to the primary volume root.
-            String rel = path;
-            if (rel.startsWith("/storage/emulated/0/")) {
-                rel = rel.substring("/storage/emulated/0/".length());
-            } else if (rel.startsWith("/sdcard/")) {
-                rel = rel.substring("/sdcard/".length());
+            String docId;
+            if (path.startsWith("/storage/emulated/0/")) {
+                docId = "primary:" + path.substring("/storage/emulated/0/".length());
+            } else if (path.equals("/storage/emulated/0")) {
+                docId = "primary:";
+            } else if (path.startsWith("/sdcard/")) {
+                docId = "primary:" + path.substring("/sdcard/".length());
+            } else if (path.equals("/sdcard")) {
+                docId = "primary:";
+            } else if (path.startsWith("/storage/")) {
+                // Non-primary volume, e.g. /storage/FAEB-190A or /storage/FAEB-190A/Music.
+                // DocumentsUI uses "<volumeId>:<subpath>" as the document ID.
+                String rest = path.substring("/storage/".length());
+                int slash = rest.indexOf('/');
+                if (slash < 0) {
+                    docId = rest + ":";
+                } else {
+                    docId = rest.substring(0, slash) + ":" + rest.substring(slash + 1);
+                }
             } else {
-                // Non-primary volume or unrecognised prefix – just show a toast-level fallback.
-                Log.w(TAG, "openFolder: non-primary path, skipping: " + path);
+                Log.w(TAG, "openFolder: unrecognised path prefix, cannot open: " + path);
                 return;
             }
-            // Use the DocumentsUI content URI understood by the built-in Files app.
-            Uri folderUri = Uri.parse(
-                "content://com.android.externalstorage.documents/document/primary:"
-                + Uri.encode(rel));
+            // Build the DocumentsUI content URI via the official API so that the document ID
+            // is correctly percent-encoded (e.g. slashes inside the ID become %2F).
+            Uri folderUri = DocumentsContract.buildDocumentUri(
+                    "com.android.externalstorage.documents", docId);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(folderUri, DocumentsContract.Document.MIME_TYPE_DIR);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
-            Log.i(TAG, "openFolder: launched for " + path);
+            Log.i(TAG, "openFolder: launched for " + path + " (docId=" + docId + ")");
         } catch (Exception e) {
             Log.e(TAG, "openFolder: failed for " + path + ": " + e);
         }
@@ -317,7 +329,7 @@ public class CediniaFilePicker {
         launchPicker(activity, false, startPath);
     }
 
-    // ── internal ──────────────────────────────────────────────────────────
+    // internal
 
     private static void launchPicker(final Activity activity, final boolean isInclude,
                                      final String startPath) {
@@ -462,7 +474,7 @@ public class CediniaFilePicker {
         }
     }
 
-    // ── native callback registered by Rust via register_native_methods ────
+    // native callback registered by Rust via register_native_methods
 
     /**
      * Called after the user picks a directory (either SAF or dialog).

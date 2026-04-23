@@ -526,9 +526,10 @@ impl GuiMainNotebook {
                     let idx = (i + 1) as u32;
                     if idx < n
                         && let Some(col) = cols.item(idx)
-                            && let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>() {
-                                column.set_title(Some(name.as_str()));
-                            }
+                        && let Ok(column) = col.downcast::<gtk4::ColumnViewColumn>()
+                    {
+                        column.set_title(Some(name.as_str()));
+                    }
                 }
                 continue;
             }

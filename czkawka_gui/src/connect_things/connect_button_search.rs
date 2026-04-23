@@ -372,7 +372,7 @@ fn temporary_files_search(
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
         .spawn(move || {
-            let mut tool = Temporary::new();
+            let mut tool = Temporary::new(Default::default());
 
             set_common_settings(&mut tool, &loaded_commons);
             tool.search(&stop_flag, Some(&progress_data_sender));
@@ -514,7 +514,7 @@ fn broken_files_search(
         checked_types |= CheckedTypes::ARCHIVE;
     }
     if check_button_broken_files_video.is_active() {
-        checked_types |= CheckedTypes::VIDEO;
+        checked_types |= CheckedTypes::VIDEO_FFPROBE | CheckedTypes::VIDEO_FFMPEG;
     }
 
     if checked_types != CheckedTypes::NONE {
@@ -608,6 +608,7 @@ fn similar_image_search(
                 only_same_size,
                 size_ratio_enabled,
                 size_ratio,
+                false,
             );
             let mut tool = SimilarImages::new(params);
 
@@ -646,6 +647,7 @@ fn similar_video_search(
             let params = SimilarVideosParameters::new(
                 tolerance,
                 ignore_same_size,
+                false, // Not implemented in gtk gui
                 DEFAULT_SKIP_FORWARD_AMOUNT,
                 DEFAULT_VID_HASH_DURATION,
                 DEFAULT_CROP_DETECT,

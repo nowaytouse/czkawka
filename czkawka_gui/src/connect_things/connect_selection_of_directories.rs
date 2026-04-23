@@ -169,7 +169,14 @@ fn add_manually_directories(window_main: &Window, tree_view: &TreeView, excluded
     btn_box.append(&cancel_btn);
     btn_box.append(&ok_btn);
 
-    let main_box = gtk4::Box::builder().orientation(Orientation::Vertical).spacing(8).margin_top(10).margin_bottom(10).margin_start(10).margin_end(10).build();
+    let main_box = gtk4::Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(8)
+        .margin_top(10)
+        .margin_bottom(10)
+        .margin_start(10)
+        .margin_end(10)
+        .build();
     main_box.append(&entry);
     main_box.append(&btn_box);
 

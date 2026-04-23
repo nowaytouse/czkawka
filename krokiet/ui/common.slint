@@ -19,6 +19,7 @@ export enum ActiveTab {
 
 export enum PopupRequest {
     Delete,
+    Trash,
     Move,
     CleanExif,
     OptimizeVideo,
@@ -77,6 +78,7 @@ export enum SelectMode {
     SelectAll,
     UnselectAll,
     InvertSelection,
+    InvertSelectionInGroup,
     SelectTheBiggestSize,
     SelectTheBiggestResolution,
     SelectTheSmallestSize,
@@ -85,6 +87,14 @@ export enum SelectMode {
     SelectOldest,
     SelectShortestPath,
     SelectLongestPath,
+    SelectAllExceptBiggestSize,
+    SelectAllExceptSmallestSize,
+    SelectAllExceptBiggestResolution,
+    SelectAllExceptSmallestResolution,
+    SelectAllExceptNewest,
+    SelectAllExceptOldest,
+    SelectAllExceptLongestPath,
+    SelectAllExceptShortestPath,
     SelectCustom,
 }
 
@@ -137,4 +147,17 @@ export struct CacheCleaningResult {
     time_text: string,
     errors_count: int,
     errors: string,
+}
+
+export struct CompareImageData {
+    path: string,
+    dir: string,
+    name: string,
+    size: string,
+    resolution: string,
+    modification_date: string,
+    similarity: string,
+    checked: bool,
+    thumbnail: image,
+    flat_idx: int,
 }

@@ -12,6 +12,7 @@ import { GuiState } from "gui_state.slint";
 import { Preview } from "preview.slint";
 import { PopupNewDirectories } from "popup_new_directories.slint";
 import { PopupDelete } from "popup_delete.slint";
+import { PopupTrash } from "popup_trash.slint";
 import { PopupMoveFolders } from "popup_move_folders.slint";
 import { PopupSelectResults } from "popup_select_results.slint";
 import { PopupCustomSelect } from "popup_custom_select.slint";
@@ -26,6 +27,7 @@ import { PopupCleanExif } from "popup_clean_exif.slint";
 import { PopupCleanCache } from "popup_clean_cache.slint";
 import { ToolSettings } from "tool_settings.slint";
 import { Translations } from "translations.slint";
+import { ImageCompareOverlay } from "image_compare.slint";
 
 export {Settings, Callabler, GuiState, Translations, Palette}
 
@@ -258,6 +260,14 @@ export component MainWindow inherits Window {
         y: parent.y + (parent.height - self.popup_height) / 2.0;
     }
 
+    trash_popup_window := PopupTrash {
+        height: root.height;
+        width: root.width;
+
+        x: parent.x + (root.width - self.popup_width) / 2.0;
+        y: parent.y + (parent.height - self.popup_height) / 2.0;
+    }
+
     move_popup_window := PopupMoveFolders {
         height: root.height;
         width: root.width;
@@ -382,6 +392,14 @@ export component MainWindow inherits Window {
         }
     }
 
+    if GuiState.compare_visible: ImageCompareOverlay {
+        x: 0;
+        y: 0;
+        width: root.width;
+        height: root.height;
+        z: 500;
+    }
+
     if GuiState.file_dialog_open: Rectangle {
         x: 0;
         y: 0;
@@ -452,6 +470,8 @@ export component MainWindow inherits Window {
             move_popup_window.show_popup();
         } else if (request == PopupRequest.Delete) {
             delete_popup_window.show_popup();
+        } else if (request == PopupRequest.Trash) {
+            trash_popup_window.show_popup();
         } else if (request == PopupRequest.CleanExif) {
             clean_popup_window.show_popup();
         } else if (request == PopupRequest.OptimizeVideo) {

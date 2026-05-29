@@ -500,6 +500,8 @@ fn translate_items(app: &MainWindow) {
 
     translation.set_context_menu_open_item_text(flk!("context_menu_open_item_text").into());
     translation.set_context_menu_open_parent_text(flk!("context_menu_open_parent_text").into());
+    translation.set_context_menu_protect_text(flk!("context_menu_protect_text").into());
+    translation.set_context_menu_unprotect_text(flk!("context_menu_unprotect_text").into());
     translation.set_context_menu_remove_from_results_text(flk!("context_menu_remove_from_results_text").into());
     translation.set_context_menu_remove_all_from_folder_text(flk!("context_menu_remove_all_from_folder_text").into());
     translation.set_context_menu_remove_all_from_folder_recursive_text(flk!("context_menu_remove_all_from_folder_recursive_text").into());

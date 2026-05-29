@@ -154,6 +154,7 @@ fn insert_data_to_model(items: &Rc<VecModel<SingleMainListModel>>, data_model_st
         header_row: filled_header_row.is_some(),
         filled_header_row: filled_header_row.unwrap_or(false),
         focused_row: false,
+        protected: false,
         val_str: ModelRc::new(data_model_str),
         val_int: ModelRc::new(data_model_int),
     };

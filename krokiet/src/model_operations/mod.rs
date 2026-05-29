@@ -16,8 +16,8 @@ impl SingleMainListModel {
         let val_int: Vec<i32> = self.val_int.iter().collect();
         let val_str: Vec<String> = self.val_str.iter().map(|e| e.to_string()).collect();
         println!(
-            "SingleMainListModel: checked: {}, filled_header_row: {}, header_row: {}, focused_row: {}, val_int: {:?}, val_str: {:?}",
-            self.checked, self.filled_header_row, self.header_row, self.focused_row, val_int, val_str
+            "SingleMainListModel: checked: {}, filled_header_row: {}, header_row: {}, focused_row: {}, protected: {}, val_int: {:?}, val_str: {:?}",
+            self.checked, self.filled_header_row, self.header_row, self.focused_row, self.protected, val_int, val_str
         );
     }
 }

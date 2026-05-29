@@ -4,9 +4,8 @@ use log::info;
 use slint::{ComponentHandle, Model};
 
 use crate::connect_row_selection::checker::set_number_of_enabled_items;
-use crate::connect_row_selection::reset_selection;
 use crate::file_protection::PROTECTED_FILES;
-use crate::{ActiveTab, Callabler, GuiState, MainWindow};
+use crate::{ActiveTab, Callabler, GuiState, MainWindow, SingleMainListModel};
 
 pub(crate) fn connect_file_protection(app: &MainWindow) {
     // Initialize the protected files count in GUI
@@ -17,8 +16,22 @@ pub(crate) fn connect_file_protection(app: &MainWindow) {
 
     connect_protect(app);
     connect_unprotect(app);
+    connect_toggle_single(app);
     connect_clear_all(app);
     connect_filter_after_scan(app);
+}
+
+/// Build the absolute path of a data row from its path/name columns.
+/// Returns `None` for header rows or rows missing the expected columns.
+fn row_full_path(item: &SingleMainListModel, path_idx: usize, name_idx: usize) -> Option<PathBuf> {
+    if item.header_row {
+        return None;
+    }
+    let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
+    match (val_str.get(path_idx), val_str.get(name_idx)) {
+        (Some(path), Some(name)) => Some(PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"))),
+        _ => None,
+    }
 }
 
 fn connect_protect(app: &MainWindow) {
@@ -34,19 +47,21 @@ fn connect_protect(app: &MainWindow) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let mut protected_count = 0;
 
-        // Collect paths of checked (selected) items and protect them
+        // Mark every checked data row as protected and clear its checkbox, so it
+        // leaves the deletion queue but STAYS visible in the list. Mutating rows in
+        // place keeps row indices (and therefore TOOLS_SELECTION) valid.
         for idx in 0..model.row_count() {
-            if let Some(item) = model.row_data(idx)
+            if let Some(mut item) = model.row_data(idx)
                 && item.checked
                 && !item.header_row
+                && let Some(full_path) = row_full_path(&item, path_idx, name_idx)
             {
-                let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
-                if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
-                    let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
-                    if pf.files.insert(full_path) {
-                        protected_count += 1;
-                    }
+                if pf.files.insert(full_path) {
+                    protected_count += 1;
                 }
+                item.protected = true;
+                item.checked = false;
+                model.set_row_data(idx, item);
             }
         }
 
@@ -55,8 +70,9 @@ fn connect_protect(app: &MainWindow) {
             info!("Protected {} files, total: {}", protected_count, pf.count());
         }
 
-        // Remove protected items from the model
-        remove_protected_from_model(&app, active_tab, &pf.files);
+        // Unchecked rows changed the enabled-items counter; recompute from scratch.
+        let checked_count = model.iter().filter(|i| !i.header_row && i.checked).count() as u64;
+        set_number_of_enabled_items(&app, active_tab, checked_count);
 
         app.global::<GuiState>().set_protected_files_count(pf.count() as i32);
         let info = format!("Protected {} files (total protected: {})", protected_count, pf.count());
@@ -77,18 +93,20 @@ fn connect_unprotect(app: &MainWindow) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let mut unprotected_count = 0;
 
+        // Protected rows can't be checked (their checkbox is disabled), so the bulk
+        // Unprotect button acts on FOCUSED (highlighted) rows instead. The user clicks
+        // the protected rows to highlight them, then presses Unprotect.
         for idx in 0..model.row_count() {
-            if let Some(item) = model.row_data(idx)
-                && item.checked
-                && !item.header_row
+            if let Some(mut item) = model.row_data(idx)
+                && item.focused_row
+                && item.protected
+                && let Some(full_path) = row_full_path(&item, path_idx, name_idx)
             {
-                let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
-                if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
-                    let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
-                    if pf.files.remove(&full_path) {
-                        unprotected_count += 1;
-                    }
+                if pf.files.remove(&full_path) {
+                    unprotected_count += 1;
                 }
+                item.protected = false;
+                model.set_row_data(idx, item);
             }
         }
 
@@ -103,6 +121,55 @@ fn connect_unprotect(app: &MainWindow) {
     });
 }
 
+// CONNECT_TOGGLE_SINGLE_PLACEHOLDER
+
+/// Per-row protect/unprotect from the right-click context menu. This is the surgical
+/// recovery path: it flips exactly one file without disturbing the rest of the protected
+/// set, and never removes the row from the list.
+fn connect_toggle_single(app: &MainWindow) {
+    let a = app.as_weak();
+    app.global::<Callabler>().on_row_toggle_protected(move |idx| {
+        let app = a.upgrade().expect("Failed to upgrade app :(");
+        let active_tab = app.global::<GuiState>().get_active_tab();
+        let model = active_tab.get_tool_model(&app);
+
+        let path_idx = active_tab.get_str_path_idx();
+        let name_idx = active_tab.get_str_name_idx();
+
+        let Some(mut item) = model.row_data(idx as usize) else {
+            return;
+        };
+        let Some(full_path) = row_full_path(&item, path_idx, name_idx) else {
+            return;
+        };
+
+        let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
+        let now_protected = !item.protected;
+        if now_protected {
+            pf.files.insert(full_path);
+            // A newly protected row must leave the deletion queue.
+            item.checked = false;
+        } else {
+            pf.files.remove(&full_path);
+        }
+        item.protected = now_protected;
+        pf.save();
+        model.set_row_data(idx as usize, item);
+
+        // The checkbox may have been cleared above; recompute the enabled-items counter.
+        let checked_count = model.iter().filter(|i| !i.header_row && i.checked).count() as u64;
+        set_number_of_enabled_items(&app, active_tab, checked_count);
+
+        app.global::<GuiState>().set_protected_files_count(pf.count() as i32);
+        let info = if now_protected {
+            format!("Protected 1 file (total protected: {})", pf.count())
+        } else {
+            format!("Unprotected 1 file (total protected: {})", pf.count())
+        };
+        app.global::<GuiState>().set_info_text(info.into());
+    });
+}
+
 fn connect_clear_all(app: &MainWindow) {
     let a = app.as_weak();
     app.global::<Callabler>().on_clear_all_protected_files(move || {
@@ -110,7 +177,23 @@ fn connect_clear_all(app: &MainWindow) {
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         let count = pf.count();
         pf.clear();
+        drop(pf);
         info!("Cleared all {count} protected files");
+
+        // Clear the protected marker on every currently displayed row too, so the list
+        // reflects the now-empty protected set without needing a rescan.
+        if active_tab_is_tool(&app) {
+            let active_tab = app.global::<GuiState>().get_active_tab();
+            let model = active_tab.get_tool_model(&app);
+            for idx in 0..model.row_count() {
+                if let Some(mut item) = model.row_data(idx)
+                    && item.protected
+                {
+                    item.protected = false;
+                    model.set_row_data(idx, item);
+                }
+            }
+        }
 
         app.global::<GuiState>().set_protected_files_count(0);
         let info = format!("Cleared all {count} protected files");
@@ -125,96 +208,47 @@ fn connect_filter_after_scan(app: &MainWindow) {
         let active_tab = app.global::<GuiState>().get_active_tab();
         let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         if !pf.files.is_empty() {
-            remove_protected_from_model(&app, active_tab, &pf.files);
-            info!("Filtered protected files from scan results for {active_tab:?}");
+            mark_protected_in_model(&app, active_tab, &pf.files);
+            info!("Marked protected files in scan results for {active_tab:?}");
         }
     });
 }
 
-/// Check if a file path is protected. Used as safety net in delete/move operations.
+fn active_tab_is_tool(app: &MainWindow) -> bool {
+    !matches!(app.global::<GuiState>().get_active_tab(), ActiveTab::Settings | ActiveTab::About)
+}
+
+/// Check if a file path is protected. Used as a safety net in delete/move/link/rename operations.
 pub fn is_file_protected(path: &str) -> bool {
     let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
     pf.files.contains(&PathBuf::from(path))
 }
 
-/// Remove protected files from the current model.
-/// This also removes groups that become empty or single-item after filtering.
-pub(crate) fn remove_protected_from_model(app: &MainWindow, active_tab: ActiveTab, protected: &std::collections::HashSet<PathBuf>) {
+/// Mark rows whose absolute path is in `protected` with `protected = true` (and uncheck them),
+/// in place. Rows are never removed, so row indices stay valid and the selection state does not
+/// need to be reset.
+pub(crate) fn mark_protected_in_model(app: &MainWindow, active_tab: ActiveTab, protected: &std::collections::HashSet<PathBuf>) {
     if protected.is_empty() {
         return;
     }
-
     let model = active_tab.get_tool_model(app);
     let path_idx = active_tab.get_str_path_idx();
     let name_idx = active_tab.get_str_name_idx();
-    let has_headers = active_tab.get_is_header_mode();
 
-    let items: Vec<_> = model.iter().collect();
-    let (new_items, checked_count) = filter_protected_items(items, path_idx, name_idx, has_headers, protected);
+    for idx in 0..model.row_count() {
+        if let Some(mut item) = model.row_data(idx)
+            && let Some(full_path) = row_full_path(&item, path_idx, name_idx)
+            && protected.contains(&full_path)
+            && !item.protected
+        {
+            item.protected = true;
+            item.checked = false;
+            model.set_row_data(idx, item);
+        }
+    }
 
-    let new_model = slint::ModelRc::new(slint::VecModel::from(new_items));
-    active_tab.set_tool_model(app, new_model);
-    // The model shrank; TOOLS_SELECTION still holds stale row indices/counts.
-    // Reset it before any selection callback runs, or the assertions in
-    // connect_row_selection.rs will panic on the next click/space/select-all.
-    reset_selection(app, active_tab, true);
+    let checked_count = model.iter().filter(|i| !i.header_row && i.checked).count() as u64;
     set_number_of_enabled_items(app, active_tab, checked_count);
-}
-
-/// Pure filtering logic, split out so it can be unit-tested without a live `MainWindow`.
-/// Returns the surviving rows and the number of still-checked data rows among them,
-/// which the caller must feed back into the enabled-items counter to keep it in sync.
-fn filter_protected_items(
-    items: Vec<crate::SingleMainListModel>,
-    path_idx: usize,
-    name_idx: usize,
-    has_headers: bool,
-    protected: &std::collections::HashSet<PathBuf>,
-) -> (Vec<crate::SingleMainListModel>, u64) {
-    let is_protected = |item: &crate::SingleMainListModel| -> bool {
-        let val_str: Vec<String> = item.val_str.iter().map(|s| s.to_string()).collect();
-        if let (Some(path), Some(name)) = (val_str.get(path_idx), val_str.get(name_idx)) {
-            let full_path = PathBuf::from(format!("{path}{MAIN_SEPARATOR}{name}"));
-            protected.contains(&full_path)
-        } else {
-            false
-        }
-    };
-
-    let new_items = if has_headers {
-        // Group-based filtering: collect groups, filter protected items, remove empty/single groups
-        let mut groups: Vec<Vec<crate::SingleMainListModel>> = Vec::new();
-        let mut current_group: Vec<crate::SingleMainListModel> = Vec::new();
-
-        for item in &items {
-            if item.header_row && !current_group.is_empty() {
-                groups.push(std::mem::take(&mut current_group));
-            }
-            current_group.push(item.clone());
-        }
-        if !current_group.is_empty() {
-            groups.push(current_group);
-        }
-
-        let mut new_items = Vec::new();
-        for group in groups {
-            let (headers, data_items): (Vec<_>, Vec<_>) = group.into_iter().partition(|i| i.header_row);
-            let filtered: Vec<_> = data_items.into_iter().filter(|item| !is_protected(item)).collect();
-
-            // Keep the group only if it has at least 2 data items
-            if filtered.len() >= 2 {
-                new_items.extend(headers);
-                new_items.extend(filtered);
-            }
-        }
-        new_items
-    } else {
-        // Simple filtering without groups
-        items.into_iter().filter(|item| item.header_row || !is_protected(item)).collect()
-    };
-
-    let checked_count = new_items.iter().filter(|i| !i.header_row && i.checked).count() as u64;
-    (new_items, checked_count)
 }
 
 #[cfg(test)]
@@ -224,7 +258,7 @@ mod tests {
 
     use slint::{Model, ModelRc, SharedString, VecModel};
 
-    use super::{MAIN_SEPARATOR, filter_protected_items};
+    use super::{MAIN_SEPARATOR, row_full_path};
     use crate::SingleMainListModel;
 
     // Builds a row whose val_str places `path` at index 0 and `name` at index 1,
@@ -239,82 +273,81 @@ mod tests {
         }
     }
 
-    fn protected_set(paths: &[&str]) -> HashSet<PathBuf> {
-        paths.iter().map(PathBuf::from).collect()
-    }
-
     fn full(path: &str, name: &str) -> String {
         format!("{path}{MAIN_SEPARATOR}{name}")
     }
 
+    // Pure re-implementation of the marking logic over a Vec, so the group-preserving
+    // behavior can be asserted without a live MainWindow. Mirrors mark_protected_in_model.
+    fn mark(items: &mut [SingleMainListModel], path_idx: usize, name_idx: usize, protected: &HashSet<PathBuf>) -> u64 {
+        for item in items.iter_mut() {
+            if let Some(fp) = row_full_path(item, path_idx, name_idx)
+                && protected.contains(&fp)
+                && !item.protected
+            {
+                item.protected = true;
+                item.checked = false;
+            }
+        }
+        items.iter().filter(|i| !i.header_row && i.checked).count() as u64
+    }
+
     #[test]
-    fn flat_mode_drops_protected_rows_and_recomputes_checked_count() {
-        // 3 rows, all checked; the middle one is protected and must be removed.
-        let items = vec![
+    fn marks_protected_row_and_keeps_all_rows() {
+        let mut items = vec![
             row("/a", "keep1.jpg", true, false),
             row("/a", "secret.jpg", true, false),
             row("/a", "keep2.jpg", true, false),
         ];
-        let protected = protected_set(&[&full("/a", "secret.jpg")]);
+        let protected: HashSet<PathBuf> = [PathBuf::from(full("/a", "secret.jpg"))].into_iter().collect();
 
-        let (new_items, checked_count) = filter_protected_items(items, 0, 1, false, &protected);
+        let checked_count = mark(&mut items, 0, 1, &protected);
 
-        assert_eq!(new_items.len(), 2);
-        // The returned count must equal the survivors' checked rows — this is exactly the
-        // value that used to desync the enabled-items counter and crash selection.
+        // No row is removed — protection is a marker, not a deletion.
+        assert_eq!(items.len(), 3);
+        // The protected row is flagged and unchecked; the others stay checked.
+        let secret = items.iter().find(|i| i.val_str.iter().nth(1).unwrap() == "secret.jpg").unwrap();
+        assert!(secret.protected);
+        assert!(!secret.checked);
+        // Two still-checked survivors → counter reflects them.
         assert_eq!(checked_count, 2);
-        assert!(new_items.iter().all(|i| i.val_str.iter().nth(1).unwrap() != "secret.jpg"));
     }
 
     #[test]
-    fn header_mode_drops_group_that_shrinks_below_two_items() {
-        // Group 1: header + 2 data rows, one protected → 1 survivor → whole group dropped.
-        // Group 2: header + 2 data rows, none protected → kept intact.
-        let items = vec![
+    fn marking_preserves_group_structure_including_headers() {
+        // A group that loses members to protection is NOT dropped — every row stays put.
+        let mut items = vec![
             row("", "", false, true),
             row("/g1", "a.jpg", true, false),
-            row("/g1", "b.jpg", false, false),
-            row("", "", false, true),
-            row("/g2", "c.jpg", true, false),
-            row("/g2", "d.jpg", true, false),
+            row("/g1", "b.jpg", true, false),
         ];
-        let protected = protected_set(&[&full("/g1", "a.jpg")]);
+        let protected: HashSet<PathBuf> = [PathBuf::from(full("/g1", "a.jpg"))].into_iter().collect();
 
-        let (new_items, checked_count) = filter_protected_items(items, 0, 1, true, &protected);
+        let checked_count = mark(&mut items, 0, 1, &protected);
 
-        // Only group 2 survives: 1 header + 2 data rows.
-        assert_eq!(new_items.len(), 3);
-        assert_eq!(new_items.iter().filter(|i| i.header_row).count(), 1);
-        // Both surviving data rows were checked.
-        assert_eq!(checked_count, 2);
-    }
-
-    #[test]
-    fn header_mode_keeps_group_with_two_or_more_survivors() {
-        // Group has 3 data rows; one protected → 2 survivors → group kept.
-        let items = vec![
-            row("", "", false, true),
-            row("/g", "a.jpg", true, false),
-            row("/g", "b.jpg", false, false),
-            row("/g", "c.jpg", true, false),
-        ];
-        let protected = protected_set(&[&full("/g", "b.jpg")]);
-
-        let (new_items, checked_count) = filter_protected_items(items, 0, 1, true, &protected);
-
-        assert_eq!(new_items.len(), 3); // header + a + c
-        assert_eq!(checked_count, 2);
-        assert!(new_items.iter().all(|i| i.header_row || i.val_str.iter().nth(1).unwrap() != "b.jpg"));
+        assert_eq!(items.len(), 3); // header + 2 data rows, nothing removed
+        assert!(items[0].header_row);
+        assert!(items[1].protected && !items[1].checked);
+        assert!(!items[2].protected && items[2].checked);
+        assert_eq!(checked_count, 1);
     }
 
     #[test]
     fn nothing_protected_leaves_everything_unchanged() {
-        let items = vec![row("/a", "x.jpg", true, false), row("/a", "y.jpg", false, false)];
-        let protected = protected_set(&[&full("/a", "z.jpg")]);
+        let mut items = vec![row("/a", "x.jpg", true, false), row("/a", "y.jpg", false, false)];
+        let protected: HashSet<PathBuf> = [PathBuf::from(full("/a", "z.jpg"))].into_iter().collect();
 
-        let (new_items, checked_count) = filter_protected_items(items, 0, 1, false, &protected);
+        let checked_count = mark(&mut items, 0, 1, &protected);
 
-        assert_eq!(new_items.len(), 2);
+        assert_eq!(items.len(), 2);
+        assert!(items.iter().all(|i| !i.protected));
         assert_eq!(checked_count, 1);
     }
+
+    #[test]
+    fn header_rows_never_get_a_full_path() {
+        let header = row("ignored", "ignored", false, true);
+        assert!(row_full_path(&header, 0, 1).is_none());
+    }
 }
+

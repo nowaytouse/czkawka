@@ -7,6 +7,7 @@ use crossbeam_channel::Sender;
 use czkawka_core::common::progress_data::ProgressData;
 use slint::{ComponentHandle, Weak};
 
+use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
 use crate::{Callabler, GuiState, MainWindow};
@@ -35,10 +36,17 @@ impl ModelProcessor {
             let name_idx = self.active_tab.get_str_name_idx();
 
             let hardlink_fnc = move |original: &SimplerSingleMainListModel, derived: &SimplerSingleMainListModel| {
-                hardlink_single_item(
-                    &format!("{}{MAIN_SEPARATOR}{}", original.val_str[path_idx], original.val_str[name_idx]),
-                    &format!("{}{MAIN_SEPARATOR}{}", derived.val_str[path_idx], derived.val_str[name_idx]),
-                )
+                // Hardlinking overwrites the derived file with a link to the original,
+                // destroying the derived file's standalone content. Protect both ends.
+                let original_path = format!("{}{MAIN_SEPARATOR}{}", original.val_str[path_idx], original.val_str[name_idx]);
+                let derived_path = format!("{}{MAIN_SEPARATOR}{}", derived.val_str[path_idx], derived.val_str[name_idx]);
+                if is_file_protected(&derived_path) {
+                    return Err(format!("File is protected: {derived_path}"));
+                }
+                if is_file_protected(&original_path) {
+                    return Err(format!("File is protected: {original_path}"));
+                }
+                hardlink_single_item(&original_path, &derived_path)
             };
             self.process_and_update_gui_state(
                 &weak_app,

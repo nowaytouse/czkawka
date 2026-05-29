@@ -178,7 +178,9 @@ export component ActionButtons inherits HorizontalLayout {
     unprotect_button := Button {
         visible: lists_enabled;
         height: parent.height;
-        enabled: base_buttons_may_be_available && self.visible && checked_anything;
+        // Protected rows can't be checked, so this acts on highlighted (focused) rows.
+        // Enable it whenever any files are protected and results are visible.
+        enabled: base_buttons_may_be_available && self.visible && GuiState.protected_files_count > 0;
         text: self.visible && Settings.show_only_icons ? "" : "Unprotect";
         colorize-icon: true;
         clicked => {

@@ -114,6 +114,23 @@ export component SelectableTableView inherits Rectangle {
                 border-radius: 5px;
                 height: item_height;
                 background: ColorPalette.get_listview_color_with_header(r.focused_row, touch-area.has-hover, r.header_row);
+
+                // Protected rows get a tint plus a solid accent bar on the left edge, so
+                // the state is obvious at a glance without relying on glyphs (the default
+                // femtovg renderer cannot draw arbitrary symbol fonts reliably).
+                protected_tint := Rectangle {
+                    visible: r.protected && !r.header_row;
+                    width: parent.width;
+                    height: parent.height;
+                    border-radius: 5px;
+                    background: ColorPalette.protected_row_color.with_alpha(0.18);
+                    Rectangle {
+                        x: 0;
+                        width: 4px;
+                        height: parent.height;
+                        background: ColorPalette.protected_row_color;
+                    }
+                }
                 touch_area := TouchArea {
                     forward-focus: focus_item;
                     double-clicked => {
@@ -126,6 +143,7 @@ export component SelectableTableView inherits Rectangle {
                             if (contains_data(idx)) {
                                 Callabler.row_reverse_single_unique_item(idx);
                                 context_menu_row_idx = idx;
+                                context_menu.row_is_protected = r.protected;
                                 context_menu.x = touch_area.mouse-x;
                                 context_menu.y = list_view.y + idx * item_height + list_view.viewport-y;
                                 context_menu.show_popup();
@@ -166,10 +184,16 @@ export component SelectableTableView inherits Rectangle {
                     CheckBox {
                         property <bool> from_model: r.checked;
                         visible: !r.header_row;
+                        // Protected rows cannot be checked: they must stay out of the deletion queue.
+                        enabled: !r.protected;
                         checked: r.checked && !r.header_row;
                         width: root.column_sizes[0] - 5px;
                         changed from-model => { self.checked = from-model; }
                         toggled => {
+                            if (r.protected) {
+                                self.checked = false;
+                                return;
+                            }
                             Callabler.change_number_of_checked_items(r.checked ? -1 : 1);
                             r.checked = !r.checked;
                         }
@@ -344,6 +368,11 @@ export component SelectableTableView inherits Rectangle {
         open_parent() => {
             if (context_menu_row_idx != -1) {
                 Callabler.row_open_parent_item_with_index(context_menu_row_idx);
+            }
+        }
+        toggle_protected() => {
+            if (context_menu_row_idx != -1) {
+                Callabler.row_toggle_protected(context_menu_row_idx);
             }
         }
         remove_from_results() => {

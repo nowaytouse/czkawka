@@ -730,6 +730,17 @@ export component SettingsList inherits VerticalLayout {
                 text: "File Protection (" + GuiState.protected_files_count + " files)";
             }
 
+            HorizontalLayout {
+                spacing: 5px;
+                Text {
+                    text: "Protected files stay visible in results with an amber marker, can't be checked, and are skipped by delete, move, link and rename. Right-click a row to protect or unprotect a single file.";
+                    vertical-alignment: TextVerticalAlignment.center;
+                    font-size: FontSizes.small;
+                    color: ColorPalette.hint_color;
+                    wrap: TextWrap.word-wrap;
+                }
+            }
+
             Button {
                 text: "Clear All Protected Files";
                 enabled: GuiState.protected_files_count > 0;

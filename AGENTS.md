@@ -258,5 +258,15 @@ just androidr             # release variant
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
 - **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
 - **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
-- **`SelectAllExceptHighestQuality` is SimilarImages-only** – the new selection mode (spare the item with the biggest pixel count) is only shown for the Similar Images tab; it has no meaning for other tools.
+- **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools.
 - **`run_gui.py` freshness check is heuristic** – the Python launcher skips recompile when no source file under `<crate>/src/` or `czkawka_core/src/` is newer than the binary; changes to `Cargo.toml`, build scripts, or `.slint` files outside those directories will not trigger a rebuild.
+
+### Stability investigation (Krokiet)
+
+Findings from auditing fork commits against `upstream/master`:
+
+- **File-protection selection desync [FIXED]** – `remove_protected_from_model` replaced the tool model with a shorter one without resetting `TOOLS_SELECTION` or the checked-item counter, so the next selection action panicked on a stale row index. Every other model-mutating path calls `reset_selection`; this one did not. Fixed by resetting selection and recomputing the counter after the model swap, plus regression tests on the extracted pure `filter_protected_items` helper.
+- **Thumbnail preview crash on first launch [NOT A FORK REGRESSION]** – `krokiet/src/connect_show_preview.rs` is byte-identical to `upstream/master`. If reproducible, it is an upstream bug (likely a backend/GPU issue with the default `winit_femtovg` renderer); report upstream rather than patching the fork.
+- **Double-click spawns a second instance / second-instance crash [NOT A FORK REGRESSION]** – the double-click handler routes to `open::that(path)` in `connect_row_selection.rs`, which is byte-identical to upstream. No fork code re-execs the krokiet binary. The "second instance" is an OS file-association side effect of opening a result file, not a fork bug.
+- **Simplified Chinese blank regions** – `krokiet/i18n/zh-CN/krokiet.ftl` is ~94 keys behind English, but missing keys fall back to English text (not blank). True blank glyphs point at the renderer's lack of a bundled CJK font under `winit_femtovg`, which is upstream behaviour. Per the i18n rules, non-English `.ftl` files must not be hand-edited (Crowdin overwrites them); regenerate via `just translate` / Crowdin instead.
+- **Environment limitation** – stability bugs #1/#4 require a live GUI session and a GPU backend to reproduce and capture a backtrace; they cannot be reproduced in a headless CI/agent environment. Root-causing here is static (diff vs upstream) only.

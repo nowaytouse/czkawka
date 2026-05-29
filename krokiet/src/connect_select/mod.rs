@@ -56,7 +56,7 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
             SelectMode::SelectAllExceptOldest => select_all_except_by_property(&current_model, active_tab, Property::Date, false),
             SelectMode::SelectAllExceptLongestPath => select_all_except_by_property(&current_model, active_tab, Property::PathLength, true),
             SelectMode::SelectAllExceptShortestPath => select_all_except_by_property(&current_model, active_tab, Property::PathLength, false),
-            SelectMode::SelectAllExceptHighestQuality => select_all_except_by_property(&current_model, active_tab, Property::Resolution, true),
+            SelectMode::SelectAllExceptHighestQuality => select_all_except_by_property(&current_model, active_tab, Property::Quality, true),
 
             SelectMode::SelectCustom => return,
         };
@@ -156,6 +156,9 @@ enum Property {
     Date,
     PathLength,
     Resolution,
+    // Pixel count as the primary key, file size as the tiebreaker: among images of equal
+    // resolution the larger (less-compressed) file is treated as the higher-quality copy.
+    Quality,
 }
 
 pub(crate) fn set_select_buttons(app: &MainWindow) {
@@ -248,6 +251,16 @@ fn extract_comparable_field(model: &SingleMainListModel, property: Property, act
             ((path_len as u64) << 32) | (name_len as u64)
         }
         Property::Resolution => val_ints.nth(active_tab.get_int_pixel_count_idx()).expect("can find pixel count proerty") as u64,
+        Property::Quality => {
+            let pixel_count = model.val_int.iter().nth(active_tab.get_int_pixel_count_idx()).expect("can find pixel count property") as u64;
+            let mut size_ints = model.val_int.iter();
+            let high = size_ints.nth(active_tab.get_int_size_idx()).expect("can find file size property");
+            let low = size_ints.next().expect("can find file size property");
+            let size = connect_i32_into_u64(high, low);
+            // Primary key: pixel count; secondary key: file size (capped to 32 bits as a tiebreaker).
+            // Among images of equal resolution the larger, less-compressed file ranks higher.
+            (pixel_count << 32) | size.min(u32::MAX as u64)
+        }
     }
 }
 
@@ -448,8 +461,23 @@ mod tests {
     use slint::{ModelRc, SharedString, VecModel};
 
     use super::*;
-    use crate::common::{MAX_INT_DATA_DUPLICATE_FILES, MAX_STR_DATA_DUPLICATE_FILES, create_model_from_model_vec, split_u64_into_i32s};
+    use crate::common::{MAX_INT_DATA_DUPLICATE_FILES, MAX_INT_DATA_SIMILAR_IMAGES, MAX_STR_DATA_DUPLICATE_FILES, create_model_from_model_vec, split_u64_into_i32s};
     use crate::test_common::get_model_vec;
+
+    // Builds a SimilarImages row with the given pixel count and file size encoded in val_int.
+    // IntDataSimilarImages layout: [ModDate1, ModDate2, SizePart1, SizePart2, Width, Height, PixelCount, SimilarityValue]
+    fn make_image_item(pixel_count: u64, size: u64) -> SingleMainListModel {
+        let (size_hi, size_lo) = split_u64_into_i32s(size);
+        let mut ints = [0i32; MAX_INT_DATA_SIMILAR_IMAGES];
+        ints[2] = size_hi; // SizePart1
+        ints[3] = size_lo; // SizePart2
+        ints[6] = pixel_count as i32; // PixelCount
+        SingleMainListModel {
+            val_int: ModelRc::new(VecModel::from(ints.to_vec())),
+            val_str: ModelRc::new(VecModel::from(vec![SharedString::from(""); 4])),
+            ..crate::test_common::get_main_list_model()
+        }
+    }
 
     // Builds a DuplicateFiles row with the given size encoded in val_int.
     // IntDataDuplicateFiles layout: [ModDatePart1, ModDatePart2, SizePart1, SizePart2]
@@ -794,5 +822,45 @@ mod tests {
 
         assert!(!new_model.row_data(1).unwrap().checked); // shorter dir – spared
         assert!(new_model.row_data(2).unwrap().checked); // longer dir – selected
+    }
+
+    // select_all_except by Quality (highest pixel count, file size as tiebreaker)
+
+    #[test]
+    fn select_all_except_highest_quality_spares_largest_pixel_count() {
+        let mut header = crate::test_common::get_main_list_model();
+        header.header_row = true;
+        // pixel counts differ → resolution alone decides; biggest is spared.
+        let items = vec![
+            header,
+            make_image_item(1_000, 500),   // low res
+            make_image_item(2_000, 100),   // mid res, tiny file
+            make_image_item(4_000, 50),    // high res, smallest file
+        ];
+        let model = create_model_from_model_vec(&items);
+
+        let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::SimilarImages, Property::Quality, true);
+
+        assert!(new_model.row_data(1).unwrap().checked); // low res – selected
+        assert!(new_model.row_data(2).unwrap().checked); // mid res – selected
+        assert!(!new_model.row_data(3).unwrap().checked); // highest res – spared even though it is the smallest file
+    }
+
+    #[test]
+    fn select_all_except_highest_quality_breaks_resolution_ties_by_file_size() {
+        let mut header = crate::test_common::get_main_list_model();
+        header.header_row = true;
+        // Equal pixel count → larger (less-compressed) file is the higher-quality copy and is spared.
+        let items = vec![
+            header,
+            make_image_item(3_000, 1_000),  // same res, smaller file
+            make_image_item(3_000, 9_000),  // same res, larger file → spared
+        ];
+        let model = create_model_from_model_vec(&items);
+
+        let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::SimilarImages, Property::Quality, true);
+
+        assert!(new_model.row_data(1).unwrap().checked); // smaller file – selected
+        assert!(!new_model.row_data(2).unwrap().checked); // larger file at same resolution – spared
     }
 }

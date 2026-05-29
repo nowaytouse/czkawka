@@ -35,7 +35,9 @@ The project will remain available in the repository. For some time I will ensure
 - Fixed a crash when using the sort button - [#1837](https://github.com/qarmin/czkawka/pull/1837)
 
 ### Fork-specific changes (all-features branch)
-- Added "Select all except highest quality" mode for Similar Images (spares the item with the largest pixel count per group)
+- Fixed a crash in the file-protection feature: removing protected files from scan results left the selection state (`TOOLS_SELECTION`) and the checked-item counter out of sync with the now-shorter model, causing a panic on the next click/space/select-all. The model-mutating path now resets selection and recomputes the counter, matching every other model-mutation site
+- Changed "Select all except highest quality" to rank by pixel count with file size as a tiebreaker (equal resolution → the larger, less-compressed file is treated as higher quality), making it distinct from "except biggest resolution"
+- Added "Select all except highest quality" mode for Similar Images
 - Replaced `run_gui.sh` with `run_gui.py`: interactive launcher for Czkawka or Krokiet with smart build-freshness detection
 
 ### Krokiet

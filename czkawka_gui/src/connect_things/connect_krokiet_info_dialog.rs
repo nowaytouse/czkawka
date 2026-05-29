@@ -1,7 +1,9 @@
 use gtk4::prelude::*;
-use gtk4::{Align, Orientation};
+use gtk4::{Align, Orientation, Picture};
 
 use crate::flg;
+use crate::gui_structs::gui_data::CZK_ICON_KROKIET;
+use crate::helpers::image_operations::svg_to_pixbuf;
 
 pub fn show_krokiet_info_dialog(window_main: &gtk4::Window) {
     let window = gtk4::Window::builder()
@@ -22,6 +24,21 @@ pub fn show_krokiet_info_dialog(window_main: &gtk4::Window) {
         .margin_end(10)
         .build();
 
+    // Load Krokiet logo from SVG at 96x96 (from upstream #1919)
+    if let Some(pixbuf) = svg_to_pixbuf(CZK_ICON_KROKIET, 96) {
+        let picture = Picture::for_pixbuf(&pixbuf);
+        picture.set_can_shrink(false);
+        let wrapper = gtk4::Box::new(Orientation::Vertical, 0);
+        wrapper.set_size_request(96, 96);
+        wrapper.set_halign(Align::Center);
+        wrapper.set_hexpand(false);
+        wrapper.set_vexpand(false);
+        wrapper.set_margin_top(15);
+        wrapper.set_margin_bottom(5);
+        wrapper.append(&picture);
+        main_box.append(&wrapper);
+    }
+
     let label = gtk4::Label::builder()
         .label(&flg!("krokiet_info_message"))
         .wrap(true)
@@ -29,8 +46,13 @@ pub fn show_krokiet_info_dialog(window_main: &gtk4::Window) {
         .halign(Align::Center)
         .build();
 
+    let link_text = format!(
+        "<a href=\"https://github.com/qarmin/czkawka/releases\">{}</a>  |  <a href=\"https://github.com/qarmin/czkawka/tree/master/krokiet\">{}</a>",
+        flg!("krokiet_promo_link_download"),
+        flg!("krokiet_promo_link_project")
+    );
     let link = gtk4::Label::builder()
-        .label("<a href=\"https://github.com/qarmin/czkawka/tree/master/krokiet\">https://github.com/qarmin/czkawka/tree/master/krokiet</a> / <a href=\"https://github.com/qarmin/czkawka/releases\">https://github.com/qarmin/czkawka/releases</a>")
+        .label(&link_text)
         .use_markup(true)
         .halign(Align::Center)
         .margin_top(5)

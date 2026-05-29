@@ -57,6 +57,7 @@ You can read more about the 11.0.0 release, its new features, and the issues tha
 
 This fork adds the following on top of upstream `qarmin/czkawka`:
 
+- **File protection** – mark any result as protected so it is never deleted, moved, hardlinked, symlinked or renamed by the app. Protected files stay visible in the results with an amber marker and a disabled checkbox, and are remembered across scans and restarts (stored in `protected_files.json`). Protect/unprotect a whole selection with the toolbar buttons, or a single file from the right-click context menu; clear the whole set from Settings.
 - **Select all except highest quality** – a new selection mode in the Similar Images tool that spares the item with the largest pixel count in each duplicate group, checking all lower-quality copies for deletion.
 - **`run_gui.py` launcher** – replaces `run_gui.sh` with an interactive Python script that lets you choose between Krokiet and Czkawka at startup. It checks whether the binary is already newer than all source files and skips the `cargo build` step when no recompile is needed.
 - **GTK layout fixes** – several upstream GTK measurement warnings resolved; default window size increased to 1200×700 to prevent layout overflow.

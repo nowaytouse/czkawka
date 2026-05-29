@@ -35,9 +35,12 @@ The project will remain available in the repository. For some time I will ensure
 - Fixed a crash when using the sort button - [#1837](https://github.com/qarmin/czkawka/pull/1837)
 
 ### Fork-specific changes (all-features branch)
+- Redesigned the file-protection UX: protecting a file no longer deletes it from the results. Protected rows stay visible with an amber marker and an accent bar, their checkbox is disabled so they can never be queued for an action, and they are filtered in place after every scan (no group is dropped). Each row can be protected or unprotected individually from the right-click context menu, so recovering one file no longer requires clearing the whole protected set
+- Extended the protection safety net: protected files are now skipped by hardlink, symlink and rename in addition to delete and move
 - Fixed a crash in the file-protection feature: removing protected files from scan results left the selection state (`TOOLS_SELECTION`) and the checked-item counter out of sync with the now-shorter model, causing a panic on the next click/space/select-all. The model-mutating path now resets selection and recomputes the counter, matching every other model-mutation site
 - Changed "Select all except highest quality" to rank by pixel count with file size as a tiebreaker (equal resolution → the larger, less-compressed file is treated as higher quality), making it distinct from "except biggest resolution"
 - Added "Select all except highest quality" mode for Similar Images
+- Resolved all remaining Clippy warnings across the workspace (`question_mark` in `czkawka_core`, `explicit_counter_loop` in `czkawka_gui`)
 - Replaced `run_gui.sh` with `run_gui.py`: interactive launcher for Czkawka or Krokiet with smart build-freshness detection
 
 ### Krokiet

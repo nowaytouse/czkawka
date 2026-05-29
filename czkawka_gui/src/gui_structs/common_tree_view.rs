@@ -212,8 +212,8 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     column_view.insert_column(0, &col_select);
 
     // Text columns: Size, Name, Path, Modification
-    let mut col_idx = 1u32;
-    for (title, prop_name) in [("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")] {
+    for (col_offset, (title, prop_name)) in [("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")].into_iter().enumerate() {
+        let col_idx = col_offset as u32 + 1;
         let factory = SignalListItemFactory::new();
         factory.connect_setup(move |_f, obj| {
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -278,7 +278,6 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
             _ => col.set_fixed_width(120),
         }
         column_view.insert_column(col_idx, &col);
-        col_idx += 1;
     }
 
     column_view.set_vexpand(true);
@@ -329,8 +328,8 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
     column_view.insert_column(0, &col_select);
 
     // Text columns: configured per tab type
-    let mut col_idx = 1u32;
-    for (title, prop_name) in simple_column_config(enum_value) {
+    for (col_offset, (title, prop_name)) in simple_column_config(enum_value).iter().enumerate() {
+        let col_idx = col_offset as u32 + 1;
         let factory = SignalListItemFactory::new();
         factory.connect_setup(move |_f, obj| {
             let list_item = obj.downcast_ref::<gtk4::ListItem>().expect("ListItem");
@@ -397,7 +396,6 @@ fn create_simple_column_view(scrolled_window: &ScrolledWindow, enum_value: Noteb
             _ => col.set_fixed_width(150),
         }
         column_view.insert_column(col_idx, &col);
-        col_idx += 1;
     }
 
     column_view.set_vexpand(true);

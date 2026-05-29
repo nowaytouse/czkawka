@@ -56,6 +56,7 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
             SelectMode::SelectAllExceptOldest => select_all_except_by_property(&current_model, active_tab, Property::Date, false),
             SelectMode::SelectAllExceptLongestPath => select_all_except_by_property(&current_model, active_tab, Property::PathLength, true),
             SelectMode::SelectAllExceptShortestPath => select_all_except_by_property(&current_model, active_tab, Property::PathLength, false),
+            SelectMode::SelectAllExceptHighestQuality => select_all_except_by_property(&current_model, active_tab, Property::Resolution, true),
 
             SelectMode::SelectCustom => return,
         };
@@ -194,6 +195,7 @@ pub(crate) fn set_select_buttons(app: &MainWindow) {
             (SelectMode::SelectAllExceptBiggestSize, settings.get_select_show_except_biggest_size()),
             (SelectMode::SelectAllExceptSmallestResolution, settings.get_select_show_except_smallest_resolution()),
             (SelectMode::SelectAllExceptBiggestResolution, settings.get_select_show_except_biggest_resolution()),
+            (SelectMode::SelectAllExceptHighestQuality, settings.get_select_show_except_highest_quality()),
             (SelectMode::SelectAllExceptShortestPath, settings.get_select_show_except_shortest_path()),
             (SelectMode::SelectAllExceptLongestPath, settings.get_select_show_except_longest_path()),
         ],

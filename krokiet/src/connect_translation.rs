@@ -616,6 +616,7 @@ pub(crate) fn translate_select_mode(select_mode: SelectMode) -> SharedString {
         SelectMode::SelectAllExceptOldest => flk!("selection_all_except_oldest").into(),
         SelectMode::SelectAllExceptLongestPath => flk!("selection_all_except_longest_path").into(),
         SelectMode::SelectAllExceptShortestPath => flk!("selection_all_except_shortest_path").into(),
+        SelectMode::SelectAllExceptHighestQuality => flk!("selection_all_except_highest_quality").into(),
         SelectMode::SelectCustom => flk!("selection_custom_select_unselect").into(),
     }
 }

@@ -229,6 +229,7 @@ selection_all_except_newest = Select all except newest
 selection_all_except_oldest = Select all except oldest
 selection_all_except_longest_path = Select all except longest path
 selection_all_except_shortest_path = Select all except shortest path
+selection_all_except_highest_quality = Select all except highest quality
 selection_custom_select_unselect = Custom Select/Unselect
 stage_current = Current Stage:
 stage_all = All Stages:

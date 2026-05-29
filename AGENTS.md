@@ -247,3 +247,16 @@ just unpack_translations <path>
 just android              # build + install + launch on device
 just androidr             # release variant
 ```
+
+---
+
+## Known Defects / Limitations (this fork)
+
+- **GTK frontend maintenance-only** – `czkawka_gui` receives no new features; all active development targets Krokiet. Upstream has announced it will eventually stop providing GTK binaries.
+- **Cedinia is experimental** – the Android frontend lacks video tools (ffmpeg unavailable on Android) and has no stable release.
+- **Non-English translations are AI-generated** – only the English `.ftl` files are hand-edited; all other locales are machine-translated via Crowdin and may contain errors or missing entries.
+- **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
+- **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
+- **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
+- **`SelectAllExceptHighestQuality` is SimilarImages-only** – the new selection mode (spare the item with the biggest pixel count) is only shown for the Similar Images tab; it has no meaning for other tools.
+- **`run_gui.py` freshness check is heuristic** – the Python launcher skips recompile when no source file under `<crate>/src/` or `czkawka_core/src/` is newer than the binary; changes to `Cargo.toml`, build scripts, or `.slint` files outside those directories will not trigger a rebuild.

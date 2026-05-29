@@ -34,6 +34,10 @@ The project will remain available in the repository. For some time I will ensure
 ### GTK GUI
 - Fixed a crash when using the sort button - [#1837](https://github.com/qarmin/czkawka/pull/1837)
 
+### Fork-specific changes (all-features branch)
+- Added "Select all except highest quality" mode for Similar Images (spares the item with the largest pixel count per group)
+- Replaced `run_gui.sh` with `run_gui.py`: interactive launcher for Czkawka or Krokiet with smart build-freshness detection
+
 ### Krokiet
 - Added separate buttons for moving files to trash and permanently deleting them - [#1900](https://github.com/qarmin/czkawka/pull/1900)
 - Added a new custom selection popup - [#1809](https://github.com/qarmin/czkawka/pull/1809)

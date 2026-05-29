@@ -53,6 +53,14 @@ You can read more about the 11.0.0 release, its new features, and the issues tha
 - English article - https://medium.com/@qarmin/czkawka-krokiet-11-0-0f6cea385934
 - Polish article - https://medium.com/@qarmin/czkawka-krokiet-11-0-c95ee35eccc2
 
+## Fork-specific features (all-features branch)
+
+This fork adds the following on top of upstream `qarmin/czkawka`:
+
+- **Select all except highest quality** – a new selection mode in the Similar Images tool that spares the item with the largest pixel count in each duplicate group, checking all lower-quality copies for deletion.
+- **`run_gui.py` launcher** – replaces `run_gui.sh` with an interactive Python script that lets you choose between Krokiet and Czkawka at startup. It checks whether the binary is already newer than all source files and skips the `cargo build` step when no recompile is needed.
+- **GTK layout fixes** – several upstream GTK measurement warnings resolved; default window size increased to 1200×700 to prevent layout overflow.
+
 ## Usage, installation, compilation, requirements, license
 
 Each tool uses different technologies, so you can find instructions for each of them in the appropriate file:

@@ -591,7 +591,6 @@ hard_sym_link_label = Are you sure that you want to link these files?
 move_folder_failed = Failed to move folder {$name}, reason {$reason}
 move_file_failed = Failed to move file {$name}, reason {$reason}
 move_files_title_dialog = Choose folder to which you want to move duplicated files
-move_files_choose_more_than_1_path = Only one path may be selected to be able to copy their duplicated files, selected {$path_number}.
 move_stats = Properly moved {$num_files}/{$all_files} items
 
 save_results_to_file = Saved results both to txt and json files into "{$name}" folder.

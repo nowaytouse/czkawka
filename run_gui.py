@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Selectable launcher for Czkawka (GTK) or Krokiet (Slint). Skips recompile if binary is up-to-date."""
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -14,15 +13,35 @@ APPS = {
 }
 
 
-def binary_is_fresh(bin_path: Path, src_dirs: list[Path]) -> bool:
+def _paths_newer_than(bin_mtime: float, paths: list[Path]) -> bool:
+    for path in paths:
+        if not path.exists():
+            continue
+        if path.is_file():
+            if path.stat().st_mtime > bin_mtime:
+                return True
+            continue
+        for f in path.rglob("*"):
+            if f.is_file() and f.stat().st_mtime > bin_mtime:
+                return True
+    return False
+
+
+def binary_is_fresh(bin_path: Path, crate: str) -> bool:
     if not bin_path.exists():
         return False
     bin_mtime = bin_path.stat().st_mtime
-    for src_dir in src_dirs:
-        for f in src_dir.rglob("*"):
-            if f.is_file() and f.stat().st_mtime > bin_mtime:
-                return False
-    return True
+    watch_paths = [
+        ROOT / crate / "src",
+        ROOT / crate / "ui",
+        ROOT / crate / "Cargo.toml",
+        ROOT / crate / "build.rs",
+        ROOT / "czkawka_core" / "src",
+        ROOT / "czkawka_core" / "Cargo.toml",
+        ROOT / "Cargo.toml",
+        ROOT / "Cargo.lock",
+    ]
+    return not _paths_newer_than(bin_mtime, watch_paths)
 
 
 def main() -> None:
@@ -37,9 +56,8 @@ def main() -> None:
 
     crate, bin_name = APPS[choice]
     bin_path = ROOT / "target" / "release" / bin_name
-    src_dirs = [ROOT / crate / "src", ROOT / "czkawka_core" / "src"]
 
-    if binary_is_fresh(bin_path, src_dirs):
+    if binary_is_fresh(bin_path, crate):
         print(f"Binary {bin_path} is up-to-date, skipping recompile.")
         subprocess.run([str(bin_path)], cwd=ROOT, check=True)
     else:

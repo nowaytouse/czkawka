@@ -1,3 +1,4 @@
+import "./fonts/NotoSansSC-Regular.otf";
 import { HorizontalBox, LineEdit, Palette, VerticalBox } from "std-widgets.slint";
 import { FontSizes } from "fonts.slint";
 import { LeftSidePanel } from "left_side_panel.slint";
@@ -29,9 +30,12 @@ import { ToolSettings } from "tool_settings.slint";
 import { Translations } from "translations.slint";
 import { ImageCompareOverlay } from "image_compare.slint";
 
+// Bundled for winit_femtovg: default system/Latin fonts do not cover CJK glyphs.
+
 export {Settings, Callabler, GuiState, Translations, Palette}
 
 export component MainWindow inherits Window {
+    default-font-family: "Noto Sans SC";
     default-font-size: FontSizes.normal;
 
     callback scan_stopping;

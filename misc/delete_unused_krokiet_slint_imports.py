@@ -24,7 +24,7 @@ for file_path in collected_files:
 
     non_import_lines: list[str] = []
     imports_to_check = []
-    updated_lines = []
+    font_import_lines: list[str] = []
 
     for line in lines:
         if line.startswith("import"):
@@ -39,6 +39,11 @@ for file_path in collected_files:
     imports: dict[str, set[str]] = {}
 
     for import_line in imports_to_check:
+        # Font assets: `import "./font.otf";` — not component imports.
+        if " from " not in import_line:
+            font_import_lines.append(import_line)
+            continue
+
         imported_items = [i.strip() for i in import_line.split("{")[1].split("}")[0].split(",") if len(i.strip()) > 0]
         if not imported_items:
             continue
@@ -54,6 +59,8 @@ for file_path in collected_files:
         if used_items:
             imports.setdefault(from_file, set()).update(used_items)
 
+    updated_lines: list[str] = []
+    updated_lines.extend(font_import_lines)
     for from_file2, used_items2 in imports.items():
         items = list(used_items2)
         items.sort()

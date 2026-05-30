@@ -1,11 +1,12 @@
 use std::fs::metadata;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use czkawka_core::common::image::{ImgResizeOptions, check_if_can_display_image, get_dynamic_image_from_path};
 use czkawka_core::helpers::debug_timer::Timer;
 use czkawka_core::re_exported::FirFilterType;
-use image::{DynamicImage, Rgba, RgbaImage};
+use image::{DynamicImage, Rgba};
 use log::{debug, error};
 use slint::ComponentHandle;
 
@@ -14,7 +15,16 @@ use crate::{ActiveTab, Callabler, GuiState, MainWindow, Settings};
 
 pub type ImageBufferRgba = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
+struct PreviewLoadResult {
+    image_path: String,
+    rgba_pixels: Vec<u8>,
+    width: u32,
+    height: u32,
+    timer_report: String,
+}
+
 pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<SharedModels>>) {
+    let preview_generation = Arc::new(AtomicU64::new(0));
     let a = app.as_weak();
     app.global::<Callabler>()
         .on_load_image_preview(move |image_path, crop_left, crop_top, crop_right, crop_bottom, orig_width, orig_height| {
@@ -49,7 +59,7 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
                 return;
             }
 
-            let path = Path::new(image_path.as_str());
+            let path = PathBuf::from(image_path.as_str());
 
             let images_in_thumbnails_line = if active_tab == ActiveTab::VideoOptimizer {
                 shared_models
@@ -62,35 +72,84 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
                 1
             };
 
-            if let Some((mut timer, img)) = load_image(path) {
-                let mut img_to_use = img.into_rgba8();
+            let generation = preview_generation.fetch_add(1, Ordering::Relaxed) + 1;
+            let preview_generation_done = preview_generation.clone();
+            let app_weak = a.clone();
 
-                if crop_left != -1 && crop_top != -1 && crop_right != -1 && crop_bottom != -1 && orig_width > 0 && orig_height > 0 {
-                    img_to_use = draw_crop_rectangle_on_image(
-                        img_to_use,
-                        crop_left,
-                        crop_top,
-                        crop_right,
-                        crop_bottom,
-                        orig_width as u32,
-                        orig_height as u32,
-                        images_in_thumbnails_line as u32,
-                    );
-                    timer.checkpoint("cropping image");
-                }
+            let images_in_thumbnails_line = images_in_thumbnails_line as u32;
 
-                let slint_image = convert_into_slint_image(&img_to_use);
-                timer.checkpoint("converting image to Slint image");
+            std::thread::spawn(move || {
+                let Some(loaded) = load_preview_in_background(&path, crop_left, crop_top, crop_right, crop_bottom, orig_width, orig_height, images_in_thumbnails_line) else {
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if preview_generation_done.load(Ordering::Relaxed) != generation {
+                            return;
+                        }
+                        let Some(app) = app_weak.upgrade() else {
+                            return;
+                        };
+                        let gui_state = app.global::<GuiState>();
+                        set_preview_visible(&gui_state, None);
+                    });
+                    return;
+                };
 
-                gui_state.set_preview_image(slint_image);
-                timer.checkpoint("setting image in GUI");
-
-                debug!("{}", timer.report("total", true));
-                set_preview_visible(&gui_state, Some(image_path.as_str()));
-            } else {
-                set_preview_visible(&gui_state, None);
-            }
+                let _ = slint::invoke_from_event_loop(move || {
+                    if preview_generation_done.load(Ordering::Relaxed) != generation {
+                        return;
+                    }
+                    let Some(app) = app_weak.upgrade() else {
+                        return;
+                    };
+                    let gui_state = app.global::<GuiState>();
+                    if gui_state.get_preview_image_path() == loaded.image_path.as_str() {
+                        return;
+                    }
+                    gui_state.set_preview_image(convert_into_slint_image_from_rgba(&loaded.rgba_pixels, loaded.width, loaded.height));
+                    debug!("{}", loaded.timer_report);
+                    set_preview_visible(&gui_state, Some(loaded.image_path.as_str()));
+                });
+            });
         });
+}
+
+fn load_preview_in_background(
+    path: &Path,
+    crop_left: i32,
+    crop_top: i32,
+    crop_right: i32,
+    crop_bottom: i32,
+    orig_width: i32,
+    orig_height: i32,
+    images_in_thumbnails_line: u32,
+) -> Option<PreviewLoadResult> {
+    let (mut timer, img) = load_image(path)?;
+
+    let mut img_to_use = img.into_rgba8();
+
+    if crop_left != -1 && crop_top != -1 && crop_right != -1 && crop_bottom != -1 && orig_width > 0 && orig_height > 0 {
+        img_to_use = draw_crop_rectangle_on_image(
+            img_to_use,
+            crop_left,
+            crop_top,
+            crop_right,
+            crop_bottom,
+            orig_width as u32,
+            orig_height as u32,
+            images_in_thumbnails_line,
+        );
+        timer.checkpoint("cropping image");
+    }
+
+    timer.checkpoint("preparing preview buffer");
+
+    let timer_report = timer.report("total", true);
+    Some(PreviewLoadResult {
+        image_path: path.to_string_lossy().into_owned(),
+        rgba_pixels: img_to_use.as_raw().clone(),
+        width: img_to_use.width(),
+        height: img_to_use.height(),
+        timer_report,
+    })
 }
 
 fn set_preview_visible(gui_state: &GuiState, preview: Option<&str>) {
@@ -103,8 +162,8 @@ fn set_preview_visible(gui_state: &GuiState, preview: Option<&str>) {
     }
 }
 
-fn convert_into_slint_image(img: &RgbaImage) -> slint::Image {
-    let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(img.as_raw(), img.width(), img.height());
+fn convert_into_slint_image_from_rgba(pixels: &[u8], width: u32, height: u32) -> slint::Image {
+    let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(pixels, width, height);
     slint::Image::from_rgba8(buffer)
 }
 

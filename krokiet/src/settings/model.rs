@@ -362,6 +362,8 @@ pub struct BasicSettings {
     pub select_show_except_shortest_path: bool,
     #[serde(default = "ttrue")]
     pub select_show_except_longest_path: bool,
+    #[serde(default = "ttrue")]
+    pub select_show_except_highest_quality: bool,
 }
 
 impl Default for BasicSettings {

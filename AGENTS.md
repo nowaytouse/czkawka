@@ -208,6 +208,15 @@ All other language files are managed through [Crowdin](https://crowdin.com/) and
 **overwritten** when translations are pulled from Crowdin. Any manual edits to non-English
 `.ftl` files in the repo will be lost on the next `just unpack_translations` run.
 
+**Fork (Simplified Chinese):** This branch maintains **zh-CN only** beyond Crowdin. Use
+`just sync-zh-cn` (runs `misc/fill_zh_cn_missing.py` and `misc/sync_fork_i18n.py` for
+`zh-CN` / GTK+core fork keys). Krokiet and Cedinia bundle **Noto Sans SC**
+(`ui/fonts/NotoSansSC-Regular.otf`, `default-font-family` in `main_window.slint`). After
+editing fork strings, validate with
+`uv run misc/ai_translate/validate_translations.py <project>/i18n --languages zh-CN`.
+Tracked zh-CN files live under `i18n/zh-CN/` (gitignored by default — `git add -f` when
+committing).
+
 ---
 
 ## Slint UI conventions
@@ -242,6 +251,7 @@ just runr krokiet         # fast_release run
 just fix                  # format + clippy + Python checks
 just translate            # AI-translate all projects
 just validate_translations [--fix]
+just sync-zh-cn           # fork: fill zh-CN gaps + GTK/core fork strings (zh-CN only)
 just pack_translations    # create i18n_translations.zip for Crowdin
 just unpack_translations <path>
 just android              # build + install + launch on device
@@ -258,15 +268,14 @@ just androidr             # release variant
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
 - **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
 - **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
-- **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools.
-- **`run_gui.py` freshness check is heuristic** – the Python launcher skips recompile when no source file under `<crate>/src/` or `czkawka_core/src/` is newer than the binary; changes to `Cargo.toml`, build scripts, or `.slint` files outside those directories will not trigger a rebuild.
+- **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools. Its visibility toggle is persisted in `BasicSettings.select_show_except_highest_quality`.
 
 ### Stability investigation (Krokiet)
 
 Findings from auditing fork commits against `upstream/master`:
 
 - **File-protection feature [REDESIGNED]** – protection is now a visible, reversible per-row state instead of a removal. `protect_selected_items`, the post-scan filter, and the per-row context-menu toggle all *mark* rows (`protected = true`) and clear their checkbox in place via `set_row_data`; rows are never removed, so `TOOLS_SELECTION` indices stay valid (this also eliminates the earlier selection-desync panic, since the model is no longer swapped). Protected rows render with an amber tint + accent bar and a disabled checkbox, and `is_file_protected` guards delete, move, hardlink, symlink and rename. The enabled-items counter is recomputed after any in-place checkbox change. Recovering a single file no longer requires "Clear All".
-- **Thumbnail preview crash on first launch [NOT A FORK REGRESSION]** – `krokiet/src/connect_show_preview.rs` is byte-identical to `upstream/master`. If reproducible, it is an upstream bug (likely a backend/GPU issue with the default `winit_femtovg` renderer); report upstream rather than patching the fork.
+- **Simplified Chinese UI [FIXED in fork]** – Krokiet/Cedinia embed Noto Sans SC; zh-CN strings are maintained via `just sync-zh-cn`. System locale tags such as `zh`, `zh-CN`, and `zh-Hans-CN` map to `zh-CN` in `find_the_closest_language_idx_to_system()` (BCP47-aware, not the old alphabetic-stripping matcher).
+- **Image preview [PARTIALLY MITIGATED]** – preview decode/crop runs on a background thread with a generation counter so the UI thread is not blocked and stale loads are dropped. A GPU/backend crash on first preview (if any) may still be upstream/`winit_femtovg`; report upstream if it persists after this change.
 - **Double-click spawns a second instance / second-instance crash [NOT A FORK REGRESSION]** – the double-click handler routes to `open::that(path)` in `connect_row_selection.rs`, which is byte-identical to upstream. No fork code re-execs the krokiet binary. The "second instance" is an OS file-association side effect of opening a result file, not a fork bug.
-- **Simplified Chinese blank regions [RENDERER, NOT i18n]** – verified against i18n-embed 0.16.0 source: `FluentLanguageLoader::load_languages` always appends the `en` fallback bundle and `get_args_fluent` iterates all loaded bundles, so `flk!()` *does* return English for the ~104 keys zh-CN lacks — it does not return blank. The blanks are a rendering failure: the default `winit_femtovg` renderer has no bundled CJK font and `krokiet/src` registers none, so CJK glyphs cannot be drawn (Latin renders fine → "only English works"). Real fixes are bundling+registering a CJK font or switching to the skia renderer; hand-editing `.ftl` would not help (and is forbidden — Crowdin overwrites non-English locales).
-- **Environment limitation** – stability bugs #1/#4 require a live GUI session and a GPU backend to reproduce and capture a backtrace; they cannot be reproduced in a headless CI/agent environment. Root-causing here is static (diff vs upstream) only.
+- **Environment limitation** – GPU/renderer crashes require a live GUI session to reproduce and capture a backtrace; they cannot be reproduced in a headless CI/agent environment. Root-causing here is static (diff vs upstream) only.

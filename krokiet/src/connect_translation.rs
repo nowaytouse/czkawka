@@ -138,20 +138,37 @@ pub(crate) fn connect_translations(app: &MainWindow) {
     });
 }
 
+fn normalize_locale_tag(tag: &str) -> String {
+    tag.to_lowercase().replace('_', "-")
+}
+
+fn language_idx_for_system_locale(system_tag: &str) -> Option<usize> {
+    let system = normalize_locale_tag(system_tag);
+
+    for (idx, lang) in LANGUAGE_LIST.iter().enumerate() {
+        if system == normalize_locale_tag(lang.short_name) {
+            return Some(idx);
+        }
+    }
+
+    if system.starts_with("zh") {
+        let traditional = system.contains("-tw") || system.contains("-hk") || system.contains("-mo") || system.contains("hant");
+        let target = if traditional { "zh-TW" } else { "zh-CN" };
+        return LANGUAGE_LIST.iter().position(|lang| lang.short_name == target);
+    }
+
+    let system_base = system.split('-').next()?;
+    LANGUAGE_LIST.iter().position(|lang| lang.short_name.split('-').next() == Some(system_base))
+}
+
 pub fn find_the_closest_language_idx_to_system() -> usize {
     let requested_languages = DesktopLanguageRequester::requested_languages();
 
     if let Some(language) = requested_languages.first() {
-        let strip_function = |s: &str| s.chars().take_while(|c| c.is_ascii_alphabetic()).collect::<String>();
-
-        let system_language = strip_function(&language.to_string());
-        info!("System language: {system_language}");
-        for (idx, lang) in LANGUAGE_LIST.iter().enumerate() {
-            let lang_short = strip_function(lang.short_name);
-            info!("Language: {}", lang.short_name);
-            if system_language == lang_short {
-                return idx;
-            }
+        let system_tag = language.to_string();
+        info!("System language: {system_tag}");
+        if let Some(idx) = language_idx_for_system_locale(&system_tag) {
+            return idx;
         }
     }
     0
@@ -657,5 +674,33 @@ fn apply_similar_videos_audio_preset(app: &MainWindow) {
             settings.set_similar_videos_audio_maximum_difference(6.0);
         }
         _ => {}
+    }
+}
+
+#[cfg(test)]
+mod language_detection_tests {
+    use super::{LANGUAGE_LIST, language_idx_for_system_locale};
+
+    fn idx(short_name: &str) -> usize {
+        LANGUAGE_LIST.iter().position(|lang| lang.short_name == short_name).expect("language in LANGUAGE_LIST")
+    }
+
+    #[test]
+    fn matches_zh_cn_locale_tags() {
+        for tag in ["zh-CN", "zh_CN", "zh-Hans-CN", "zh"] {
+            assert_eq!(language_idx_for_system_locale(tag), Some(idx("zh-CN")), "tag: {tag}");
+        }
+    }
+
+    #[test]
+    fn matches_zh_tw_locale_tags() {
+        for tag in ["zh-TW", "zh_Hant_TW", "zh-Hant-HK"] {
+            assert_eq!(language_idx_for_system_locale(tag), Some(idx("zh-TW")), "tag: {tag}");
+        }
+    }
+
+    #[test]
+    fn matches_english_base_locale() {
+        assert_eq!(language_idx_for_system_locale("en-US"), Some(idx("en")));
     }
 }

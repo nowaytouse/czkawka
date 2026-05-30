@@ -296,6 +296,7 @@ pub(crate) fn set_base_settings_to_gui(app: &MainWindow, basic_settings: &BasicS
     settings.set_select_show_except_biggest_resolution(basic_settings.select_show_except_biggest_resolution);
     settings.set_select_show_except_shortest_path(basic_settings.select_show_except_shortest_path);
     settings.set_select_show_except_longest_path(basic_settings.select_show_except_longest_path);
+    settings.set_select_show_except_highest_quality(basic_settings.select_show_except_highest_quality);
 
     set_combobox_basic_settings_items(&settings, basic_settings);
 }
@@ -982,5 +983,6 @@ pub(crate) fn collect_base_settings(app: &MainWindow) -> BasicSettings {
         select_show_except_biggest_resolution: settings.get_select_show_except_biggest_resolution(),
         select_show_except_shortest_path: settings.get_select_show_except_shortest_path(),
         select_show_except_longest_path: settings.get_select_show_except_longest_path(),
+        select_show_except_highest_quality: settings.get_select_show_except_highest_quality(),
     }
 }

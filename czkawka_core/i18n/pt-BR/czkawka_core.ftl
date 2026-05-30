@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Please provide the text to translate
 core_similarity_very_high = Muito grande
 core_similarity_high = Grande
@@ -11,7 +10,7 @@ core_cannot_read_entry_dir = Não foi possível ler os dados do diretório ‘{ 
 core_cannot_read_metadata_dir = Não foi possível ler os metadados do diretório ‘{ $dir }’, por causa de ‘{ $reason }’
 core_cannot_read_metadata_file = Não foi possível ler os metadados no arquivo ‘{ $file }’, por causa de ‘{ $reason }’
 core_file_modified_before_epoch = O arquivo { $name } parece ser modificado antes do Epoch Unix
-core_folder_modified_before_epoch = A pasta ‘{ $name }’ parece ter sido modificada antes do ‘Epoch’ do Unix 
+core_folder_modified_before_epoch = A pasta ‘{ $name }’ parece ter sido modificada antes do ‘Epoch’ do Unix
 core_file_no_modification_date = Não foi possível obter a data da modificação do arquivo ‘{ $name }’, por causa de ‘{ $reason }’
 core_folder_no_modification_date = Não foi possível obter a data da modificação da pasta ‘{ $name }’, por causa de ‘{ $reason }’
 core_cannot_start_scan_no_included_paths = Não é possível iniciar a varredura, porque não há caminhos incluídos
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Não é possível criar ou abrir o arqui
 core_cannot_set_config_cache_path = Não é possível definir o caminho de configuração/cache - a configuração e o cache não serão utilizados.
 core_invalid_extension_contains_space = { $extension } não é uma extensão válida porque contém espaço em branco dentro
 core_invalid_extension_contains_dot = { $extension } não é uma extensão válida porque contém ponto dentro
-
 core_ffmpeg_unknown_encoder = Não é possível codificar o arquivo { $file } usando o codificador { $encoder }. A versão atual do FFmpeg não oferece suporte a este codificador. Utilize uma versão diferente do FFmpeg que possua o suporte ao codec necessário, ou selecione outro codificador.
 core_ffmpeg_error = Erro do FFmpeg durante o processamento de { $file }, código de status { $code }, motivo: { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Bản gốc
 core_similarity_very_high = Rất cao
 core_similarity_high = Cao
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Không thể tạo hoặc mở tệp cac
 core_cannot_set_config_cache_path = Không thể thiết lập đường dẫn cấu hình/cache - cấu hình và cache sẽ không được sử dụng.
 core_invalid_extension_contains_space = { $extension } không phải là một phần mở rộng hợp lệ vì nó chứa khoảng trắng ở bên trong
 core_invalid_extension_contains_dot = { $extension } không phải là một phần mở rộng hợp lệ vì nó chứa dấu chấm bên trong
-
 core_ffmpeg_unknown_encoder = Không thể mã hóa { $file } bằng bộ mã hóa { $encoder }. Phiên bản FFmpeg hiện tại không hỗ trợ bộ mã hóa này. Vui lòng sử dụng một phiên bản FFmpeg khác có hỗ trợ codec cần thiết hoặc chọn một bộ mã hóa khác.
 core_ffmpeg_error = Lỗi FFmpeg khi xử lý { $file }, mã lỗi { $code }, lý do { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

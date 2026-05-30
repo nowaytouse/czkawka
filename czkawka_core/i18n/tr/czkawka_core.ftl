@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Asıl
 core_similarity_very_high = Çok Yüksek
 core_similarity_high = Yüksek
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = "{ $file }" adlı geçici dosyayı oluş
 core_cannot_set_config_cache_path = Config/cache yolu yapılamadı - config ve cache kullanılmayacak.
 core_invalid_extension_contains_space = { $extension } geçerli bir uzantı değildir çünkü içinde boşluk içermektedir
 core_invalid_extension_contains_dot = { $extension } geçerli bir uzantı değildir çünkü içinde nokta içeriyor
-
 core_ffmpeg_unknown_encoder = { $file } dosyasını { $encoder } kodlayıcıyla kodlayamaz. Mevcut FFmpeg sürümü bu kodlayıcıyı desteklemiyor. Gerekli codec desteği olan farklı bir FFmpeg sürümü kullanın veya başka bir kodlayıcı seçin.
 core_ffmpeg_error = FFmpeg işleme sırasında { $file } dosyasında bir hata oluştu, hata kodu { $code }, nedeni { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

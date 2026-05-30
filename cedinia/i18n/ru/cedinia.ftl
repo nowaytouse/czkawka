@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Дубликаты
 tool_empty_folders = Пустые папки
@@ -13,9 +10,9 @@ tool_bad_extensions = Плохие расширения
 tool_same_music = Музыкальные дубликаты
 tool_bad_names = Неверные имена
 tool_exif_remover = Данные EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Каталоги
 tool_settings = Настройки
-# Home screen tool card descriptions
 home_dup_description = Найти файлы с одним и тем же контентом
 home_empty_folders_description = Директории без содержания
 home_similar_images_description = Найти похожие на визуальное фото
@@ -27,7 +24,7 @@ home_bad_extensions_description = Файлы с недопустимым рас�
 home_same_music_description = Похожие аудио файлы по тегам
 home_bad_names_description = Файлы с проблемными символами в имени
 home_exif_description = Изображения с метаданными EXIF
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Идет сканирование...
 stopping = Остановка...
 no_results = Нет результатов
@@ -36,7 +33,6 @@ select_label = Сел.
 deselect_label = Desel.
 list_label = Список
 gallery_label = Гал.
-# Selection popup
 selection_popup_title = Выбрать
 select_all = Выбрать все
 select_except_one = Выделить все, кроме одного
@@ -50,32 +46,25 @@ select_highest_res = Выберите наибольшее разрешение
 select_lowest_res = Выберите минимальное разрешение
 invert_selection = Инвертировать выделение
 close = Закрыть
-# Deselection popup
 deselection_popup_title = Отменить выбор
 deselect_all = Отменить выбор
 deselect_except_one = Отменить выбор всех кроме одного
-# Confirm popup
 cancel = Отмена
 delete = Удалить
 rename = Переименовать
-# Delete errors popup
 delete_errors_title = Не удалось удалить некоторые файлы:
 ok = ОК
-# Stopping overlay
 stopping_overlay_title = Остановка
 stopping_overlay_body =
     Завершение сканирования...
     Пожалуйста подождите.
-# Permission popup
 permission_title = Доступ к файлу
 permission_body = Для сканирования файлов приложению требуется доступ к хранилищу устройства. Без этого разрешения сканирование будет невозможно.
 grant = Предоставить
 no_permission_scan_warning = Нет доступа к файлу - предоставить разрешение для сканирования
-# Settings screen tabs
 settings_tab_general = Общие положения
 settings_tab_tools = Инструменты
 settings_tab_diagnostics = Инфо
-# Settings - General tab
 settings_use_cache = Использовать кэш
 settings_use_cache_desc = Ускоряет последующие сканирования (хэш/изображения)
 settings_ignore_hidden = Игнорировать скрытые файлы
@@ -99,7 +88,6 @@ settings_allowed_extensions = РАЗРЕШЕННЫЕ ВЫХОДЫ (пусто = 
 settings_allowed_extensions_placeholder = напр. jpg, png, mp4
 settings_excluded_extensions = РАСПРОСТРАНЕНИЕ ВЫШЕНИЙ
 settings_excluded_extensions_placeholder = например, bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = ПОДРАЗУМЕВАНИЯ
 settings_check_method_label = МЕТОД КОМПАРИЗНА
 settings_check_method = Метод
@@ -129,6 +117,10 @@ settings_music_length = Длина
 settings_music_genre = Жанр
 settings_music_bitrate = Битрейт
 settings_music_approx = Приблизительное сравнение тегов
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = БРОКЕН ФАЙЛЫ
 settings_broken_files_note = Ресурсоемкое сканирование. Для оптимальной производительности используйте Krokiet на рабочем столе.
 settings_broken_files_types_label = ИЗМЕНЕННЫЕ ТИПЫ
@@ -136,6 +128,11 @@ settings_broken_audio = Аудио
 settings_broken_pdf = PDF
 settings_broken_archive = Архивировать
 settings_broken_image = Изображение
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = НАЗВАНИЯ BAD
 settings_bad_names_checks_label = ПОИСК
 settings_bad_names_uppercase_ext = Расширение прописных букв
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Эмодзи в имени
 settings_bad_names_space = Пробелы в начале/конце
 settings_bad_names_non_ascii = Не ASCII символы
 settings_bad_names_duplicated = Повторяющиеся символы
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = ДИАГНОСТИКА
 diagnostics_thumbnails = Кэш миниатюр
 diagnostics_app_cache = Кэш приложений
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Очистить весь кэш приложений
 about_repo = Репозиторий
 about_translate = Переводы
 about_donate = Поддержка
-# Collect-test result popup
 collect_test_title = Результаты испытания
 collect_test_volumes = Объем:
 collect_test_folders = Папки:
 collect_test_files = Файлы:
 collect_test_time = Время:
-# Licenses
 licenses_label = ЛИЦЕНЗИЯ
 third_party_licenses = Сторонние лицензии
 licenses_popup_title = Сторонние лицензии
-# Directories screen
 directories_include_header = Включить
 directories_included = Включено
 directories_exclude_header = Исключить
@@ -182,11 +179,9 @@ no_paths = Нет путей - добавить ниже
 directories_volume_header = Громкость
 directories_volume_refresh = Обновить
 directories_volume_add = Добавить
-# Bottom navigation
 nav_home = Начать
 nav_dirs = Каталоги
 nav_settings = Настройки
-# Status messages set from Rust
 status_ready = Готово
 status_stopped = Остановлено
 status_no_results = Нет результатов
@@ -206,7 +201,6 @@ cleaned_exif_suffix = файлы
 cleaned_exif_errors_suffix = ошибки
 and_more_prefix = ...и
 and_more_suffix = больше
-# Gallery / delete popups
 gallery_delete_button = Удалить
 gallery_back = Назад
 gallery_confirm_delete = Да, удалить
@@ -218,16 +212,12 @@ app_subtitle = В честь Сединии (972 CE)
 app_license = Фронтенд для Czkawka Core - лицензия GPL-3.0
 about_app_label = О программе
 cache_label = ОЧИСТЬ
-# Notification
 scan_completed_notification = Сканирование завершено - { $file_count } элементов найдено
-# Confirm popups (set from Rust)
 confirm_clean_exif = Вы уверены, что хотите удалить EXIF теги из { $n } выбранных файлов?
 confirm_delete_items = Вы уверены, что хотите удалить { $n } выбранных элементов?
 gallery_confirm_delete_msg = Вы собираетесь удалить { $total_images } изображений в { $total_groups } группах.
 gallery_confirm_delete_warning = Все элементы выбраны в { $unsafe_groups } группах!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Вычисление и сравнение аудио отпечатков пальцев очень ресурсоемкое и может занять много времени. Для этого рекомендуется использовать Krokiet на настольной системе.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Сбор файлов
 stage_scanning_name = Сканирование по имени
 stage_scanning_size_name = Сканирование по имени и размеру
@@ -256,13 +246,13 @@ stage_hardlinking = Создание жёстких ссылок
 stage_symlinking = Создание символьных ссылок
 stage_optimizing_videos = Оптимизация видео
 stage_cleaning_exif = Очистка EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } файлов x { $per_file } / file = { $total } всего
 similar_images_group_header = { $count } похожие изображения
 same_music_group_header = { $count } похожие треки
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Вы уверены, что хотите переименовать { $n } выбранных файлов?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Крупнейший
 option_search_mode_smallest = Наименьший
 option_similarity_very_high = Высокий V
@@ -278,20 +268,13 @@ option_check_method_size = Размер
 option_music_method_tags = Теги
 option_music_method_audio = Аудио
 option_min_size_none = Нет
-option_min_size_1kb = 1 КБ
-option_min_size_8kb = 8 КБ
-option_min_size_64kb = 64 КБ
-option_min_size_1mb = 1 МБ
-option_max_size_16kb = 16 КБ
-option_max_size_1mb = 1 МБ
-option_max_size_10mb = 10 МБ
-option_max_size_100mb = 100 МБ
 option_max_size_unlimited = Неограниченный
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Внутреннее хранилище
 volume_sd_card = Карта памяти (SD карта)
 volume_storage = Громкость хранения
-# Directories screen
 directories_referenced_tooltip = Ссылаемый (не удален)
 directories_include_section_header = ВКЛЮЧЕНО
 directories_exclude_section_header = ВЫКЛЮЧЕНО
@@ -315,3 +298,21 @@ path_edit_no_newlines = Пути не могут содержать новые �
 ctx_menu_title = Открыть
 ctx_open_file = Открыть предмет
 ctx_open_folder = Открыть родительскую папку
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 КБ
+option_min_size_8kb = 8 КБ
+option_min_size_64kb = 64 КБ
+option_min_size_1mb = 1 МБ
+option_max_size_16kb = 16 КБ
+option_max_size_1mb = 1 МБ
+option_max_size_10mb = 10 МБ
+option_max_size_100mb = 100 МБ

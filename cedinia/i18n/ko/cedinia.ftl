@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = 세디니아
 tool_duplicate_files = 중복 파일
 tool_empty_folders = 비어있는 폴더들
@@ -13,9 +10,9 @@ tool_bad_extensions = 잘못된 확장자
 tool_same_music = 중복 음악
 tool_bad_names = 나쁜 이름
 tool_exif_remover = EXIF 데이터
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = 디렉터리 (또는 폴더)
 tool_settings = 설정
-# Home screen tool card descriptions
 home_dup_description = 동일한 내용을 가진 파일을 찾습니다
 home_empty_folders_description = 내용이 없는 폴더
 home_similar_images_description = 시각적으로 유사한 사진을 찾아보세요
@@ -27,7 +24,7 @@ home_bad_extensions_description = 유효하지 않은 확장자를 가진 파일
 home_same_music_description = 태그를 기준으로 한 유사 오디오 파일
 home_bad_names_description = 이름에 문제가 있는 문자가 포함된 파일
 home_exif_description = EXIF 메타데이터가 포함된 이미지
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = 스캔 진행 중...
 stopping = 정지 중...
 no_results = 결과가 없습니다
@@ -36,7 +33,6 @@ select_label = 선택.
 deselect_label = Desel.
 list_label = 목록
 gallery_label = 갈.
-# Selection popup
 selection_popup_title = 선택
 select_all = 전체 선택
 select_except_one = 다음 중 하나를 제외하고 모두 선택하세요
@@ -50,32 +46,25 @@ select_highest_res = 가장 높은 해상도를 선택하세요
 select_lowest_res = 가장 낮은 해상도 선택
 invert_selection = 선택 반전
 close = 닫기
-# Deselection popup
 deselection_popup_title = 선택 해제
 deselect_all = 전체 선택 해제
 deselect_except_one = 모두 선택 해제하고, 단 하나만 선택하세요
-# Confirm popup
 cancel = 취소
 delete = 삭제
 rename = 이름 바꾸기
-# Delete errors popup
 delete_errors_title = 일부 파일을 삭제하는 데 실패했습니다:
 ok = 알겠습니다
-# Stopping overlay
 stopping_overlay_title = 정지
-stopping_overlay_body = 
-        현재 스캔이 완료됩니다...
-        잠시만 기다려 주십시오.
-# Permission popup
+stopping_overlay_body =
+    현재 스캔이 완료됩니다...
+    잠시만 기다려 주십시오.
 permission_title = 파일 접근 권한
 permission_body = 파일을 스캔하려면 앱이 기기 저장 공간에 접근해야 합니다. 이 권한이 없으면 스캔이 불가능합니다.
 grant = 수혜
 no_permission_scan_warning = 파일 접근 권한 없음 - 스캔 권한을 부여하세요
-# Settings screen tabs
 settings_tab_general = 일반
 settings_tab_tools = 도구들
 settings_tab_diagnostics = 정보
-# Settings - General tab
 settings_use_cache = 캐시 사용
 settings_use_cache_desc = 이후 스캔(해시/이미지) 속도를 향상시킵니다
 settings_ignore_hidden = 숨김 파일은 무시합니다
@@ -99,7 +88,6 @@ settings_allowed_extensions = 허용되는 확장자 (비어 있음 = 모두 허
 settings_allowed_extensions_placeholder = 예: jpg, png, mp4
 settings_excluded_extensions = 제외 대상 확장 프로그램
 settings_excluded_extensions_placeholder = 예: bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = 중복 항목
 settings_check_method_label = 비교 방법
 settings_check_method = 방식
@@ -129,6 +117,10 @@ settings_music_length = 길이
 settings_music_genre = 장르
 settings_music_bitrate = 비트레이트
 settings_music_approx = 대략적인 태그 비교
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = 손상된 파일들
 settings_broken_files_note = 많은 시스템 자원을 사용하는 스캔 작업입니다. 최상의 성능을 위해 데스크톱 환경에서 Krokiet을 사용하십시오.
 settings_broken_files_types_label = 확인된 유형 목록
@@ -136,6 +128,11 @@ settings_broken_audio = 오디오 파일
 settings_broken_pdf = PDF
 settings_broken_archive = 아카이브 파일
 settings_broken_image = 이미지 파일
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = 나쁜 이름들
 settings_bad_names_checks_label = 수표
 settings_bad_names_uppercase_ext = 대문자 확장
@@ -143,7 +140,10 @@ settings_bad_names_emoji = 이모지 이름에
 settings_bad_names_space = 시작/끝에 있는 공백
 settings_bad_names_non_ascii = ASCII 문자가 아닌 문자들
 settings_bad_names_duplicated = 반복되는 문자
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = 진단
 diagnostics_thumbnails = 미리보기 이미지 캐시
 diagnostics_app_cache = 앱 캐시
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = 앱 캐시를 모두 삭제하시겠습니까?
 about_repo = 리포지토리
 about_translate = 번역
 about_donate = 지원
-# Collect-test result popup
 collect_test_title = 테스트 결과
 collect_test_volumes = 권수:
 collect_test_folders = 폴더:
 collect_test_files = 파일:
 collect_test_time = 시간:
-# Licenses
 licenses_label = 라이선스
 third_party_licenses = 제3자 라이선스
 licenses_popup_title = 제3자 라이선스
-# Directories screen
 directories_include_header = 포함하세요
 directories_included = 포함됨
 directories_exclude_header = 제외
@@ -182,11 +179,9 @@ no_paths = 경로는 없습니다. 아래에 추가해주세요
 directories_volume_header = 권 (卷)
 directories_volume_refresh = 새로 고침
 directories_volume_add = 추가
-# Bottom navigation
 nav_home = 시작
 nav_dirs = 폴더 목록
 nav_settings = 설정
-# Status messages set from Rust
 status_ready = 준비 완료
 status_stopped = 정지됨
 status_no_results = 결과가 없습니다
@@ -206,7 +201,6 @@ cleaned_exif_suffix = 파일들
 cleaned_exif_errors_suffix = 오류들
 and_more_prefix = ...그리고
 and_more_suffix = 더
-# Gallery / delete popups
 gallery_delete_button = 삭제
 gallery_back = 뒤로
 gallery_confirm_delete = 네, 삭제합니다
@@ -218,16 +212,12 @@ app_subtitle = 체디니아 전투(972년)를 기리며
 app_license = Czkawka Core의 프론트엔드 - GPL-3.0 라이선스
 about_app_label = 소개
 cache_label = 캐시(CACHE)
-# Notification
 scan_completed_notification = 검색 완료 - { $file_count } 개의 항목이 발견되었습니다
-# Confirm popups (set from Rust)
 confirm_clean_exif = 선택된 { $n }개의 파일에서 EXIF 태그를 삭제하시겠습니까?
 confirm_delete_items = 선택하신 { $n }개의 항목을 삭제하시겠습니까?
 gallery_confirm_delete_msg = { $total_groups } 개의 그룹에 있는 { $total_images } 개의 이미지를 삭제하시려고 합니다.
 gallery_confirm_delete_warning = 모든 항목은 { $unsafe_groups } 그룹에서 선택되었습니다!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = 오디오 지문 계산 및 비교는 많은 자원을 소모하며, 시간이 오래 걸릴 수 있습니다. 따라서 이 작업은 데스크톱 시스템에서 Krokiet을 사용하는 것이 좋습니다.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = 파일 수집 중
 stage_scanning_name = 이름으로 검색
 stage_scanning_size_name = 이름과 크기 기준으로 검색
@@ -256,13 +246,13 @@ stage_hardlinking = 하드 링크 생성하기
 stage_symlinking = 심볼릭 링크 생성하기
 stage_optimizing_videos = 동영상 최적화하기
 stage_cleaning_exif = EXIF 정보 제거
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } 개의 파일 x { $per_file } / 파일 = 총 { $total }
 similar_images_group_header = { $count } 개의 유사 이미지
 same_music_group_header = { $count } 개의 유사한 트랙
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = 선택된 { $n }개의 파일 이름을 정말 변경하시겠습니까?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = 가장 큰
 option_search_mode_smallest = 가장 작음
 option_similarity_very_high = V. 매우 높음
@@ -278,20 +268,13 @@ option_check_method_size = 파일 크기
 option_music_method_tags = 태그 기준 검사
 option_music_method_audio = 오디오 파일
 option_min_size_none = 없음
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = 제한 없음
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = 내부 저장 공간
 volume_sd_card = 메모리 카드 (SD 카드)
 volume_storage = 저장 공간 용량
-# Directories screen
 directories_referenced_tooltip = 참조 (삭제되지 않음)
 directories_include_section_header = 포함됨
 directories_exclude_section_header = 제외됨
@@ -315,3 +298,21 @@ path_edit_no_newlines = 경로는 줄 바꿈을 포함할 수 없습니다. Ente
 ctx_menu_title = 열기
 ctx_open_file = 미결 항목
 ctx_open_folder = 상위 폴더 열기
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

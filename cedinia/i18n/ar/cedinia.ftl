@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = التكرارات
 tool_empty_folders = مجلدات فارغة
@@ -13,9 +10,9 @@ tool_bad_extensions = ملحقات سيئة
 tool_same_music = مكرر الموسيقى
 tool_bad_names = أسماء سيئة
 tool_exif_remover = بيانات EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = المجلدات
 tool_settings = الإعدادات
-# Home screen tool card descriptions
 home_dup_description = البحث عن ملفات بنفس المحتوى
 home_empty_folders_description = المجلدات بدون محتوى
 home_similar_images_description = العثور على صور مشابهة بصرياً
@@ -27,7 +24,7 @@ home_bad_extensions_description = ملفات ذات ملحق غير صالح
 home_same_music_description = ملفات صوتية مشابهة بواسطة العلامات
 home_bad_names_description = الملفات ذات الأحرف الإشكالية في الاسم
 home_exif_description = صور مع بيانات التعريف EXIF
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = جاري الفحص...
 stopping = التوقف...
 no_results = لا توجد نتائج
@@ -36,7 +33,6 @@ select_label = سيّل.
 deselect_label = ديزل.
 list_label = قائمة
 gallery_label = غلا.
-# Selection popup
 selection_popup_title = حدد
 select_all = حدد الكل
 select_except_one = حدد الكل باستثناء واحد
@@ -50,32 +46,25 @@ select_highest_res = حدد أعلى دقة
 select_lowest_res = حدد أدنى دقة
 invert_selection = عكس التحديد
 close = أغلق
-# Deselection popup
 deselection_popup_title = إلغاء التحديد
 deselect_all = إلغاء تحديد الكل
 deselect_except_one = إلغاء تحديد الكل باستثناء واحد
-# Confirm popup
 cancel = إلغاء
 delete = حذف
 rename = إعادة تسمية
-# Delete errors popup
 delete_errors_title = فشل في حذف بعض الملفات:
 ok = حسناً
-# Stopping overlay
 stopping_overlay_title = التوقف
-stopping_overlay_body = 
-        جارٍ إنهاء الفحص الحالي...
-        الرجاء الانتظار.
-# Permission popup
+stopping_overlay_body =
+    جارٍ إنهاء الفحص الحالي...
+    الرجاء الانتظار.
 permission_title = الوصول إلى الملف
 permission_body = للمسح الضوئي للملفات، يحتاج التطبيق إلى الوصول إلى تخزين الجهاز. بدون هذا الإذن، لن يكون المسح الضوئي ممكنا.
 grant = منح
 no_permission_scan_warning = لا يوجد وصول إلى الملف - منح الإذن بالمسح
-# Settings screen tabs
 settings_tab_general = عام
 settings_tab_tools = أدوات
 settings_tab_diagnostics = معلومات
-# Settings - General tab
 settings_use_cache = استخدام ذاكرة التخزين المؤقت
 settings_use_cache_desc = تسريع المسح اللاحق (هاش/صور)
 settings_ignore_hidden = تجاهل الملفات المخفية
@@ -99,7 +88,6 @@ settings_allowed_extensions = اختصارات محجوبة (فارغة = الك
 settings_allowed_extensions_placeholder = مثل jpg, png, mp4
 settings_excluded_extensions = نسخ مستخرجة
 settings_excluded_extensions_placeholder = مثل الخبز ، tmp، سجل
-# Settings - Tools section labels
 settings_duplicates_header = المحتويات
 settings_check_method_label = التعليق على الطريقة
 settings_check_method = الطريقة
@@ -129,6 +117,10 @@ settings_music_length = طول
 settings_music_genre = النوع
 settings_music_bitrate = معدل
 settings_music_approx = مقارنة الوسوم التقريبية
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = الحفلات المدفوعه
 settings_broken_files_note = المسح الكثيف للموارد. للحصول على أفضل أداء استخدم Krokiet على سطح المكتب.
 settings_broken_files_types_label = التحقق من اللعبة
@@ -136,6 +128,11 @@ settings_broken_audio = الصوت
 settings_broken_pdf = ملف PDF
 settings_broken_archive = أرشيف
 settings_broken_image = صورة
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = أسماء العملاء
 settings_bad_names_checks_label = التدوين
 settings_bad_names_uppercase_ext = ملحق الحالة العلوية
@@ -143,7 +140,10 @@ settings_bad_names_emoji = الرموز التعبيرية باسم
 settings_bad_names_space = المسافات عند البدء/النهاية
 settings_bad_names_non_ascii = الأحرف غير المستخدمة في معيار ASCII
 settings_bad_names_duplicated = أحرف متكررة
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = الأجهزة،
 diagnostics_thumbnails = ذاكرة تخزين مؤقت للصور المصغرة
 diagnostics_app_cache = ذاكرة التخزين المؤقت للتطبيق
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = مسح ذاكرة التخزين المؤقت للت�
 about_repo = المستودع
 about_translate = الترجمات
 about_donate = الدعم
-# Collect-test result popup
 collect_test_title = نتائج الاختبار
 collect_test_volumes = المجلدات:
 collect_test_folders = المجلدات:
 collect_test_files = الملفات:
 collect_test_time = الوقت:
-# Licenses
 licenses_label = ليسانس
 third_party_licenses = تراخيص طرف ثالث
 licenses_popup_title = تراخيص الطرف الثالث
-# Directories screen
 directories_include_header = تضمين
 directories_included = متضمن
 directories_exclude_header = استبعاد
@@ -182,11 +179,9 @@ no_paths = لا توجد مسارات - أضف أدناه
 directories_volume_header = الصوت
 directories_volume_refresh = تحديث
 directories_volume_add = إضافة
-# Bottom navigation
 nav_home = ابدأ
 nav_dirs = المجلدات
 nav_settings = الإعدادات
-# Status messages set from Rust
 status_ready = مستعد
 status_stopped = توقفت
 status_no_results = لا توجد نتائج
@@ -206,7 +201,6 @@ cleaned_exif_suffix = الملفات
 cleaned_exif_errors_suffix = أخطاء
 and_more_prefix = ...و
 and_more_suffix = المزيد
-# Gallery / delete popups
 gallery_delete_button = حذف
 gallery_back = الرجوع
 gallery_confirm_delete = نعم، حذف
@@ -218,16 +212,12 @@ app_subtitle = تكريما لمعركة سيدينيا (972 CE)
 app_license = الواجهة لنواة Czkawka - GPL-3.0
 about_app_label = من
 cache_label = التوقف
-# Notification
 scan_completed_notification = تم مسح العناصر - { $file_count } الموجودة
-# Confirm popups (set from Rust)
 confirm_clean_exif = هل أنت متأكد من أنك تريد تنظيف وسوم EXIF من الملفّات المختارة{ $n}؟
 confirm_delete_items = هل أنت متأكد من أنك تريد حذف { $n } العناصر المحددة؟
 gallery_confirm_delete_msg = أنت على وشك حذف صور { $total_images } في مجموعات { $total_groups}.
 gallery_confirm_delete_warning = تم تحديد جميع العناصر في مجموعة { $unsafe_groups}!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = إن حساب ومقارنة بصمات الصوت كثيف الموارد وقد يستغرق وقتا طويلا. ويوصى باستخدام كروكييت على نظام حاسوب مكتبي لهذه المهمة.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = جمع الملفات
 stage_scanning_name = البحث عن طريق الاسم
 stage_scanning_size_name = البحث حسب الاسم والحجم
@@ -256,13 +246,13 @@ stage_hardlinking = إنشاء روابط صلبة
 stage_symlinking = إنشاء الروابط الرمزية
 stage_optimizing_videos = تحسين الفيديوهات
 stage_cleaning_exif = تنظيف EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } ملفات x { $per_file } / الملف = { $total } المجموع
 similar_images_group_header = { $count } صور مشابهة
 same_music_group_header = { $count } مسارات مشابهة
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = هل أنت متأكد من أنك تريد إعادة تسمية { $n } من الملفات المحددة؟
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = أكبر
 option_search_mode_smallest = أصغر
 option_similarity_very_high = خامساً - عالي
@@ -278,20 +268,13 @@ option_check_method_size = الحجم
 option_music_method_tags = الوسوم
 option_music_method_audio = الصوت
 option_min_size_none = لا
-option_min_size_1kb = 1 كيلوبايت
-option_min_size_8kb = 8 كيلوبايت
-option_min_size_64kb = 64 كيلوبايت
-option_min_size_1mb = 1 ميغابايت
-option_max_size_16kb = 16 كيلوبايت
-option_max_size_1mb = 1 ميغابايت
-option_max_size_10mb = 10 ميغابايت
-option_max_size_100mb = 100 ميغابايت
 option_max_size_unlimited = غير محدود
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = التخزين الداخلي
 volume_sd_card = بطاقة الذاكرة (بطاقة SD)
 volume_storage = حجم التخزين
-# Directories screen
 directories_referenced_tooltip = المشار إليها (غير محذوفة)
 directories_include_section_header = مشاهدة
 directories_exclude_section_header = أكمل
@@ -315,3 +298,21 @@ path_edit_no_newlines = المسارات لا يمكن أن تحتوي على خ
 ctx_menu_title = فتح
 ctx_open_file = فتح العنصر
 ctx_open_folder = فتح المجلد الأصل
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 كيلوبايت
+option_min_size_8kb = 8 كيلوبايت
+option_min_size_64kb = 64 كيلوبايت
+option_min_size_1mb = 1 ميغابايت
+option_max_size_16kb = 16 كيلوبايت
+option_max_size_1mb = 1 ميغابايت
+option_max_size_10mb = 10 ميغابايت
+option_max_size_100mb = 100 ميغابايت

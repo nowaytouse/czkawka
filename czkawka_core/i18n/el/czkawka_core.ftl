@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Αρχικό
 core_similarity_very_high = Πολύ Υψηλή
 core_similarity_high = Υψηλή
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Δεν μπορεί να δημιουρ�
 core_cannot_set_config_cache_path = Δεν μπορεί να ρυθμιστεί ο/η διαδρομή config/cache - η config και η cache δεν θα χρησιμοποιηθούν.
 core_invalid_extension_contains_space = { $extension } δεν είναι έγκυρος τύπος επέκτασης επειδή περιέχει κενό διάστημα μέσα
 core_invalid_extension_contains_dot = Το { $extension } δεν είναι έγκυρος τύπος επέκτασης επειδή περιέχει τελεία μέσα
-
 core_ffmpeg_unknown_encoder = Δεν είναι δυνατή η κωδικοποίηση του αρχείου { $file } χρησιμοποιώντας τον κωδικοποιητή { $encoder }. Η τρέχουσα έκδοση του FFmpeg δεν υποστηρίζει αυτόν τον κωδικοποιητή. Χρησιμοποιήστε μια διαφορετική έκδοση του FFmpeg με την απαραίτητη υποστήριξη κωδικοποιητή ή επιλέξτε έναν άλλο κωδικοποιητή.
 core_ffmpeg_error = Σφάλμα FFmpeg κατά την επεξεργασία του αρχείου { $file }, κωδικός κατάστασης { $code }, αιτία: { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

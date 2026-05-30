@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Διπλότυπα
 tool_empty_folders = Άδειασμα Φακέλων
@@ -13,9 +10,9 @@ tool_bad_extensions = Εσφαλμένες Επεκτάσεις
 tool_same_music = Αντίγραφο Μουσικής
 tool_bad_names = Εσφαλμένα Ονόματα
 tool_exif_remover = Δεδομένα EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Κατάλογοι
 tool_settings = Ρυθμίσεις
-# Home screen tool card descriptions
 home_dup_description = Εύρεση αρχείων με το ίδιο περιεχόμενο
 home_empty_folders_description = Κατάλογοι χωρίς περιεχόμενο
 home_similar_images_description = Βρείτε οπτικά παρόμοιες φωτογραφίες
@@ -27,7 +24,7 @@ home_bad_extensions_description = Αρχεία με μη έγκυρη επέκτ
 home_same_music_description = Παρόμοια αρχεία ήχου από ετικέτες
 home_bad_names_description = Αρχεία με προβληματικούς χαρακτήρες στο όνομα
 home_exif_description = Εικόνες με μεταδεδομένα EXIF
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Σάρωση σε εξέλιξη...
 stopping = Διακοπή...
 no_results = Κανένα αποτέλεσμα
@@ -36,7 +33,6 @@ select_label = Επιλογή.
 deselect_label = Desel.
 list_label = Λίστα
 gallery_label = Γαλάτες.
-# Selection popup
 selection_popup_title = Επιλογή
 select_all = Επιλογή όλων
 select_except_one = Επιλογή όλων εκτός από ένα
@@ -50,32 +46,25 @@ select_highest_res = Επιλέξτε την υψηλότερη ανάλυση
 select_lowest_res = Επιλέξτε χαμηλότερη ανάλυση
 invert_selection = Αντιστροφή επιλογής
 close = Κλείσιμο
-# Deselection popup
 deselection_popup_title = Αποεπιλογή
 deselect_all = Αποεπιλογή όλων
 deselect_except_one = Αποεπιλογή όλων εκτός ενός
-# Confirm popup
 cancel = Ακύρωση
 delete = Διαγραφή
 rename = Μετονομασία
-# Delete errors popup
 delete_errors_title = Αποτυχία διαγραφής μερικών αρχείων:
 ok = Εντάξει
-# Stopping overlay
 stopping_overlay_title = Διακοπή
-stopping_overlay_body = 
-        Ολοκληρώνεται η τρέχουσα σάρωση...
-        Παρακαλώ περιμένετε.
-# Permission popup
+stopping_overlay_body =
+    Ολοκληρώνεται η τρέχουσα σάρωση...
+    Παρακαλώ περιμένετε.
 permission_title = Πρόσβαση Αρχείου
 permission_body = Για τη σάρωση αρχείων, η εφαρμογή χρειάζεται πρόσβαση στον αποθηκευτικό χώρο της συσκευής. Χωρίς αυτό το δικαίωμα, η σάρωση δεν θα είναι δυνατή.
 grant = Παραχώρηση
 no_permission_scan_warning = Δεν υπάρχει πρόσβαση σε αρχείο - χορηγήστε άδεια για σάρωση
-# Settings screen tabs
 settings_tab_general = Γενικά
 settings_tab_tools = Εργαλεία
 settings_tab_diagnostics = Πληροφορίες
-# Settings - General tab
 settings_use_cache = Χρήση προσωρινής μνήμης
 settings_use_cache_desc = Επιταχύνει τις επόμενες σαρώσεις (hash/images)
 settings_ignore_hidden = Παράβλεψη κρυφών αρχείων
@@ -99,7 +88,6 @@ settings_allowed_extensions = ΕΠΙΤΡΕΠΟΜΕΝΕΣ ΕΠΕΚΤΑΣΕΙΣ (�
 settings_allowed_extensions_placeholder = π.χ. jpg, png, mp4
 settings_excluded_extensions = ΑΠΑΛΛΑΓΕΣ ΕΠΕΚΤΑΣΕΙΣ
 settings_excluded_extensions_placeholder = π.χ. bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = ΔΙΠΛΟΤΥΠΙΕΣ
 settings_check_method_label = ΜΕΘΟΔΟΣ COMPARISON
 settings_check_method = Μέθοδος
@@ -129,6 +117,10 @@ settings_music_length = Μήκος
 settings_music_genre = Είδος
 settings_music_bitrate = Ρυθμός Bit
 settings_music_approx = Κατά προσέγγιση σύγκριση ετικετών
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = ΠΕΡΙΣΣΟΤΕΡΑ BROKEN
 settings_broken_files_note = Σάρωση έντασης πόρων. Για καλύτερη απόδοση χρησιμοποιήστε το Krokiet στην επιφάνεια εργασίας.
 settings_broken_files_types_label = ΕΛΕΓΧΟΙ ΤΥΠΟΙ
@@ -136,6 +128,11 @@ settings_broken_audio = Ήχος
 settings_broken_pdf = PDF
 settings_broken_archive = Αρχειοθέτηση
 settings_broken_image = Εικόνα
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = ΚΑΚΑ ΟΝΟΜΑΤΑ
 settings_bad_names_checks_label = ΕΛΕΓΧΟΙ
 settings_bad_names_uppercase_ext = Επέκταση κεφαλαίων
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Emoji στο όνομα
 settings_bad_names_space = Χώροι στην έναρξη/λήξη
 settings_bad_names_non_ascii = Χαρακτήρες που δεν ανήκουν στο σύνολο ASCII
 settings_bad_names_duplicated = Επαναλαμβανόμενοι χαρακτήρες
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = ΔΙΑΓΝΩΣΤΙΚΕΣ
 diagnostics_thumbnails = Προσωρινή μνήμη για μικρογραφίες
 diagnostics_app_cache = Προσωρινή μνήμη εφαρμογής
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Εκκαθάριση όλων των cache?
 about_repo = Αποθετήριο
 about_translate = Μεταφράσεις
 about_donate = Υποστήριξη
-# Collect-test result popup
 collect_test_title = Αποτελέσματα δοκιμής
 collect_test_volumes = Τόμοι:
 collect_test_folders = Φάκελοι:
 collect_test_files = Αρχεία:
 collect_test_time = Ώρα:
-# Licenses
 licenses_label = ΑΔΕΙΑ
 third_party_licenses = Άδειες τρίτων
 licenses_popup_title = Άδειες Τρίτων
-# Directories screen
 directories_include_header = Συμπερίληψη
 directories_included = Περιλαμβάνεται
 directories_exclude_header = Εξαίρεση
@@ -182,11 +179,9 @@ no_paths = Δεν υπάρχουν διαδρομές - προσθέστε πα�
 directories_volume_header = Ένταση
 directories_volume_refresh = Ανανέωση
 directories_volume_add = Προσθήκη
-# Bottom navigation
 nav_home = Έναρξη
 nav_dirs = Κατάλογοι
 nav_settings = Ρυθμίσεις
-# Status messages set from Rust
 status_ready = Έτοιμο
 status_stopped = Διακόπηκε
 status_no_results = Κανένα αποτέλεσμα
@@ -206,7 +201,6 @@ cleaned_exif_suffix = αρχεία
 cleaned_exif_errors_suffix = σφάλματα
 and_more_prefix = ...και
 and_more_suffix = περισσότερα
-# Gallery / delete popups
 gallery_delete_button = Διαγραφή
 gallery_back = Πίσω
 gallery_confirm_delete = Ναι, διαγραφή
@@ -218,16 +212,12 @@ app_subtitle = Προς τιμήν της Μάχης της Cedynia (972 CE)
 app_license = Frontend για Czkawka Core - GPL-3.0
 about_app_label = ΣΧΕΤΙΚΑ
 cache_label = CACHE
-# Notification
 scan_completed_notification = Η σάρωση ολοκληρώθηκε - βρέθηκαν { $file_count } στοιχεία
-# Confirm popups (set from Rust)
 confirm_clean_exif = Είστε σίγουροι ότι θέλετε να διαγράψετε τις ετικέτες EXIF από τα { $n } επιλεγμένα αρχεία;
 confirm_delete_items = Είστε σίγουροι ότι θέλετε να διαγράψετε { $n } επιλεγμένα αντικείμενα;
 gallery_confirm_delete_msg = Ετοιμάζεστε να διαγράψετε { $total_images } εικόνες σε { $total_groups } ομάδες.
 gallery_confirm_delete_warning = Όλα τα στοιχεία επιλέχθηκαν σε { $unsafe_groups } ομάδες!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Υπολογισμός και σύγκριση ήχου δακτυλικά αποτυπώματα είναι πολύ έντασης πόρων και μπορεί να διαρκέσει πολύ. Συνιστάται η χρήση του Krokiet σε ένα επιτραπέζιο σύστημα για αυτήν την εργασία.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Συλλογή αρχείων
 stage_scanning_name = Σάρωση με όνομα
 stage_scanning_size_name = Σάρωση κατά όνομα και μέγεθος
@@ -256,13 +246,13 @@ stage_hardlinking = Δημιουργία σκληρών συνδέσμων
 stage_symlinking = Δημιουργία symlinks
 stage_optimizing_videos = Βελτιστοποίηση βίντεο
 stage_cleaning_exif = Καθαρισμός EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } αρχεία x { $per_file } / αρχείο = { $total } συνολικά
 similar_images_group_header = { $count } παρόμοιες εικόνες
 same_music_group_header = { $count } παρόμοια κομμάτια
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Είστε σίγουροι ότι θέλετε να μετονομάσετε τα { $n } επιλεγμένα αρχεία;
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Μεγαλύτερο
 option_search_mode_smallest = Μικρότερο
 option_similarity_very_high = Πολύ Υψηλό
@@ -278,20 +268,13 @@ option_check_method_size = Μέγεθος
 option_music_method_tags = Ετικέτες
 option_music_method_audio = Ήχος
 option_min_size_none = Κανένα
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Απεριόριστο
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Εσωτερικός Χώρος Αποθήκευσης
 volume_sd_card = Κάρτα Μνήμης (Κάρτα SD)
 volume_storage = Όγκος Αποθήκευσης
-# Directories screen
 directories_referenced_tooltip = Αναφορά (δεν διαγράφεται)
 directories_include_section_header = ΣΥΜΠΕΡΙΛΑΜΒΑΝΟΜΕΝΑ
 directories_exclude_section_header = ΑΠΑΝΤΗΣΗ
@@ -315,3 +298,21 @@ path_edit_no_newlines = Οι διαδρομές δεν μπορούν να πε�
 ctx_menu_title = Άνοιγμα
 ctx_open_file = Άνοιγμα αντικειμένου
 ctx_open_folder = Άνοιγμα γονικού φακέλου
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

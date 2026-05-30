@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Teks asli
 core_similarity_very_high = Sangat Tinggi
 core_similarity_high = Tinggi
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Tidak dapat membuat atau membuka file ca
 core_cannot_set_config_cache_path = Tidak dapat mengatur jalur konfigurasi/cache - konfigurasi dan cache tidak akan digunakan.
 core_invalid_extension_contains_space = { $extension } bukanlah ekstensi yang valid karena mengandung spasi di dalamnya
 core_invalid_extension_contains_dot = { $extension } bukanlah ekstensi yang valid karena mengandung titik di dalamnya
-
 core_ffmpeg_unknown_encoder = Tidak dapat mengenkode { $file } menggunakan encoder { $encoder }. Versi FFmpeg yang sedang digunakan tidak mendukung encoder ini. Gunakan versi FFmpeg yang berbeda yang mendukung codec yang diperlukan, atau pilih encoder lain.
 core_ffmpeg_error = Terjadi kesalahan FFmpeg saat memproses { $file }, kode status { $code }, alasan { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

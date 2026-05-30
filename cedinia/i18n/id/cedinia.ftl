@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Duplikat
 tool_empty_folders = Folder Kosong
@@ -13,9 +10,9 @@ tool_bad_extensions = Ekstensi yang Buruk
 tool_same_music = Duplikat Musik
 tool_bad_names = Nama yang Buruk
 tool_exif_remover = Data EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Direktori
 tool_settings = Pengaturan
-# Home screen tool card descriptions
 home_dup_description = Temukan file yang memiliki konten yang sama
 home_empty_folders_description = Direktori tanpa konten
 home_similar_images_description = Temukan foto-foto yang secara visual mirip
@@ -27,7 +24,7 @@ home_bad_extensions_description = Berkas dengan ekstensi yang tidak valid
 home_same_music_description = File audio serupa berdasarkan tag
 home_bad_names_description = Berkas dengan karakter yang bermasalah dalam namanya
 home_exif_description = Gambar dengan metadata EXIF
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Proses pemindaian sedang berlangsung...
 stopping = Berhenti...
 no_results = Tidak ada hasil
@@ -36,7 +33,6 @@ select_label = Pilih.
 deselect_label = Desel.
 list_label = Daftar
 gallery_label = Gal.
-# Selection popup
 selection_popup_title = Pilih
 select_all = Pilih Semua
 select_except_one = Pilih semua kecuali satu
@@ -50,32 +46,25 @@ select_highest_res = Pilih resolusi tertinggi
 select_lowest_res = Pilih resolusi terendah
 invert_selection = Balikkan pilihan
 close = Tutup
-# Deselection popup
 deselection_popup_title = Batalkan pilihan
 deselect_all = Batalkan semua pilihan
 deselect_except_one = Batalkan pilihan semua kecuali satu
-# Confirm popup
 cancel = Batalkan
 delete = Hapus
 rename = Ubah nama
-# Delete errors popup
 delete_errors_title = Gagal menghapus beberapa file:
 ok = OK
-# Stopping overlay
 stopping_overlay_title = Berhenti
-stopping_overlay_body = 
-        Penyelesaian pemindaian sedang berlangsung...
-        Mohon tunggu.
-# Permission popup
+stopping_overlay_body =
+    Penyelesaian pemindaian sedang berlangsung...
+    Mohon tunggu.
 permission_title = Akses File
 permission_body = Untuk memindai berkas, aplikasi memerlukan akses ke penyimpanan perangkat. Tanpa izin ini, proses pemindaian tidak akan dapat dilakukan.
 grant = Hibah
 no_permission_scan_warning = Tidak dapat mengakses berkas - berikan izin untuk melakukan pemindaian
-# Settings screen tabs
 settings_tab_general = Umum
 settings_tab_tools = Alat
 settings_tab_diagnostics = Informasi
-# Settings - General tab
 settings_use_cache = Gunakan cache
 settings_use_cache_desc = Mempercepat pemindaian selanjutnya (hash/gambar)
 settings_ignore_hidden = Abaikan file tersembunyi
@@ -99,7 +88,6 @@ settings_allowed_extensions = EKSTENSI YANG DIIZINKAN (kosong = semua)
 settings_allowed_extensions_placeholder = Contoh: jpg, png, mp4
 settings_excluded_extensions = EKSTENSI YANG TIDAK TERMASUK
 settings_excluded_extensions_placeholder = Contoh: bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = DUPLIKAT
 settings_check_method_label = METODE PERBANDINGAN
 settings_check_method = Metode
@@ -129,6 +117,10 @@ settings_music_length = Panjang
 settings_music_genre = Genre
 settings_music_bitrate = Bitrate
 settings_music_approx = Perbandingan tag perkiraan
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = FILE RUSAK
 settings_broken_files_note = Pemindaian membutuhkan banyak sumber daya. Untuk performa terbaik, gunakan Krokiet di desktop.
 settings_broken_files_types_label = JENIS YANG TELAH DIPERIKSA
@@ -136,6 +128,11 @@ settings_broken_audio = Audio
 settings_broken_pdf = PDF
 settings_broken_archive = Arsip
 settings_broken_image = Gambar
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = NAMA YANG BURUK
 settings_bad_names_checks_label = CEK
 settings_bad_names_uppercase_ext = Ekstensi huruf kapital
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Emoji dalam nama
 settings_bad_names_space = Spasi di awal/akhir
 settings_bad_names_non_ascii = Karakter non-ASCII
 settings_bad_names_duplicated = Karakter yang berulang
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = DIAGNOSTIK
 diagnostics_thumbnails = Cache gambar mini
 diagnostics_app_cache = Cache aplikasi
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Hapus semua cache aplikasi?
 about_repo = Repositori
 about_translate = Terjemahan
 about_donate = Dukungan
-# Collect-test result popup
 collect_test_title = Hasil pengujian
 collect_test_volumes = Volume:
 collect_test_folders = Folder:
 collect_test_files = Berkas:
 collect_test_time = Waktu:
-# Licenses
 licenses_label = LISENSÍ
 third_party_licenses = Lisensi pihak ketiga
 licenses_popup_title = Lisensi Pihak Ketiga
-# Directories screen
 directories_include_header = Sertakan
 directories_included = Termasuk
 directories_exclude_header = Kecualikan
@@ -182,11 +179,9 @@ no_paths = Tidak ada jalur - tambahkan di bawah ini
 directories_volume_header = Volume
 directories_volume_refresh = Segarkan
 directories_volume_add = Tambahkan
-# Bottom navigation
 nav_home = Mulai
 nav_dirs = Direktori
 nav_settings = Pengaturan
-# Status messages set from Rust
 status_ready = Siap
 status_stopped = Berhenti
 status_no_results = Tidak ada hasil
@@ -206,7 +201,6 @@ cleaned_exif_suffix = berkas
 cleaned_exif_errors_suffix = kesalahan
 and_more_prefix = ...dan
 and_more_suffix = lebih
-# Gallery / delete popups
 gallery_delete_button = Hapus
 gallery_back = Kembali
 gallery_confirm_delete = Ya, hapus
@@ -218,16 +212,12 @@ app_subtitle = Sebagai penghormatan kepada Pertempuran Cedynia (tahun 972 Masehi
 app_license = Antarmuka pengguna untuk Czkawka Core - Lisensi GPL-3.0
 about_app_label = TENTANG
 cache_label = CACHE
-# Notification
 scan_completed_notification = Pemindaian selesai - { $file_count } item ditemukan
-# Confirm popups (set from Rust)
 confirm_clean_exif = Apakah Anda yakin ingin menghapus tag EXIF dari { $n } file yang dipilih?
 confirm_delete_items = Apakah Anda yakin ingin menghapus { $n } item yang telah dipilih?
 gallery_confirm_delete_msg = Anda akan menghapus { $total_images } gambar di { $total_groups } grup.
 gallery_confirm_delete_warning = Semua item telah dipilih dari { $unsafe_groups } grup!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Menghitung dan membandingkan sidik jari audio membutuhkan banyak sumber daya dan mungkin memerlukan waktu yang lama. Disarankan untuk menggunakan Krokiet pada sistem desktop untuk tugas ini.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Mengumpulkan berkas
 stage_scanning_name = Pencarian berdasarkan nama
 stage_scanning_size_name = Pemindaian berdasarkan nama dan ukuran
@@ -256,13 +246,13 @@ stage_hardlinking = Membuat tautan keras
 stage_symlinking = Membuat symlink
 stage_optimizing_videos = Mengoptimalkan video
 stage_cleaning_exif = Membersihkan data EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } berkas x { $per_file } / berkas = { $total } total
 similar_images_group_header = { $count } gambar serupa
 same_music_group_header = { $count } trek serupa
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Apakah Anda yakin ingin mengubah nama { $n } berkas yang dipilih?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Terbesar
 option_search_mode_smallest = Terkecil
 option_similarity_very_high = V. Tinggi
@@ -278,20 +268,13 @@ option_check_method_size = Ukuran
 option_music_method_tags = Tag
 option_music_method_audio = Audio
 option_min_size_none = Tidak ada
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Tidak terbatas
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Penyimpanan Internal
 volume_sd_card = Kartu Memori (Kartu SD)
 volume_storage = Volume Penyimpanan
-# Directories screen
 directories_referenced_tooltip = Dirujuk (tidak dihapus)
 directories_include_section_header = TERMASUK
 directories_exclude_section_header = DIKECUALIKAN
@@ -315,3 +298,21 @@ path_edit_no_newlines = Jalur tidak boleh mengandung baris baru — tombol Enter
 ctx_menu_title = Buka
 ctx_open_file = Item terbuka
 ctx_open_folder = Buka folder induk
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

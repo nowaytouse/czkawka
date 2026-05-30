@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Các bản sao
 tool_empty_folders = Thư mục trống
@@ -13,9 +10,9 @@ tool_bad_extensions = Các tiện ích mở rộng kém chất lượng
 tool_same_music = Bản sao nhạc
 tool_bad_names = Tên nghe tệ
 tool_exif_remover = Dữ liệu EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Thư mục
 tool_settings = Cài đặt
-# Home screen tool card descriptions
 home_dup_description = Tìm các tệp có nội dung giống nhau
 home_empty_folders_description = Các thư mục không có nội dung
 home_similar_images_description = Tìm các ảnh có hình ảnh tương tự
@@ -27,7 +24,7 @@ home_bad_extensions_description = Các tệp có phần mở rộng không hợp
 home_same_music_description = Các tệp âm thanh tương tự theo thẻ
 home_bad_names_description = Các tệp có chứa các ký tự không hợp lệ trong tên
 home_exif_description = Hình ảnh có siêu dữ liệu EXIF
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Đang quét...
 stopping = Đang dừng...
 no_results = Không có kết quả
@@ -36,7 +33,6 @@ select_label = Chọn.
 deselect_label = Desel.
 list_label = Danh sách
 gallery_label = Ga-la.
-# Selection popup
 selection_popup_title = Chọn
 select_all = Chọn tất cả
 select_except_one = Chọn tất cả trừ một
@@ -50,32 +46,25 @@ select_highest_res = Chọn độ phân giải cao nhất
 select_lowest_res = Chọn độ phân giải thấp nhất
 invert_selection = Đảo ngược lựa chọn
 close = Đóng
-# Deselection popup
 deselection_popup_title = Bỏ chọn
 deselect_all = Bỏ chọn tất cả
 deselect_except_one = Bỏ chọn tất cả, chỉ giữ lại một
-# Confirm popup
 cancel = Hủy bỏ
 delete = Xóa
 rename = Đổi tên
-# Delete errors popup
 delete_errors_title = Không thể xóa một số tập tin:
 ok = Được
-# Stopping overlay
 stopping_overlay_title = Dừng lại
-stopping_overlay_body = 
-        Đang hoàn thành quá trình quét hiện tại...
-        Vui lòng chờ.
-# Permission popup
+stopping_overlay_body =
+    Đang hoàn thành quá trình quét hiện tại...
+    Vui lòng chờ.
 permission_title = Truy cập tệp
 permission_body = Để ứng dụng có thể quét các tệp, ứng dụng cần quyền truy cập vào bộ nhớ của thiết bị. Nếu không có quyền này, việc quét sẽ không thể thực hiện được.
 grant = Trao tặng
 no_permission_scan_warning = Không thể truy cập tệp - vui lòng cấp quyền để quét
-# Settings screen tabs
 settings_tab_general = Tổng quan
 settings_tab_tools = Công cụ
 settings_tab_diagnostics = Thông tin
-# Settings - General tab
 settings_use_cache = Sử dụng bộ nhớ đệm
 settings_use_cache_desc = Tăng tốc độ quét sau (băm/hình ảnh)
 settings_ignore_hidden = Bỏ qua các tệp ẩn
@@ -99,7 +88,6 @@ settings_allowed_extensions = CÁC ĐỊNH DẠNG TỆP ĐƯỢC PHÉP (để tr
 settings_allowed_extensions_placeholder = Ví dụ: jpg, png, mp4
 settings_excluded_extensions = CÁC TIỆN ÍCH KHÔNG ĐƯỢC HỖ TRỢ
 settings_excluded_extensions_placeholder = Ví dụ: bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = BẢN SAO CHÉ
 settings_check_method_label = PHƯƠNG PHÁP SO SÁNH
 settings_check_method = Phương pháp
@@ -129,6 +117,10 @@ settings_music_length = Độ dài
 settings_music_genre = Thể loại
 settings_music_bitrate = Bitrate
 settings_music_approx = So sánh thẻ (ước tính)
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = TỆP BỊ HƯ HỎNG
 settings_broken_files_note = Quá trình quét này đòi hỏi nhiều tài nguyên. Để đạt hiệu suất tốt nhất, hãy sử dụng Krokiet trên máy tính để bàn.
 settings_broken_files_types_label = LOẠI ĐÃ KIỂM TRA
@@ -136,6 +128,11 @@ settings_broken_audio = Âm thanh
 settings_broken_pdf = PDF
 settings_broken_archive = Lưu trữ
 settings_broken_image = Hình ảnh
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = TÊN XẤU
 settings_bad_names_checks_label = KIỂM TRA
 settings_bad_names_uppercase_ext = Ký hiệu mở rộng viết hoa
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Biểu tượng cảm xúc trong tên
 settings_bad_names_space = Các khoảng trắng ở đầu/cuối
 settings_bad_names_non_ascii = Ký tự không thuộc bảng ASCII
 settings_bad_names_duplicated = Ký tự lặp lại
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = CHẨN ĐOÁN
 diagnostics_thumbnails = Bộ nhớ đệm ảnh thu nhỏ
 diagnostics_app_cache = Bộ nhớ đệm của ứng dụng
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Xóa toàn bộ bộ nhớ cache của ứng dụng?
 about_repo = Kho lưu trữ
 about_translate = Dịch thuật
 about_donate = Hỗ trợ
-# Collect-test result popup
 collect_test_title = Kết quả kiểm tra
 collect_test_volumes = Số lượng:
 collect_test_folders = Thư mục:
 collect_test_files = Tệp:
 collect_test_time = Thời gian:
-# Licenses
 licenses_label = GIẤY PHÉP SỬ DỤNG
 third_party_licenses = Giấy phép của bên thứ ba
 licenses_popup_title = Giấy phép của bên thứ ba
-# Directories screen
 directories_include_header = Bao gồm
 directories_included = Đã bao gồm
 directories_exclude_header = Loại trừ
@@ -182,11 +179,9 @@ no_paths = Không có đường dẫn - thêm vào phần dưới đây
 directories_volume_header = Số lượng
 directories_volume_refresh = Làm mới
 directories_volume_add = Thêm
-# Bottom navigation
 nav_home = Bắt đầu
 nav_dirs = Thư mục
 nav_settings = Cài đặt
-# Status messages set from Rust
 status_ready = Sẵn sàng
 status_stopped = Đã dừng
 status_no_results = Không có kết quả
@@ -206,7 +201,6 @@ cleaned_exif_suffix = các tệp
 cleaned_exif_errors_suffix = lỗi
 and_more_prefix = ...và
 and_more_suffix = thêm nữa
-# Gallery / delete popups
 gallery_delete_button = Xóa
 gallery_back = Quay lại
 gallery_confirm_delete = Vâng, xóa
@@ -218,16 +212,12 @@ app_subtitle = Để tưởng nhớ trận chiến Cedynia (năm 972 CN)
 app_license = Giao diện người dùng cho Czkawka Core - Giấy phép GPL-3.0
 about_app_label = VỀ
 cache_label = BỘ NHỚ ĐỆM
-# Notification
 scan_completed_notification = Quá trình quét đã hoàn tất - Tìm thấy { $file_count } mục
-# Confirm popups (set from Rust)
 confirm_clean_exif = Bạn có chắc chắn muốn xóa các thẻ EXIF khỏi { $n } tập tin đã chọn không?
 confirm_delete_items = Bạn có chắc chắn muốn xóa { $n } mục đã chọn không?
 gallery_confirm_delete_msg = Bạn sắp xóa { $total_images } ảnh trong { $total_groups } nhóm.
 gallery_confirm_delete_warning = Tất cả các mục đã được chọn trong { $unsafe_groups } nhóm!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Việc tính toán và so sánh dấu vân âm thanh đòi hỏi rất nhiều tài nguyên và có thể mất nhiều thời gian. Chúng tôi khuyến nghị nên sử dụng Krokiet trên một hệ thống máy tính để bàn để thực hiện tác vụ này.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Đang thu thập các tệp
 stage_scanning_name = Quét theo tên
 stage_scanning_size_name = Quét theo tên và kích thước
@@ -256,13 +246,13 @@ stage_hardlinking = Tạo liên kết cứng
 stage_symlinking = Tạo liên kết tượng trưng
 stage_optimizing_videos = Tối ưu hóa video
 stage_cleaning_exif = Loại bỏ thông tin EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } tệp tin x { $per_file } / tệp tin = { $total } tổng cộng
 similar_images_group_header = { $count } hình ảnh tương tự
 same_music_group_header = { $count } bản nhạc tương tự
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Bạn có chắc chắn muốn đổi tên { $n } tệp đã chọn không?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Lớn nhất
 option_search_mode_smallest = Nhỏ nhất
 option_similarity_very_high = V. Cực cao
@@ -278,20 +268,13 @@ option_check_method_size = Kích thước
 option_music_method_tags = Các thẻ
 option_music_method_audio = Âm thanh
 option_min_size_none = Không có
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Không giới hạn
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Bộ nhớ trong
 volume_sd_card = Thẻ nhớ (thẻ SD)
 volume_storage = Dung lượng lưu trữ
-# Directories screen
 directories_referenced_tooltip = Đã tham chiếu (chưa bị xóa)
 directories_include_section_header = ĐÃ BAO GỒM
 directories_exclude_section_header = LOẠI TRỪ
@@ -315,3 +298,21 @@ path_edit_no_newlines = Đường dẫn không được chứa ký tự xuống 
 ctx_menu_title = Mở
 ctx_open_file = Mục đang mở
 ctx_open_folder = Mở thư mục cha
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

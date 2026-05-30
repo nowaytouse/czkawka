@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = 新規に作成
 core_similarity_very_high = 非常に高い
 core_similarity_high = 高い
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = キャッシュファイル "{ $file }" 
 core_cannot_set_config_cache_path = 設定/キャッシュのパスを設定できません - 設定とキャッシュは使用されません。.
 core_invalid_extension_contains_space = { $extension } は有効な拡張子ではありません。なぜなら、中に空白が含まれているからです。
 core_invalid_extension_contains_dot = { $extension } は有効な拡張子ではありません。なぜなら、中にドットが含まれているからです。
-
 core_ffmpeg_unknown_encoder = { $file } を { $encoder } エンコーダでエンコードできません。現在の FFmpeg のバージョンでは、このエンコーダがサポートされていません。必要なコーデックをサポートしている別の FFmpeg のバージョンを使用するか、別のエンコーダを選択してください。.
 core_ffmpeg_error = FFmpeg処理中にエラーが発生しました。ファイル: { $file }, エラーコード: { $code }, エラー内容: { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

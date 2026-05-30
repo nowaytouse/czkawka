@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Оригінал
 core_similarity_very_high = Дуже висока
 core_similarity_high = Висока
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Не вдається створити �
 core_cannot_set_config_cache_path = Не вдається встановити шлях до конфігурації/кешу - конфігурація та кеш не будуть використані.
 core_invalid_extension_contains_space = { $extension } не є допустимим розширенням, оскільки воно містить порожній простір всередині
 core_invalid_extension_contains_dot = { $extension } не є допустимим розширенням, оскільки воно містить крапку всередині
-
 core_ffmpeg_unknown_encoder = Не вдалося закодувати файл { $file } за допомогою кодека { $encoder }. Поточна версія FFmpeg не підтримує цей кодек. Використовуйте іншу версію FFmpeg з підтримкою необхідного кодека або виберіть інший кодек.
 core_ffmpeg_error = Помилка FFmpeg під час обробки файлу { $file }, код помилки { $code }, причина { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Dubbletter
 tool_empty_folders = Tomma mappar
@@ -13,9 +10,9 @@ tool_bad_extensions = Dåliga tillägg
 tool_same_music = Musik Duplicerar
 tool_bad_names = Dåliga namn
 tool_exif_remover = EXIF data
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Kataloger
 tool_settings = Inställningar
-# Home screen tool card descriptions
 home_dup_description = Hitta filer med samma innehåll
 home_empty_folders_description = Kataloger utan innehåll
 home_similar_images_description = Hitta visuellt liknande bilder
@@ -27,7 +24,7 @@ home_bad_extensions_description = Filer med ogiltigt tillägg
 home_same_music_description = Liknande ljudfiler med taggar
 home_bad_names_description = Filer med problematiska tecken i namnet
 home_exif_description = Bilder med EXIF-metadata
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Skannar pågår...
 stopping = Stoppar...
 no_results = Inga resultat
@@ -36,7 +33,6 @@ select_label = Sälj.
 deselect_label = Desel.
 list_label = Lista
 gallery_label = Gal.
-# Selection popup
 selection_popup_title = Välj
 select_all = Markera alla
 select_except_one = Markera alla utom en
@@ -50,32 +46,25 @@ select_highest_res = Välj högsta upplösning
 select_lowest_res = Välj lägsta upplösning
 invert_selection = Invertera markering
 close = Stäng
-# Deselection popup
 deselection_popup_title = Avmarkera
 deselect_all = Avmarkera alla
 deselect_except_one = Avmarkera alla utom en
-# Confirm popup
 cancel = Avbryt
 delete = Radera
 rename = Döp om
-# Delete errors popup
 delete_errors_title = Det gick inte att ta bort några filer:
 ok = Ok
-# Stopping overlay
 stopping_overlay_title = Stoppar
 stopping_overlay_body =
     Slutför aktuell skanning...
     Vänligen vänta.
-# Permission popup
 permission_title = Åtkomst till fil
 permission_body = För att skanna filer behöver appen åtkomst till enhetslagring. Utan denna behörighet kommer skanning inte att vara möjlig.
 grant = Bevilja
 no_permission_scan_warning = Ingen filåtkomst - bevilja behörighet att skanna
-# Settings screen tabs
 settings_tab_general = Allmänt
 settings_tab_tools = Verktyg
 settings_tab_diagnostics = Information
-# Settings - General tab
 settings_use_cache = Använd cache
 settings_use_cache_desc = Snabbar upp efterföljande skanningar (hash/images)
 settings_ignore_hidden = Ignorera dolda filer
@@ -99,7 +88,6 @@ settings_allowed_extensions = TILLGÄNGLIGA EXTENSIONER (tom = alla)
 settings_allowed_extensions_placeholder = t.ex. jpg, png, mp4
 settings_excluded_extensions = EXKLICKA EXTENSIONER
 settings_excluded_extensions_placeholder = t.ex. bak, tmp, logg
-# Settings - Tools section labels
 settings_duplicates_header = DUPLIKATER
 settings_check_method_label = KOMPARISON METOD
 settings_check_method = Metod
@@ -129,6 +117,10 @@ settings_music_length = Längd
 settings_music_genre = Genre
 settings_music_bitrate = Bithastighet
 settings_music_approx = Ungefärlig tagg jämförelse
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = BLÄDDRA FILER
 settings_broken_files_note = Resursintensiv skanning. För bästa prestanda använd Krokiet på skrivbordet.
 settings_broken_files_types_label = CHECKADE TYPER
@@ -136,6 +128,11 @@ settings_broken_audio = Ljud
 settings_broken_pdf = PDF
 settings_broken_archive = Arkivera
 settings_broken_image = Bild
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = BAD NAMN
 settings_bad_names_checks_label = CHECKAR
 settings_bad_names_uppercase_ext = Versaler förlängning
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Emoji i namn
 settings_bad_names_space = Mellanslag vid start/slut
 settings_bad_names_non_ascii = Tecken som inte är ASCII
 settings_bad_names_duplicated = Upprepade tecken
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = DIAGNOSTIKER
 diagnostics_thumbnails = Miniatyrbildscache
 diagnostics_app_cache = Applikationscache
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Rensa alla appcache?
 about_repo = Utveckling
 about_translate = Översättningar
 about_donate = Stöd
-# Collect-test result popup
 collect_test_title = Testa resultat
 collect_test_volumes = Volymer:
 collect_test_folders = Mappar:
 collect_test_files = Filer:
 collect_test_time = Tid:
-# Licenses
 licenses_label = LICENS
 third_party_licenses = Tredjeparts licenser
 licenses_popup_title = Licenser för tredje part
-# Directories screen
 directories_include_header = Inkludera
 directories_included = Ingår
 directories_exclude_header = Exkludera
@@ -182,11 +179,9 @@ no_paths = Inga sökvägar - lägg till nedan
 directories_volume_header = Volymer
 directories_volume_refresh = Uppdatera
 directories_volume_add = Lägg till
-# Bottom navigation
 nav_home = Starta
 nav_dirs = Kataloger
 nav_settings = Inställningar
-# Status messages set from Rust
 status_ready = Redo
 status_stopped = Stoppad
 status_no_results = Inga resultat
@@ -206,7 +201,6 @@ cleaned_exif_suffix = filer
 cleaned_exif_errors_suffix = fel
 and_more_prefix = ...och
 and_more_suffix = mer
-# Gallery / delete popups
 gallery_delete_button = Radera
 gallery_back = Tillbaka
 gallery_confirm_delete = Ja, ta bort
@@ -218,16 +212,12 @@ app_subtitle = För att hedra slaget vid Cedynia (972 CE)
 app_license = Frontend för Czkawka Core - GPL-3.0
 about_app_label = OM
 cache_label = CACHE
-# Notification
 scan_completed_notification = Skanna klar - { $file_count } objekt hittade
-# Confirm popups (set from Rust)
 confirm_clean_exif = Vill du verkligen rensa EXIF-taggar från { $n } valda filer?
 confirm_delete_items = Är du säker på att du vill ta bort { $n } valda objekt?
 gallery_confirm_delete_msg = Du håller på att ta bort { $total_images } bilder i { $total_groups } grupper.
 gallery_confirm_delete_warning = Alla objekt är markerade i { $unsafe_groups } grupper!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Att beräkna och jämföra ljudfingeravtryck är mycket resurskrävande och kan ta lång tid. Det rekommenderas att använda Krokiet på ett skrivbordssystem för denna uppgift.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Samlar in filer
 stage_scanning_name = Skannar efter namn
 stage_scanning_size_name = Skannar efter namn och storlek
@@ -256,13 +246,13 @@ stage_hardlinking = Skapar hårda länkar
 stage_symlinking = Skapar symlänkar
 stage_optimizing_videos = Optimerar videor
 stage_cleaning_exif = Rengöring av EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } filer x { $per_file } / fil = { $total } totalt
 similar_images_group_header = { $count } liknande bilder
 same_music_group_header = { $count } liknande spår
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Är du säker på att du vill byta namn på { $n } valda filer?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Största
 option_search_mode_smallest = Minsta
 option_similarity_very_high = V.Hög
@@ -278,20 +268,13 @@ option_check_method_size = Storlek
 option_music_method_tags = Taggar
 option_music_method_audio = Ljud
 option_min_size_none = Ingen
-option_min_size_1kb = 1 kB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Obegränsad
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Intern lagring
 volume_sd_card = Minneskort (SD-kort)
 volume_storage = Lagring Volym
-# Directories screen
 directories_referenced_tooltip = Refererad (ej borttagen)
 directories_include_section_header = ÖKLICKA
 directories_exclude_section_header = EXKLICKA
@@ -315,3 +298,21 @@ path_edit_no_newlines = Sökvägar kan inte innehålla newlines — Ange nyckel 
 ctx_menu_title = Öppna
 ctx_open_file = Öppna objekt
 ctx_open_folder = Öppna överordnad mapp
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 kB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

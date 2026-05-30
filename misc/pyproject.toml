@@ -8,6 +8,7 @@ dependencies = [
     "ty==0.0.26",
     "pandas-stubs",
     "fluent.syntax",
-    "ollama"
+    "ollama",
+    "opencc-python-reimplemented>=0.1.7",
 ]
 

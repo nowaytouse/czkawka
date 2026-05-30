@@ -274,6 +274,13 @@ translate:
     uv run misc/ai_translate/translate.py czkawka_core/i18n
     uv run misc/ai_translate/translate.py krokiet/i18n
     uv run misc/ai_translate/translate.py cedinia/i18n
+
+# Fork-only: fill Crowdin gaps (see misc/sync_fork_i18n.py, misc/fill_zh_cn_missing.py)
+sync-fork-i18n:
+    uv run python misc/build_fork_i18n_json.py
+    uv run python misc/fill_zh_cn_missing.py both
+    uv run python misc/sync_fork_i18n.py all --langs zh-CN,zh-TW,de,fr,ja,ko,es-ES,pl,ru,it,pt-BR,nl --fix-ref
+    uv run python misc/sync_fork_i18n.py all --copy-en-all-langs --copy-en
     just pack_translations
 
 validate_translations *args: # Available --fix argument, which removes invalid translations

@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Ursprunglig
 core_similarity_very_high = Mycket Hög
 core_similarity_high = Hög
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Kan inte skapa eller öppna cachefil "{ 
 core_cannot_set_config_cache_path = Kan inte ställa in config/cache-sökväg - config och cache kommer inte att användas.
 core_invalid_extension_contains_space = { $extension } är inte en giltig filändelse eftersom den innehåller tomma utrymmen däri
 core_invalid_extension_contains_dot = { $extension } är inte en giltig filändelse eftersom den innehåller en punkt inuti
-
 core_ffmpeg_unknown_encoder = Det går inte att koda { $file } med kodaren { $encoder }. Den aktuella FFmpeg-versionen stöder inte denna kodare. Använd en annan FFmpeg-version med stöd för den nödvändiga codec:en, eller välj en annan kodare.
 core_ffmpeg_error = FFmpeg-fel vid bearbetning av { $file }, statuskod { $code }, anledning { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

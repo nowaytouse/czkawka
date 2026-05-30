@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Originál
 core_similarity_very_high = Velmi vysoká
 core_similarity_high = Vysoká
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Nebylo možné vytvořit nebo otevřít 
 core_cannot_set_config_cache_path = Nebylo možné nastavit popis umístění souboru s nastaveními/mezipamětí – nastavení a mezipaměť nebude použity.
 core_invalid_extension_contains_space = { $extension } není platná přípona, protože má v sobě prázdné místo
 core_invalid_extension_contains_dot = { $extension } není platná přípona, protože má v sobě tečku
-
 core_ffmpeg_unknown_encoder = Nelze zakódovat soubor { $file } pomocí kodeku { $encoder }. Současná verze FFmpeg tuto funkci nepodporuje. Použijte jinou verzi FFmpeg s podporou požadovaného kodeku, nebo zvolte jiný kodek.
 core_ffmpeg_error = Chyba FFmpeg při zpracování souboru { $file }, kód chyby { $code }, důvod { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

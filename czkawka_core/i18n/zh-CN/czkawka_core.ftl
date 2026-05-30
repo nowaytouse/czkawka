@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = 原版
 core_similarity_very_high = 非常高
 core_similarity_high = 高
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = 无法创建或打开缓存文件 "{ $fi
 core_cannot_set_config_cache_path = 无法设置配置/缓存路径 - 配置和缓存将不会被使用。.
 core_invalid_extension_contains_space = { $extension } 不是一个有效的扩展名，因为它包含内部的空格
 core_invalid_extension_contains_dot = { $extension } 不是一个有效的扩展名，因为它包含在点内
-
 core_ffmpeg_unknown_encoder = 无法使用 { $encoder } 编码器对 { $file } 进行编码。当前的 FFmpeg 版本不支持此编码器。请使用支持所需编解码器的其他 FFmpeg 版本，或选择其他编码器。.
 core_ffmpeg_error = FFmpeg 处理 { $file } 时发生错误，状态码为 { $code }，原因：{ $reason }
+core_custom_command_missing_path_placeholder = 自定义 FFmpeg 命令必须包含 {"{PATH}"} 作为输入文件占位符
+core_custom_command_empty = 自定义 FFmpeg 命令不能为空

@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Originală
 core_similarity_very_high = Foarte Mare
 core_similarity_high = Ridicat
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Nu se poate crea sau deschide fișierul 
 core_cannot_set_config_cache_path = Nu se poate seta calea de configurare/cache - configurarea și cache-ul nu vor fi utilizate.
 core_invalid_extension_contains_space = { $extension } nu este o extensie validă deoarece conține spații goale în interior
 core_invalid_extension_contains_dot = { $extension } nu este o extensie validă deoarece conține punct în interior
-
 core_ffmpeg_unknown_encoder = Nu se poate codifica fișierul { $file } folosind codificatorul { $encoder }. Versiunea curentă de FFmpeg nu suportă acest codificator. Folosiți o altă versiune de FFmpeg care să suporte codec-ul necesar sau selectați un alt codificator.
 core_ffmpeg_error = Eroare FFmpeg în timpul procesării fișierului { $file }, cod de stare { $code }, motiv { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

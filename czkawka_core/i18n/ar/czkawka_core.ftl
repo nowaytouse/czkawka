@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = الأصل
 core_similarity_very_high = عالية جدا
 core_similarity_high = مرتفع
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = لا يمكن إنشاء أو فتح م�
 core_cannot_set_config_cache_path = لا يمكن تعيين مسار التكوين/التخزين المؤقت - لن يتم استخدام التكوين والتخزين المؤقت.
 core_invalid_extension_contains_space = { $extension } ليس امتدادًا صالحًا لأنه يحتوي على مساحة فارغة داخلية
 core_invalid_extension_contains_dot = { $extension } ليس امتدادًا صالحًا لأنه يحتوي على نقطة داخلية
-
 core_ffmpeg_unknown_encoder = لا يمكن ترميز الملف { $file } باستخدام برنامج الترميز { $encoder }. إصدار FFmpeg الحالي لا يدعم هذا البرنامج الترميز. استخدم إصدارًا مختلفًا من FFmpeg يدعم البرنامج الترميز المطلوب، أو اختر برنامج ترميز آخر.
 core_ffmpeg_error = خطأ في FFmpeg أثناء معالجة الملف { $file }، رمز الحالة { $code }، والسبب { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

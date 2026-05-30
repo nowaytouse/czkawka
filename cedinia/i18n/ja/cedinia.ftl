@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = セディニア
 tool_duplicate_files = 重複
 tool_empty_folders = 空のフォルダ
@@ -13,9 +10,9 @@ tool_bad_extensions = 不正なエクステンション
 tool_same_music = 音楽重複
 tool_bad_names = 名前が正しくありません
 tool_exif_remover = EXIFデータ
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = ディレクトリ
 tool_settings = 設定
-# Home screen tool card descriptions
 home_dup_description = 同じ内容のファイルを検索
 home_empty_folders_description = コンテンツのないディレクトリ
 home_similar_images_description = 視覚的に類似した写真を検索
@@ -27,7 +24,7 @@ home_bad_extensions_description = 無効な拡張子を持つファイル
 home_same_music_description = タグによる類似のオーディオ ファイル
 home_bad_names_description = 名前に問題のある文字を含むファイル
 home_exif_description = EXIF メタデータを持つ画像
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = スキャン中...
 stopping = 停止中...
 no_results = 結果がありません
@@ -36,7 +33,6 @@ select_label = セル。.
 deselect_label = Desel.
 list_label = リスト
 gallery_label = ガール。.
-# Selection popup
 selection_popup_title = 選択
 select_all = すべて選択
 select_except_one = 1つ以外のすべてを選択
@@ -50,32 +46,25 @@ select_highest_res = 最高解像度を選択
 select_lowest_res = 最小解像度を選択
 invert_selection = 選択を反転
 close = 閉じる
-# Deselection popup
 deselection_popup_title = 選択を解除
 deselect_all = すべての選択を解除
 deselect_except_one = 一つ以外のすべての選択を解除
-# Confirm popup
 cancel = キャンセル
 delete = 削除
 rename = 名前の変更
-# Delete errors popup
 delete_errors_title = いくつかのファイルを削除できませんでした:
 ok = 了解。
-# Stopping overlay
 stopping_overlay_title = 停止中
-stopping_overlay_body = 
+stopping_overlay_body =
     現在のスキャンを完了しています...
     お待ちください。.
-# Permission popup
 permission_title = ファイルアクセス
 permission_body = ファイルをスキャンするには、アプリがデバイスのストレージにアクセスする必要があります。この許可がないとスキャンはできません。.
 grant = 許可
 no_permission_scan_warning = ファイルへのアクセス権限がありません - スキャンする権限を付与します
-# Settings screen tabs
 settings_tab_general = 全般
 settings_tab_tools = ツール
 settings_tab_diagnostics = 情報
-# Settings - General tab
 settings_use_cache = キャッシュを使用
 settings_use_cache_desc = その後のスキャン速度を上げる（ハッシュ/イメージ）
 settings_ignore_hidden = 隠しファイルを無視
@@ -99,7 +88,6 @@ settings_allowed_extensions = 許可された拡張 (空 = すべて)
 settings_allowed_extensions_placeholder = 例: jpg, png, mp4
 settings_excluded_extensions = 除外された拡張
 settings_excluded_extensions_placeholder = 例: bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = 重複度
 settings_check_method_label = 比較方法
 settings_check_method = 方法
@@ -129,6 +117,10 @@ settings_music_length = 長さ
 settings_music_genre = ジャンル
 settings_music_bitrate = ビットレート
 settings_music_approx = おおよそのタグ比較
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = ブロックファイル
 settings_broken_files_note = リソース集約的なスキャン。最高のパフォーマンスを得るためにデスクトップでKrokietを使用してください。.
 settings_broken_files_types_label = チェックした種類
@@ -136,6 +128,11 @@ settings_broken_audio = オーディオ
 settings_broken_pdf = PDF
 settings_broken_archive = アーカイブ
 settings_broken_image = 画像
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = Bad Name
 settings_bad_names_checks_label = チェック
 settings_bad_names_uppercase_ext = 大文字の拡張
@@ -143,7 +140,10 @@ settings_bad_names_emoji = 名前の絵文字
 settings_bad_names_space = 開始/終了時のスペース
 settings_bad_names_non_ascii = 非ASCII文字
 settings_bad_names_duplicated = 繰り返し文字
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = 診断
 diagnostics_thumbnails = サムネイルキャッシュ
 diagnostics_app_cache = アプリのキャッシュ
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = アプリのキャッシュをすべてクリアし�
 about_repo = リポジトリ
 about_translate = 翻訳
 about_donate = サポート
-# Collect-test result popup
 collect_test_title = テスト結果
 collect_test_volumes = ボリューム:
 collect_test_folders = フォルダ:
 collect_test_files = ファイル:
 collect_test_time = 時間:
-# Licenses
 licenses_label = ライセンス
 third_party_licenses = サードパーティのライセンス
 licenses_popup_title = サードパーティライセンス
-# Directories screen
 directories_include_header = 含む。
 directories_included = 含む
 directories_exclude_header = 除外
@@ -182,11 +179,9 @@ no_paths = パスなし - 以下に追加
 directories_volume_header = ボリューム
 directories_volume_refresh = 更新
 directories_volume_add = 追加
-# Bottom navigation
 nav_home = 開始
 nav_dirs = ディレクトリ
 nav_settings = 設定
-# Status messages set from Rust
 status_ready = 準備完了
 status_stopped = 停止しました
 status_no_results = 結果がありません
@@ -206,7 +201,6 @@ cleaned_exif_suffix = ファイル
 cleaned_exif_errors_suffix = エラー
 and_more_prefix = ...と
 and_more_suffix = もっと見る
-# Gallery / delete popups
 gallery_delete_button = 削除
 gallery_back = 戻る
 gallery_confirm_delete = はい、削除します
@@ -218,16 +212,12 @@ app_subtitle = セデニアの戦い（972年）
 app_license = Czkawka Core のフロントエンド-GPL-3.0
 about_app_label = About
 cache_label = キャッシュ
-# Notification
 scan_completed_notification = スキャンが完了しました - { $file_count } 個のアイテムが見つかりました
-# Confirm popups (set from Rust)
 confirm_clean_exif = 選択した { $n } からの EXIF タグを削除してもよろしいですか？
 confirm_delete_items = 選択したアイテムを削除してもよろしいですか？ { $n}
 gallery_confirm_delete_msg = これから、{ $total_groups } のグループにある { $total_images } 枚の画像を削除します。.
 gallery_confirm_delete_warning = すべての項目は { $unsafe_groups } グループで選択されます。
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = オーディオフィンガープリントの計算と比較は非常にリソースがかかるため、時間がかかる場合があります。 このタスクにはデスクトップシステムで Krokiet を使用することをお勧めします。.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = ファイルの収集
 stage_scanning_name = 名前でスキャン中
 stage_scanning_size_name = 名前とサイズでスキャン中
@@ -256,13 +246,13 @@ stage_hardlinking = ハードリンクの作成
 stage_symlinking = シンボリックリンクの作成
 stage_optimizing_videos = 動画の最適化
 stage_cleaning_exif = EXIF をクリーンアップ中
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } files x { $per_file } / file = { $total } total
 similar_images_group_header = { $count } と同様の画像
 same_music_group_header = { $count } 類似のトラック
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = 選択された { $n } 個のファイルを本当に名前を変更しますか？
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = 最大
 option_search_mode_smallest = 小
 option_similarity_very_high = V.高
@@ -278,20 +268,13 @@ option_check_method_size = サイズ
 option_music_method_tags = タグ
 option_music_method_audio = オーディオ
 option_min_size_none = なし
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = 無制限です
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = 内部ストレージ
 volume_sd_card = メモリカード（SDカード）
 volume_storage = ストレージボリューム
-# Directories screen
 directories_referenced_tooltip = 参照（削除されていません）
 directories_include_section_header = 含まれる
 directories_exclude_section_header = 除外しました
@@ -315,3 +298,21 @@ path_edit_no_newlines = パスに改行を含めることはできません — 
 ctx_menu_title = 開く
 ctx_open_file = アイテムを開く
 ctx_open_folder = 親フォルダを開く
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

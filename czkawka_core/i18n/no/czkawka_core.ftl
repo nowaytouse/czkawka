@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Opprinnelig
 core_similarity_very_high = Veldig høy
 core_similarity_high = Høy
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Kan ikke opprette eller åpne cachefil "
 core_cannot_set_config_cache_path = Kan ikke sette config/cache-sti - config og cache vil ikke bli brukt.
 core_invalid_extension_contains_space = { $extension } er ikke en gyldig filtype fordi den inneholder mellomrom
 core_invalid_extension_contains_dot = { $extension } er ikke en gyldig filtype fordi den inneholder et punkt (.) inni seg
-
 core_ffmpeg_unknown_encoder = Kan ikke kode { $file } ved hjelp av koderen { $encoder }. Den nåværende FFmpeg-versjonen støtter ikke denne koderen. Bruk en annen FFmpeg-versjon med støtte for den nødvendige kodeken, eller velg en annen koder.
 core_ffmpeg_error = FFmpeg-feil under behandling av { $file }, statuskode { $code }, årsak { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

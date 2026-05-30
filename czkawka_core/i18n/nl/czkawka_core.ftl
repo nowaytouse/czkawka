@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Origineel
 core_similarity_very_high = Zeer hoog
 core_similarity_high = hoog
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = Kan bestand { $file } niet aanmaken of o
 core_cannot_set_config_cache_path = Kan de config/cache pad niet instellen - config en cache zullen niet worden gebruikt.
 core_invalid_extension_contains_space = { $extension } is geen geldige extensie omdat het lege ruimte bevat binnenin
 core_invalid_extension_contains_dot = { $extension } is geen geldige extensie omdat het punt erin zit
-
 core_ffmpeg_unknown_encoder = Kan { $file } niet coderen met de { $encoder } encoder. De huidige FFmpeg-versie ondersteunt deze encoder niet. Gebruik een andere FFmpeg-versie met de benodigde codec-ondersteuning of selecteer een andere encoder.
 core_ffmpeg_error = FFmpeg-fout tijdens het verwerken van { $file }, statuscode { $code }, reden { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

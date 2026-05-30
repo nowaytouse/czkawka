@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = मूल पाठ
 core_similarity_very_high = बहुत उच्च
 core_similarity_high = ऊँचा
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = कैश फ़ाइल "{ $file }" �
 core_cannot_set_config_cache_path = कॉन्फ़िगरेशन/कैश पाथ सेट नहीं किया जा सका - कॉन्फ़िगरेशन और कैश का उपयोग नहीं किया जाएगा.
 core_invalid_extension_contains_space = { $extension } एक मान्य एक्सटेंशन नहीं है क्योंकि इसमें अंदर खाली स्थान है
 core_invalid_extension_contains_dot = { $extension } एक मान्य एक्सटेंशन नहीं है क्योंकि इसमें एक डॉट मौजूद है
-
 core_ffmpeg_unknown_encoder = { $file } फ़ाइल को { $encoder } एन्कोडर का उपयोग करके एन्कोड नहीं किया जा सकता। वर्तमान FFmpeg संस्करण इस एन्कोडर का समर्थन नहीं करता है। आवश्यक कोडेक समर्थन वाले किसी अन्य FFmpeg संस्करण का उपयोग करें या किसी अन्य एन्कोडर का चयन करें।.
 core_ffmpeg_error = FFmpeg में त्रुटि: फ़ाइल { $file } को संसाधित करते समय, स्थिति कोड { $code }, कारण { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

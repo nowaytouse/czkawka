@@ -1,6 +1,3 @@
-# Cedinia - English (fallback)
-
-# App / top bar titles
 app_name = Cedinia
 tool_duplicate_files = Duplikáty
 tool_empty_folders = Prázdné složky
@@ -13,9 +10,9 @@ tool_bad_extensions = Špatná rozšíření
 tool_same_music = Hudební duplikáty
 tool_bad_names = Špatná jména
 tool_exif_remover = Data EXIF
+tool_similar_videos = Similar Videos (Audio)
 tool_directories = Adresáře
 tool_settings = Nastavení
-# Home screen tool card descriptions
 home_dup_description = Najít soubory se stejným obsahem
 home_empty_folders_description = Adresáře bez obsahu
 home_similar_images_description = Najít vizuálně podobné fotky
@@ -27,7 +24,7 @@ home_bad_extensions_description = Soubory s neplatnou příponou
 home_same_music_description = Podobné zvukové soubory pomocí štítků
 home_bad_names_description = Soubory s problematickými znaky v názvu
 home_exif_description = Obrázky s EXIF metadaty
-# Results list
+home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
 scanning = Probíhá vyhledávání...
 stopping = Zastavování...
 no_results = Žádné výsledky
@@ -36,7 +33,6 @@ select_label = Vybráno.
 deselect_label = Desel.
 list_label = Seznam
 gallery_label = Gal.
-# Selection popup
 selection_popup_title = Vybrat
 select_all = Vybrat vše
 select_except_one = Vybrat vše kromě jednoho
@@ -50,32 +46,25 @@ select_highest_res = Vybrat nejvyšší rozlišení
 select_lowest_res = Vyberte nejnižší rozlišení
 invert_selection = Invertovat výběr
 close = Zavřít
-# Deselection popup
 deselection_popup_title = Zrušit výběr
 deselect_all = Zrušit výběr všech
 deselect_except_one = Zrušit výběr všech kromě jedné
-# Confirm popup
 cancel = Zrušit
 delete = Vymazat
 rename = Přejmenovat
-# Delete errors popup
 delete_errors_title = Nepodařilo se odstranit některé soubory:
 ok = OK
-# Stopping overlay
 stopping_overlay_title = Zastavování
 stopping_overlay_body =
     Dokončování aktuálního skenování...
     Počkejte prosím.
-# Permission popup
 permission_title = Přístup k souborům
 permission_body = Pro skenování souborů potřebuje aplikace přístup k úložišti zařízení. Bez tohoto oprávnění nebude skenování možné.
 grant = Udělit
 no_permission_scan_warning = Žádný přístup k souborům - udělit oprávnění pro skenování
-# Settings screen tabs
 settings_tab_general = Obecná ustanovení
 settings_tab_tools = Nástroje a nářadí
 settings_tab_diagnostics = Informace
-# Settings - General tab
 settings_use_cache = Použít keš
 settings_use_cache_desc = Zrychluje následující skenování (pole/obrázky)
 settings_ignore_hidden = Ignorovat skryté soubory
@@ -99,7 +88,6 @@ settings_allowed_extensions = POVOLENÉ ROZŠÍŘENÍ (prázdné = všechny)
 settings_allowed_extensions_placeholder = např. jpg, png, mp4
 settings_excluded_extensions = VYLOUČENÉ ROZŠÍŘENÍ
 settings_excluded_extensions_placeholder = např. bak, tmp, log
-# Settings - Tools section labels
 settings_duplicates_header = DUPLIKÁTORY
 settings_check_method_label = METODA SROVNÁNÍ
 settings_check_method = Metoda
@@ -129,6 +117,10 @@ settings_music_length = Délka
 settings_music_genre = Žánr
 settings_music_bitrate = Bitová rychlost
 settings_music_approx = Přibližné porovnání značek
+settings_temporary_files_header = TEMPORARY FILES
+settings_temporary_files_extensions_label = EXTENSIONS
+settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
+settings_temporary_files_reset = Reset to defaults
 settings_broken_files_header = BROKEN SOUBORY
 settings_broken_files_note = Skenování náročné na zdroje. Pro nejlepší výkon použijte Krokiet na počítači.
 settings_broken_files_types_label = KONTROLNÍ TYPY
@@ -136,6 +128,11 @@ settings_broken_audio = Zvuk
 settings_broken_pdf = PDF
 settings_broken_archive = Archiv
 settings_broken_image = Obrázek
+settings_broken_font = Font
+settings_broken_markup = Markup (JSON/XML/TOML)
+settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
+settings_similar_videos_audio_preset = Audio similarity preset
+settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
 settings_bad_names_header = Příloha V část 2 odst
 settings_bad_names_checks_label = KONTROLY
 settings_bad_names_uppercase_ext = Velké rozšíření
@@ -143,7 +140,10 @@ settings_bad_names_emoji = Emoji v názvu
 settings_bad_names_space = Mezery při startu/konci
 settings_bad_names_non_ascii = Znaky mimo sadu ASCII
 settings_bad_names_duplicated = Opakované znaky
-# Settings - Diagnostics tab
+settings_ignore_same_resolution = Ignore images with the same resolution
+settings_appearance_label = APPEARANCE
+settings_dark_theme = Dark theme
+settings_dark_theme_desc = Use dark colour scheme
 diagnostics_header = DIAGNOSTIKA
 diagnostics_thumbnails = Mezipaměť náhledů
 diagnostics_app_cache = Cache aplikací
@@ -162,17 +162,14 @@ diag_confirm_clear_cache = Smazat mezipaměť všech aplikací?
 about_repo = Repozitář
 about_translate = Překlady
 about_donate = Podpora
-# Collect-test result popup
 collect_test_title = Výsledky zkoušek
 collect_test_volumes = Objemy:
 collect_test_folders = Složky:
 collect_test_files = Soubory:
 collect_test_time = Čas:
-# Licenses
 licenses_label = LICENCE
 third_party_licenses = Licence třetích stran
 licenses_popup_title = Licence třetích stran
-# Directories screen
 directories_include_header = Zahrnout
 directories_included = Zahrnuty
 directories_exclude_header = Vyjmout
@@ -182,11 +179,9 @@ no_paths = Žádné cesty - přidat níže
 directories_volume_header = Objemy
 directories_volume_refresh = Aktualizovat
 directories_volume_add = Přidat
-# Bottom navigation
 nav_home = Začít
 nav_dirs = Adresáře
 nav_settings = Nastavení
-# Status messages set from Rust
 status_ready = Připraveno
 status_stopped = Zastaveno
 status_no_results = Žádné výsledky
@@ -206,7 +201,6 @@ cleaned_exif_suffix = soubory
 cleaned_exif_errors_suffix = chyby
 and_more_prefix = ...a
 and_more_suffix = více
-# Gallery / delete popups
 gallery_delete_button = Vymazat
 gallery_back = Zpět
 gallery_confirm_delete = Ano, smazat
@@ -218,16 +212,12 @@ app_subtitle = Na počest skotu v Cedynii (972 CE)
 app_license = Frontend pro Czkawku Core - GPL-3.0
 about_app_label = O aplikaci
 cache_label = KAKOVAT
-# Notification
 scan_completed_notification = Naskenování dokončeno - { $file_count } nalezeno
-# Confirm popups (set from Rust)
 confirm_clean_exif = Jste si jisti, že chcete vymazat EXIF tagy z vybraných souborů { $n}?
 confirm_delete_items = Jste si jisti, že chcete odstranit vybrané položky { $n}?
 gallery_confirm_delete_msg = Chystáte se odstranit { $total_images } obrázky ve skupinách { $total_groups}.
 gallery_confirm_delete_warning = Všechny položky jsou vybrány ve skupinách { $unsafe_groups}!
-# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Výpočet a porovnávání zvukových otisků prstů je velmi náročný na zdroje a může trvat dlouho. Pro tento úkol se doporučuje použít Krokiet na počítačovém systému.
-# Scan stage labels (shown during scan progress)
 stage_collecting_files = Shromažďování souborů
 stage_scanning_name = Skenování podle jména
 stage_scanning_size_name = Skenování podle názvu a velikosti
@@ -256,13 +246,13 @@ stage_hardlinking = Vytváření tvrdých odkazů
 stage_symlinking = Vytvářím symbolické odkazy
 stage_optimizing_videos = Optimalizace videí
 stage_cleaning_exif = Čištění EXIF
-# Group headers in scan results
+stage_all_hiding_links = Hiding hard links
+stage_empty_files_checking_content = Checking file content
 duplicates_group_header = { $count } soubory x { $per_file } / soubor = { $total } celkem
 similar_images_group_header = Podobné obrázky { $count}
 same_music_group_header = { $count } podobné stopy
-# Rename confirmation
+similar_videos_group_header = { $count } similar videos
 confirm_rename_items = Opravdu chcete přejmenovat vybrané soubory { $n}?
-# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Největší
 option_search_mode_smallest = Nejmenší
 option_similarity_very_high = Vrchní
@@ -278,20 +268,13 @@ option_check_method_size = Velikost
 option_music_method_tags = Štítky
 option_music_method_audio = Zvuk
 option_min_size_none = Nic
-option_min_size_1kb = 1 KB
-option_min_size_8kb = 8 KB
-option_min_size_64kb = 64 KB
-option_min_size_1mb = 1 MB
-option_max_size_16kb = 16 KB
-option_max_size_1mb = 1 MB
-option_max_size_10mb = 10 MB
-option_max_size_100mb = 100 MB
 option_max_size_unlimited = Bez omezení
-# Volume labels (shown in the directories screen)
+option_audio_preset_identical = Identical
+option_audio_preset_clip = Clip in longer
+option_audio_preset_similar = Similar
 volume_internal_storage = Interní úložiště
 volume_sd_card = Karta paměti (SD karta)
 volume_storage = Hlasitost úložiště
-# Directories screen
 directories_referenced_tooltip = Odkazováno (nesmazáno)
 directories_include_section_header = VČETNĚ
 directories_exclude_section_header = VYSVĚTLIVKA
@@ -315,3 +298,21 @@ path_edit_no_newlines = Cesty nemohou obsahovat nové řádky — Enter klíč n
 ctx_menu_title = Otevřít
 ctx_open_file = Otevřít položku
 ctx_open_folder = Otevřít nadřazenou složku
+dir_open_folder = Open folder
+compare_label = Compare
+compare_loading = Loading images…
+compare_cancelling = Cancelling…
+compare_computing = Computing diff…
+compare_mode_normal = Side
+compare_mode_split = Split
+compare_mode_overlay = Overlay
+compare_mode_diff = Diff
+compare_res_mismatch = Different resolutions – diff may be inaccurate
+option_min_size_1kb = 1 KB
+option_min_size_8kb = 8 KB
+option_min_size_64kb = 64 KB
+option_min_size_1mb = 1 MB
+option_max_size_16kb = 16 KB
+option_max_size_1mb = 1 MB
+option_max_size_10mb = 10 MB
+option_max_size_100mb = 100 MB

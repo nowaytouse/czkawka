@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = اصولی
 core_similarity_very_high = بسیار بلند
 core_similarity_high = ارتفاع
@@ -6,7 +5,7 @@ core_similarity_medium = میانبر
 core_similarity_small = کوچک
 core_similarity_very_small = بسیار کوچک
 core_similarity_minimal =
-    最少istantly converted to Persian: 
+    最少istantly converted to Persian:
     مینیمال
 core_cannot_open_dir = نمی‌توانم مسیر { $dir } را باز کنم، دلیل آن { $reason }
 core_cannot_read_entry_dir = نمی‌توانید درایه‌ای از پوشه { $dir } را بخوانید، دلیل آن { $reason }
@@ -97,6 +96,7 @@ core_cannot_create_or_open_cache_file = امکان ایجاد یا باز کرد
 core_cannot_set_config_cache_path = امکان تنظیم مسیر config/cache وجود ندارد - config و cache استفاده نخواهند شد.
 core_invalid_extension_contains_space = { $extension } یک پسوند معتبر نیست زیرا حاوی فاصله خالی در داخل است
 core_invalid_extension_contains_dot = { $extension } یک پسوند معتبر نیست زیرا شامل نقطه داخل آن است
-
 core_ffmpeg_unknown_encoder = امکان رمزگذاری فایل { $file } با استفاده از رمزگذار { $encoder } وجود ندارد. نسخه فعلی FFmpeg از این رمزگذار پشتیبانی نمی‌کند. از یک نسخه دیگر از FFmpeg که از کدک مورد نیاز پشتیبانی می‌کند، استفاده کنید یا یک رمزگذار دیگر را انتخاب کنید.
 core_ffmpeg_error = خطای FFmpeg در حین پردازش فایل { $file }، کد خطا: { $code }، دلیل: { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

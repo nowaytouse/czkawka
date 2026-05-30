@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = 원본
 core_similarity_very_high = 매우 높음
 core_similarity_high = 높음
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = 캐시 파일 "{ $file }"를 생성하�
 core_cannot_set_config_cache_path = 설정/캐시 경로 설정 불가 - 설정 및 캐시는 사용되지 않습니다.
 core_invalid_extension_contains_space = { $extension }는 유효하지 않은 확장자입니다. 확장자 안에 빈 공간이 있기 때문입니다
 core_invalid_extension_contains_dot = { $extension }는 유효하지 않은 확장자입니다. 확장자 안에 점이 포함되어 있기 때문입니다
-
 core_ffmpeg_unknown_encoder = { $file } 파일을 { $encoder } 인코더를 사용하여 인코딩할 수 없습니다. 현재 FFmpeg 버전은 이 인코더를 지원하지 않습니다. 필요한 코덱을 지원하는 다른 FFmpeg 버전을 사용하거나, 다른 인코더를 선택하십시오.
 core_ffmpeg_error = FFmpeg 처리 중 오류 발생: 파일 { $file }, 상태 코드 { $code }, 이유 { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

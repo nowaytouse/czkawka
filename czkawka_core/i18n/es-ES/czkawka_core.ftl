@@ -1,4 +1,3 @@
-# Core
 core_similarity_original = Original
 core_similarity_very_high = Muy alta
 core_similarity_high = Alta
@@ -95,6 +94,7 @@ core_cannot_create_or_open_cache_file = No se puede crear o abrir el archivo de 
 core_cannot_set_config_cache_path = No se puede establecer la ruta de configuración/caché - la configuración y la caché no se utilizarán.
 core_invalid_extension_contains_space = { $extension } no es una extensión válida porque contiene espacios en blanco dentro
 core_invalid_extension_contains_dot = { $extension } no es una extensión válida porque contiene un punto dentro
-
 core_ffmpeg_unknown_encoder = No se puede codificar el archivo { $file } utilizando el codificador { $encoder }. La versión actual de FFmpeg no es compatible con este codificador. Utilice una versión diferente de FFmpeg que admita el códec requerido o seleccione otro codificador.
 core_ffmpeg_error = Error de FFmpeg al procesar el archivo { $file }, código de estado { $code }, motivo { $reason }
+core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
+core_custom_command_empty = Custom FFmpeg command cannot be empty

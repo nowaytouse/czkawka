@@ -148,13 +148,6 @@ fn reset_selection_at_end(app: &MainWindow, active_tab: ActiveTab) {
     set_number_of_enabled_items(app, active_tab, 0);
 }
 
-/// Ends a scan on the UI thread: clear list selection state before `scan_ended` sets `scanning = false`,
-/// so a Return key-up cannot open a stale `last_selected_idx` (see `selectable_tree_view.slint` `released_key`).
-pub(crate) fn finish_scan(app: &MainWindow, active_tab: ActiveTab, message: impl Into<slint::SharedString>) {
-    reset_selection_at_end(app, active_tab);
-    app.invoke_scan_ended(message.into());
-}
-
 fn insert_data_to_model(items: &Rc<VecModel<SingleMainListModel>>, data_model_str: ModelRc<SharedString>, data_model_int: ModelRc<i32>, filled_header_row: Option<bool>) {
     let main = SingleMainListModel {
         checked: false,

@@ -339,7 +339,7 @@ pub struct SimilarImagesArgs {
         long_help = "Show only images with exactly the same file size, ignoring similarity threshold"
     )]
     pub only_same_size: bool,
-    #[clap(short = 'R', long, help = "Enable size ratio filter", long_help = "Filter results by file size ratio")]
+    #[clap(short = 'S', long, help = "Enable size ratio filter", long_help = "Filter results by file size ratio")]
     pub size_ratio_enabled: bool,
     #[clap(
         short = 'r',

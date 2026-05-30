@@ -134,7 +134,7 @@ export component SelectableTableView inherits Rectangle {
                 touch_area := TouchArea {
                     forward-focus: focus_item;
                     double-clicked => {
-                        if (contains_data(idx)) {
+                        if (contains_data(idx) && !r.header_row) {
                             Callabler.row_open_item_with_index(idx);
                         }
                     }
@@ -298,7 +298,7 @@ export component SelectableTableView inherits Rectangle {
         if (event.text == " ") {
             Callabler.row_reverse_checked_selection();
         } else if (event.text == "\n") {
-           if (last_selected_idx != -1 && contains_data(last_selected_idx)) {
+           if (last_selected_idx != -1 && contains_data(last_selected_idx) && !root.values[last_selected_idx].header_row) {
                 Callabler.row_open_item_with_index(last_selected_idx);
            }
         } else if (event.text == Key.UpArrow) {
@@ -361,7 +361,7 @@ export component SelectableTableView inherits Rectangle {
 
     context_menu := PopupContextMenu {
         open_item() => {
-            if (context_menu_row_idx != -1) {
+            if (context_menu_row_idx != -1 && contains_data(context_menu_row_idx) && !root.values[context_menu_row_idx].header_row) {
                 Callabler.row_open_item_with_index(context_menu_row_idx);
             }
         }

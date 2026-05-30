@@ -206,11 +206,23 @@ fn connect_filter_after_scan(app: &MainWindow) {
     app.global::<Callabler>().on_filter_protected_files_after_scan(move || {
         let app = a.upgrade().expect("Failed to upgrade app :(");
         let active_tab = app.global::<GuiState>().get_active_tab();
-        let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-        if !pf.files.is_empty() {
-            mark_protected_in_model(&app, active_tab, &pf.files);
-            info!("Marked protected files in scan results for {active_tab:?}");
+        let protected = {
+            let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
+            pf.files.clone()
+        };
+        if protected.is_empty() {
+            return;
         }
+        // Defer marking until after scan_ended finishes toggling `scanning` and refreshing the
+        // list. Synchronous set_row_data here was correlated with spurious row activation on macOS.
+        let app_weak = app.as_weak();
+        let _ = slint::invoke_from_event_loop(move || {
+            let Some(app) = app_weak.upgrade() else {
+                return;
+            };
+            mark_protected_in_model(&app, active_tab, &protected);
+            info!("Marked protected files in scan results for {active_tab:?}");
+        });
     });
 }
 

@@ -157,6 +157,7 @@ mod opener {
     }
 
     fn open_item_simple(path_to_open: &str) {
+        log::info!("Opening path with the system default handler: {path_to_open}");
         if let Err(e) = open::that(path_to_open) {
             error!("Failed to open file: {e}");
         }
@@ -168,6 +169,10 @@ mod opener {
         let model_data = model
             .row_data(id)
             .unwrap_or_else(|| panic!("Failed to get row data with id {id}, with model {} items", model.row_count()));
+
+        if model_data.header_row {
+            return;
+        }
 
         let get_debug_crash_data = || {
             format!(

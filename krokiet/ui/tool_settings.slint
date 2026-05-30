@@ -117,15 +117,28 @@ export component ToolSettings {
             CheckBoxWrapper {
                 text: Translations.subsettings_images_ignore_same_size_text;
                 checked <=> Settings.similar_images_sub_ignore_same_size;
+                enabled: !Settings.similar_images_sub_only_same_size;
+                toggled => {
+                    if (self.checked) {
+                        Settings.similar_images_sub_only_same_size = false;
+                    }
+                }
             }
 
             CheckBoxWrapper {
                 text: Translations.subsettings_images_only_same_size_text;
                 checked <=> Settings.similar_images_sub_only_same_size;
+                enabled: !Settings.similar_images_sub_ignore_same_size && !Settings.similar_images_sub_size_ratio_enabled;
+                toggled => {
+                    if (self.checked) {
+                        Settings.similar_images_sub_ignore_same_size = false;
+                        Settings.similar_images_sub_size_ratio_enabled = false;
+                    }
+                }
             }
 
             HintText {
-                hint_text: "When enabled, results will be filtered to only show images with identical file size";
+                hint_text: Translations.subsettings_images_only_same_size_hint_text;
                 visible: Settings.similar_images_sub_only_same_size;
             }
 
@@ -136,10 +149,16 @@ export component ToolSettings {
             CheckBoxWrapper {
                 text: Translations.subsettings_images_size_ratio_text;
                 checked <=> Settings.similar_images_sub_size_ratio_enabled;
+                enabled: !Settings.similar_images_sub_only_same_size;
+                toggled => {
+                    if (self.checked) {
+                        Settings.similar_images_sub_only_same_size = false;
+                    }
+                }
             }
 
             if Settings.similar_images_sub_size_ratio_enabled && !Settings.similar_images_sub_only_same_size: SliderWrapper {
-                text: "Max size ratio";
+                text: Translations.subsettings_images_max_size_ratio_text;
                 end_text: round(Settings.similar_images_sub_size_ratio) + "x";
                 end_text_size: 45px;
                 maximum <=> Settings.similar_images_sub_size_ratio_max;

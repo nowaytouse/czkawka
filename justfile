@@ -83,7 +83,12 @@ clip:
     cargo clippy --fix --allow-dirty --allow-staged --no-default-features --features winit_software --all-targets
 
 fix:
-    grep -rlZ --include="*.rs" "─" . | xargs -0 sed -i 's/─//g' || true
+    # macOS sed requires a backup extension; GNU sed accepts bare -i
+    if [ "$(uname -s)" = "Darwin" ]; then \
+        grep -rlZ --include="*.rs" "─" . | xargs -0 sed -i '' 's/─//g' || true; \
+    else \
+        grep -rlZ --include="*.rs" "─" . | xargs -0 sed -i 's/─//g' || true; \
+    fi
     cp misc/pyproject.toml .
     uv sync
 

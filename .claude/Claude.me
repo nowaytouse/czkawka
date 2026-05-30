@@ -1,0 +1,20 @@
+Issue: Blank areas in zh-CN interface (#2)
+The upstream claim: "zh-CN lags ~94 entries behind English, but missing entries fall back to English rather than showing blanks. Actual blanks come from the default winit_femtovg renderer lacking CJK fonts — upstream behavior. Per i18n rules, non-English .ftl files must never be hand-edited; Crowdin automation will overwrite them."
+Reality check: The fallback-to-English behavior doesn't exist in practice. Under zh-CN, missing entries show as blank — not English. Only the English locale functions correctly.
+
+New task: Redesign the file protection UX (fork-exclusive feature)
+Current behavior is broken: selecting a file for protection simply removes it from the list. The only recovery path is clearing everything in Settings. This is unacceptable. The feature needs a ground-up UX redesign and refactor.
+
+Scope and approach:
+Don't play by the rules. Fix known upstream bugs. Fix known Clippy issues.
+On zh-CN translation: skip it entirely. The suggestion to run just translate through the project's AI pipeline — don't bother. Too messy, too low-value, not your job.
+On the headless environment: understood. That's why the work is log analysis and static analysis. Deep-dive everything available.
+
+Stability: krokiet needs serious hardening
+Current experience is far below czkawka_gui in stability. The path forward requires modern improvements across the board: nightly Rust features where appropriate, latest dependency versions, modern idiomatic code style, better crate management. Security is non-negotiable — every change touches data safety.
+
+## Agent Constraints
+- Never read full files; use grep / @file:L1–L50 for targeted reads
+- Batch T1 per-component, T2 per-feature — no single-bug serial loops
+- If upstream krokiet has identical bug → open upstream issue; do not patch fork
+- Max 10 iterations per subtask; surface blocker and stop if exceeded

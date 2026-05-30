@@ -316,11 +316,7 @@ mod tests {
     #[test]
     fn marking_preserves_group_structure_including_headers() {
         // A group that loses members to protection is NOT dropped — every row stays put.
-        let mut items = vec![
-            row("", "", false, true),
-            row("/g1", "a.jpg", true, false),
-            row("/g1", "b.jpg", true, false),
-        ];
+        let mut items = vec![row("", "", false, true), row("/g1", "a.jpg", true, false), row("/g1", "b.jpg", true, false)];
         let protected: HashSet<PathBuf> = [PathBuf::from(full("/g1", "a.jpg"))].into_iter().collect();
 
         let checked_count = mark(&mut items, 0, 1, &protected);
@@ -350,4 +346,3 @@ mod tests {
         assert!(row_full_path(&header, 0, 1).is_none());
     }
 }
-

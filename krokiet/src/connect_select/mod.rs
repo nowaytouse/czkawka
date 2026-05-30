@@ -833,9 +833,9 @@ mod tests {
         // pixel counts differ → resolution alone decides; biggest is spared.
         let items = vec![
             header,
-            make_image_item(1_000, 500),   // low res
-            make_image_item(2_000, 100),   // mid res, tiny file
-            make_image_item(4_000, 50),    // high res, smallest file
+            make_image_item(1_000, 500), // low res
+            make_image_item(2_000, 100), // mid res, tiny file
+            make_image_item(4_000, 50),  // high res, smallest file
         ];
         let model = create_model_from_model_vec(&items);
 
@@ -853,8 +853,8 @@ mod tests {
         // Equal pixel count → larger (less-compressed) file is the higher-quality copy and is spared.
         let items = vec![
             header,
-            make_image_item(3_000, 1_000),  // same res, smaller file
-            make_image_item(3_000, 9_000),  // same res, larger file → spared
+            make_image_item(3_000, 1_000), // same res, smaller file
+            make_image_item(3_000, 9_000), // same res, larger file → spared
         ];
         let model = create_model_from_model_vec(&items);
 

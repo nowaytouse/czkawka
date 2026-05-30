@@ -212,7 +212,10 @@ fn create_duplicate_column_view(scrolled_window: &ScrolledWindow) -> (ColumnView
     column_view.insert_column(0, &col_select);
 
     // Text columns: Size, Name, Path, Modification
-    for (col_offset, (title, prop_name)) in [("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")].into_iter().enumerate() {
+    for (col_offset, (title, prop_name)) in [("Size", "size"), ("Name", "name"), ("Path", "path"), ("Modification", "modification")]
+        .into_iter()
+        .enumerate()
+    {
         let col_idx = col_offset as u32 + 1;
         let factory = SignalListItemFactory::new();
         factory.connect_setup(move |_f, obj| {

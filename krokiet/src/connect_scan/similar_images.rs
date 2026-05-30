@@ -13,7 +13,7 @@ use rayon::prelude::*;
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
 
 use crate::common::{MAX_INT_DATA_SIMILAR_IMAGES, MAX_STR_DATA_SIMILAR_IMAGES, split_u64_into_i32s};
-use crate::connect_scan::{MessagesData, ScanData, get_dt_timestamp_string, get_text_messages, insert_data_to_model, reset_selection_at_end, set_common_settings};
+use crate::connect_scan::{MessagesData, ScanData, finish_scan, get_dt_timestamp_string, get_text_messages, insert_data_to_model, set_common_settings};
 use crate::{ActiveTab, GuiState, MainWindow, flk};
 
 pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
@@ -104,8 +104,9 @@ fn write_similar_images_results(
         }
     }
     app.set_similar_images_model(items.into());
+    app.global::<GuiState>().set_info_text(messages_data.messages.into());
     if let Some(critical) = messages_data.critical {
-        app.invoke_scan_ended(critical.into());
+        finish_scan(app, ActiveTab::SimilarImages, critical);
     } else {
         if !stopped_search && sd.basic_settings.play_audio_on_scan_completion {
             sd.audio_player.play_scan_completed();
@@ -114,10 +115,8 @@ fn write_similar_images_results(
         if !stopped_search && sd.basic_settings.show_notification_on_scan_completion {
             crate::notification_manager::send_scan_completed_notification("Similar Images", &result_message);
         }
-        app.invoke_scan_ended(result_message.into());
+        finish_scan(app, ActiveTab::SimilarImages, result_message);
     }
-    app.global::<GuiState>().set_info_text(messages_data.messages.into());
-    reset_selection_at_end(app, ActiveTab::SimilarImages);
 }
 fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelRc<SharedString>, ModelRc<i32>) {
     let (directory, file) = split_path(fe.get_path());

@@ -179,6 +179,7 @@ export component MainWindow inherits Window {
             }
             scan_starting(item) => {
                 text_summary_text = Translations.searching_text;
+                main_list.reset_selection(item);
                 root.scan_starting(item);
                 main_list.scan_started(); // Need to clear sorting state
             }
@@ -445,6 +446,9 @@ export component MainWindow inherits Window {
     }
 
     scan_ended(scan_text) => {
+        // Clear list keyboard state before scanning=false; otherwise a Return key-up
+        // (e.g. from activating Scan) can open the stale last_selected_idx via released_key.
+        main_list.reset_selection(GuiState.active_tab);
         Callabler.filter_protected_files_after_scan();
         text_summary_text = scan_text;
         root.scanning = false;

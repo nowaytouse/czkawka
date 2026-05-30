@@ -1,3 +1,4 @@
+import "./fonts/NotoSansSC-Regular.otf";
 import { CediniaColors } from "colors.slint";
 import { ActiveTool, DirectoryEntry, FileEntry, ScanState, SimilarGroupCard } from "common.slint";
 import { AppState, BadNamesSettings, BigFilesSettings, BrokenFilesSettings, DuplicateSettings, GeneralSettings, SameMusicSettings, SimilarImagesSettings, SimilarVideosSettings, TemporaryFilesSettings } from "app_state.slint";
@@ -15,6 +16,7 @@ import { Translations } from "translations.slint";
 
 export { AppState, GeneralSettings, DuplicateSettings, SimilarImagesSettings, BigFilesSettings, SameMusicSettings, BrokenFilesSettings, BadNamesSettings, TemporaryFilesSettings, SimilarVideosSettings, Translations }
 export component MainWindow inherits Window {
+    default-font-family: "Noto Sans SC";
     title: "Cedinia";
     background: CediniaColors.bg_primary;
 

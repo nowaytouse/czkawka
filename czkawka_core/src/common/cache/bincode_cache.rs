@@ -6,7 +6,11 @@ use bincode::config::{self, Config};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
+// Use 14GB limit on 64-bit systems, 2GB limit on 32-bit systems to avoid overflow
+#[cfg(target_pointer_width = "64")]
 pub(crate) const BINCODE_MEMORY_LIMIT: usize = 14 * 1024 * 1024 * 1024;
+#[cfg(target_pointer_width = "32")]
+pub(crate) const BINCODE_MEMORY_LIMIT: usize = 2 * 1024 * 1024 * 1024;
 
 #[inline]
 pub(crate) fn legacy_no_limit() -> impl Config {

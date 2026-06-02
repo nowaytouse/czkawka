@@ -351,7 +351,7 @@ pub struct SimilarImagesArgs {
     #[clap(short = 'S', long, help = "Enable size ratio filter", long_help = "Filter results by file size ratio")]
     pub size_ratio_enabled: bool,
     #[clap(
-        short = 'r',
+        short = 'R',
         long,
         default_value = "0.0",
         help = "File size ratio (0.0-1.0)",

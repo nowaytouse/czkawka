@@ -618,6 +618,25 @@
                                     </child>
                                   </object>
                                 </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="spacing">10</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="spacing">5</property>
+                                        <child>
+                                          <object class="GtkLabel" id="label_image_geometric_invariance">
+                                            <property name="label" translatable="yes">Geometric invariance</property>
+                                            <property name="margin-end">2</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="combo_box_image_geometric_invariance"/>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                             <child>

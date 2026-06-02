@@ -4,8 +4,8 @@ use gtk4::prelude::*;
 
 use crate::gui_structs::gui_data::GuiData;
 use crate::help_combo_box::{
-    AUDIO_TYPE_CHECK_METHOD_COMBO_BOX, BIG_FILES_CHECK_METHOD_COMBO_BOX, DUPLICATES_CHECK_METHOD_COMBO_BOX, DUPLICATES_HASH_TYPE_COMBO_BOX, IMAGES_HASH_SIZE_COMBO_BOX,
-    IMAGES_HASH_TYPE_COMBO_BOX, IMAGES_RESIZE_ALGORITHM_COMBO_BOX,
+    AUDIO_TYPE_CHECK_METHOD_COMBO_BOX, BIG_FILES_CHECK_METHOD_COMBO_BOX, DUPLICATES_CHECK_METHOD_COMBO_BOX, DUPLICATES_HASH_TYPE_COMBO_BOX, IMAGES_GEOMETRIC_INVARIANCE_COMBO_BOX,
+    IMAGES_HASH_SIZE_COMBO_BOX, IMAGES_HASH_TYPE_COMBO_BOX, IMAGES_RESIZE_ALGORITHM_COMBO_BOX,
 };
 use crate::help_drop_down::set_drop_down_model_and_first;
 use crate::help_functions::scale_set_min_max_values;
@@ -52,6 +52,11 @@ pub(crate) fn initialize_gui(gui_data: &GuiData) {
         &gui_data.main_notebook.combo_box_image_resize_algorithm,
         &gui_data.main_notebook.combo_box_image_resize_algorithm_model,
         IMAGES_RESIZE_ALGORITHM_COMBO_BOX.iter().map(|e| e.eng_name),
+    );
+    set_drop_down_model_and_first(
+        &gui_data.main_notebook.combo_box_image_geometric_invariance,
+        &gui_data.main_notebook.combo_box_image_geometric_invariance_model,
+        IMAGES_GEOMETRIC_INVARIANCE_COMBO_BOX.iter().map(|e| e.eng_name),
     );
     set_drop_down_model_and_first(
         &gui_data.main_notebook.combo_box_big_files_mode,

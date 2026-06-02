@@ -8,7 +8,7 @@ component NavItem {
     in property <ActiveTool> tool;
     in property <image>      icon;
 
-    height: 64px;
+    height: 68px;
 
     property <bool> is_active: AppState.active_tool == root.tool;
 
@@ -29,11 +29,13 @@ component NavItem {
 
         VerticalLayout {
             alignment: LayoutAlignment.center;
-            spacing: 3px;
-            padding-bottom: 6px;
+            spacing: 4px;
+            padding-bottom: 8px;
 
             Rectangle {
-                height: 5px;
+                width: 20px;
+                height: 3px;
+                border-radius: 2px;
                 horizontal-stretch: 0.0;
                 background: root.is_active ? CediniaColors.accent : transparent;
                 animate background { duration: 150ms; }
@@ -50,7 +52,7 @@ component NavItem {
             Text {
                 text: root.label;
                 color: root.is_active ? CediniaColors.nav_active : CediniaColors.nav_inactive;
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: root.is_active ? 700 : 400;
                 horizontal-alignment: TextHorizontalAlignment.center;
                 overflow: elide;
@@ -63,7 +65,7 @@ component NavItem {
 
 
 component DynamicToolItem {
-    height: 64px;
+    height: 68px;
 
 
     property <ActiveTool> t: AppState.last_scan_tool;
@@ -106,11 +108,13 @@ component DynamicToolItem {
 
         VerticalLayout {
             alignment: LayoutAlignment.center;
-            spacing: 3px;
-            padding-bottom: 6px;
+            spacing: 4px;
+            padding-bottom: 8px;
 
             Rectangle {
-                height: 5px;
+                width: 20px;
+                height: 3px;
+                border-radius: 2px;
                 horizontal-stretch: 0.0;
                 background: root.is_active ? CediniaColors.accent : transparent;
                 animate background { duration: 250ms; }
@@ -127,7 +131,7 @@ component DynamicToolItem {
             Text {
                 text: root.t_label;
                 color: root.is_active ? CediniaColors.nav_active : CediniaColors.nav_inactive;
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: root.is_active ? 700 : 400;
                 horizontal-alignment: TextHorizontalAlignment.center;
                 overflow: elide;
@@ -139,7 +143,7 @@ component DynamicToolItem {
 
 
 export component BottomNavBar {
-    height: 64px;
+    height: 70px;
     horizontal-stretch: 1.0;
 
     Rectangle {
@@ -148,11 +152,14 @@ export component BottomNavBar {
         background: CediniaColors.nav_bg;
         border-width: 1px;
         border-color: CediniaColors.divider;
+        border-radius: 16px;
+        drop-shadow-blur: 12px;
+        drop-shadow-color: CediniaColors.shadow_sm;
 
         HorizontalLayout {
             alignment: LayoutAlignment.stretch;
-            padding-left: 0px;
-            padding-right: 0px;
+            padding-left: 4px;
+            padding-right: 4px;
 
             NavItem {
                 horizontal-stretch: 1.0;

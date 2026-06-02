@@ -98,11 +98,16 @@ export component MainWindow inherits Window {
                 horizontal-stretch: 1.0;
                 min_width: 300px;
                 Rectangle {
+                    border-radius: 10px;
+                    border-width: 1px;
+                    border-color: Palette.border;
+                    background: Palette.background;
                     vertical-stretch: 1.0;
                     main_list := MainList {
-                        x: 0;
+                        x: 4px;
                         width: preview_or_tool_settings.visible ? parent.width / 2 : parent.width;
-                        height: parent.height;
+                        height: parent.height - 8px;
+                        y: 4px;
                         horizontal-stretch: 0.5;
                         working: root.scanning || root.processing;
                         duplicate_files_model <=> root.duplicate_files_model;
@@ -127,9 +132,17 @@ export component MainWindow inherits Window {
 
                     preview_or_tool_settings := Rectangle {
                         visible: (GuiState.preview_visible || tool_settings.visible) && GuiState.is_tool_tab_active;
-                        height: parent.height;
+                        height: parent.height - 8px;
                         x: parent.width / 2;
+                        y: 4px;
                         width: self.visible ? parent.width / 2 : 0;
+                        Rectangle {
+                            x: 0;
+                            y: 0;
+                            width: 1px;
+                            height: parent.height;
+                            background: Palette.border;
+                        }
                         Preview {
                             height: parent.height;
                             width: parent.width;

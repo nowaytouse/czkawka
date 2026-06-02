@@ -95,6 +95,7 @@ The project will remain available in the repository. For some time I will ensure
 
 - Extended Similar Images hash sizes up to `8192`, `only same size` and `size ratio` filters, and exact size display in results.
 - Krokiet file protection (visible per-row marker; post-scan marking deferred via `invoke_from_event_loop` in `file_protection/connect.rs`).
+- UI modernisation pass for Slint frontends (Krokiet + Cedinia): refreshed theme palette, modernized action bars/top bars/bottom navigation, card-style surfaces for main content, and updated popup/list/table styling with improved visual hierarchy and spacing.
 - Simplified Chinese: Noto Sans SC in Krokiet/Cedinia; `just sync-zh-cn` for fork zh-CN strings.
 - Preserved the GTK4 migration work in `czkawka_gui`, including the ColumnView-based simple tabs, image preview improvements, and related stability fixes.
 - Kept the fork-specific file protection UX and batch-selection improvements in the GTK frontend.

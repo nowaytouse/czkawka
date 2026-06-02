@@ -6,15 +6,19 @@ export component TouchButton {
     in property <color>   bg:       CediniaColors.accent;
     in property <color>   fg:       CediniaColors.fg_on_accent;
     in property <bool>    enabled:  true;
-    in property <length>  min_h:    52px;
+    in property <length>  min_h:    50px;
     callback clicked;
 
-    height: max(min_h, txt.preferred-height + 24px);
-    min-width: txt.preferred-width + 32px;
+    height: max(min_h, txt.preferred-height + 20px);
+    min-width: txt.preferred-width + 28px;
 
     Rectangle {
-        border-radius: 8px;
-        background: ta.has-hover && root.enabled ? root.bg.brighter(0.15) : root.enabled ? root.bg : CediniaColors.bg_elevated;
+        border-radius: 12px;
+        border-width: 1px;
+        border-color: root.enabled ? root.bg.brighter(0.2) : CediniaColors.border;
+        background: ta.has-hover && root.enabled ? root.bg.brighter(0.12) : root.enabled ? root.bg : CediniaColors.bg_elevated;
+        drop-shadow-blur: 12px;
+        drop-shadow-color: ta.pressed && root.enabled ? transparent : CediniaColors.shadow_sm;
         animate background { duration: 120ms; }
 
         ta := TouchArea {
@@ -25,7 +29,7 @@ export component TouchButton {
         txt := Text {
             text: root.label;
             color: root.enabled ? root.fg : CediniaColors.text_disabled;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             horizontal-alignment: center;
             vertical-alignment: center;
@@ -43,11 +47,11 @@ export component IconButton {
     in property <color>  tint: CediniaColors.text_primary;
     callback clicked;
 
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
 
     Rectangle {
-        border-radius: 24px;
+        border-radius: 22px;
         background: ta.has-hover && root.enabled ? CediniaColors.ripple : transparent;
         animate background { duration: 120ms; }
 
@@ -59,8 +63,8 @@ export component IconButton {
         Image {
             source: root.icon;
             colorize: root.enabled ? root.tint : CediniaColors.text_disabled;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             horizontal-alignment: ImageHorizontalAlignment.center;
             vertical-alignment: ImageVerticalAlignment.center;
         }
@@ -74,7 +78,7 @@ export component SectionHeader {
     in property <string> title;
     in property <string> subtitle: "";
 
-    height: subtitle == "" ? 44px : 60px;
+    height: subtitle == "" ? 48px : 64px;
 
     Rectangle {
         width: parent.width;
@@ -82,19 +86,20 @@ export component SectionHeader {
         background: CediniaColors.bg_elevated;
         border-width: 1px;
         border-color: CediniaColors.divider;
+        border-radius: 12px;
 
         VerticalLayout {
-            padding-left: 16px;
-            padding-right: 16px;
+            padding-left: 18px;
+            padding-right: 18px;
             alignment: LayoutAlignment.center;
-            spacing: 2px;
+            spacing: 3px;
 
             Text {
                 text: root.title;
                 color: CediniaColors.accent_light;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 700;
-                letter-spacing: 0.8px;
+                letter-spacing: 1px;
             }
 
             if root.subtitle != "" : Text {

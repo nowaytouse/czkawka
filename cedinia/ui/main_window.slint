@@ -42,8 +42,10 @@ export component MainWindow inherits Window {
     in-out property <[DirectoryEntry]>   excluded_dirs_model:      [];
 
     VerticalLayout {
-        spacing: 0px;
+        spacing: 6px;
         width: parent.width;
+        padding-left: 6px;
+        padding-right: 6px;
         padding-top:    root.safe-area-insets.top;
         padding-bottom: max(AppState.inset_bottom, root.safe-area-insets.bottom);
 
@@ -71,6 +73,9 @@ export component MainWindow inherits Window {
         Rectangle {
             vertical-stretch: 1.0;
             background: CediniaColors.bg_primary;
+            border-radius: 14px;
+            border-width: 1px;
+            border-color: CediniaColors.border;
 
             if AppState.active_tool == ActiveTool.Home : HomeScreen {
                 height: parent.height;

@@ -16,10 +16,12 @@ export component PopupBase inherits PopupWindow {
     rect := Rectangle {
         width: parent.width;
         height: parent.height;
-        border-radius: 10px;
+        border-radius: 14px;
         border-color: ColorPalette.popup_border_color;
-        border-width: 2px;
+        border-width: 1px;
         background: ColorPalette.popup_background;
+        drop-shadow-blur: 20px;
+        drop-shadow-color: ColorPalette.popup_border_color.with-alpha(0.45);
         clip: true;
         VerticalLayout {
             Rectangle {
@@ -27,18 +29,26 @@ export component PopupBase inherits PopupWindow {
 
                 Text {
                     vertical-stretch: 0.0;
-                    min-height: 30px;
+                    min-height: 36px;
                     text <=> title_text;
                     vertical-alignment: center;
                     horizontal-alignment: center;
                     font-size: FontSizes.normal;
+                    font-weight: FontSizes.bold_weight;
+                }
+                Rectangle {
+                    y: parent.height - 1px;
+                    width: parent.width;
+                    height: 1px;
+                    background: ColorPalette.popup_background_border;
                 }
             }
 
             @children
 
             HorizontalLayout {
-                padding: 10px;
+                padding: 12px;
+                spacing: 8px;
                 Button {
                     enabled <=> enabled_ok_button;
                     text <=> ok_text;

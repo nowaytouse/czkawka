@@ -75,6 +75,14 @@ The project will remain available in the repository. For some time I will ensure
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Dependency modernization — 2026-06-02
+
+- **symphonia 0.6** — updated probe/decode API in audio fingerprinting and broken-file audio checks.
+- **nom-exif 3.6** — `MediaSource::open`, `parse_exif`, and revised error/EXIF value types for image orientation.
+- **quick-xml 0.40**, **sevenz-rust2 0.21** — minor crate bumps in broken-file validation.
+- **bincode 2** — cache read/write uses `config::legacy().with_variable_int_encoding()` so existing on-disk cache files from bincode 1.3+ remain compatible; centralized in `czkawka_core/src/common/cache/bincode_cache.rs`.
+- **bincode 3** is not adopted yet (would require a separate wire-format migration).
+
 ### Upstream sync — 2026-06-02 (`66db83f`, merges `qarmin/czkawka` through `4fab31c`)
 
 - Merged upstream **geometric invariance** for Similar Images ([#1944](https://github.com/qarmin/czkawka/pull/1944)) into Krokiet, Cedinia, GTK, and CLI while keeping fork parameters (`only_same_size`, `size_ratio`, hash sizes up to `8192`).

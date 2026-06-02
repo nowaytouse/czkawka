@@ -243,7 +243,7 @@ let (messages, opt_cache) =
     );
 ```
 
-- Serialized with `bincode` (binary). Optionally also as `.json`.
+- Serialized with `bincode` 2.x using `config::legacy().with_variable_int_encoding()` (see `common/cache/bincode_cache.rs`; wire-compatible with bincode 1.3+ caches). Optionally also as `.json`.
 - Cached entries validated by path + size + mtime on load.
 - 8 GB memory limit on serialization.
 - Each tool has its own version constant (`CACHE_DUPLICATE_VERSION`, …).

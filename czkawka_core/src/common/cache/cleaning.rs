@@ -4,16 +4,16 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use bincode::Options;
 use crossbeam_channel::Sender;
 use fun_time::fun_time;
 use log::{debug, error};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use super::bincode_cache::{decode_from_reader, encode_into_writer, legacy_with_memory_limit};
 use crate::common::cache::{
     CACHE_BROKEN_FILES_VERSION, CACHE_CLEANING_INTERVAL_SECONDS, CACHE_DUPLICATE_VERSION, CACHE_IMAGE_VERSION, CACHE_VERSION, CACHE_VIDEO_OPTIMIZE_VERSION, CACHE_VIDEO_VERSION,
-    CLEANING_TIMESTAMPS_FILE, MEMORY_LIMIT,
+    CLEANING_TIMESTAMPS_FILE,
 };
 use crate::common::config_cache_path::get_config_cache_path;
 use crate::common::traits::ResultEntry;
@@ -304,10 +304,9 @@ where
     let size_before = fs::metadata(cache_path).map_or(0, |m| m.len());
 
     let file = fs::File::open(cache_path).map_err(|e| format!("Cannot open file: {e}"))?;
-    let reader = BufReader::new(file);
+    let mut reader = BufReader::new(file);
 
-    let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-    let entries: Vec<T> = options.deserialize_from(reader).map_err(|e| format!("Cannot deserialize file: {e}"))?;
+    let entries: Vec<T> = decode_from_reader(&mut reader, legacy_with_memory_limit()).map_err(|e| format!("Cannot deserialize file: {e}"))?;
 
     let original_count = entries.len();
 
@@ -357,11 +356,8 @@ where
         let tmp_file_path = cache_path.with_extension("tmp");
 
         let tmp_file = fs::File::create(&tmp_file_path).map_err(|e| format!("Cannot create temporary file: {e}"))?;
-        let writer = BufWriter::new(tmp_file);
-        let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-        options
-            .serialize_into(writer, &filtered_entries)
-            .map_err(|e| format!("Cannot serialize cleaned data to temporary file: {e}"))?;
+        let mut writer = BufWriter::new(tmp_file);
+        encode_into_writer(&filtered_entries, &mut writer, legacy_with_memory_limit()).map_err(|e| format!("Cannot serialize cleaned data to temporary file: {e}"))?;
 
         let new_size = fs::metadata(&tmp_file_path).map_or(size_before, |m| m.len());
 
@@ -391,7 +387,6 @@ mod tests {
     use std::sync::atomic::AtomicBool;
     use std::time::UNIX_EPOCH;
 
-    use bincode::Options;
     use serde::{Deserialize, Serialize};
     use tempfile::TempDir;
 
@@ -435,9 +430,8 @@ mod tests {
     fn create_cache_file(cache_dir: &Path, name: &str, entries: &[TestCacheEntry]) -> PathBuf {
         let cache_path = cache_dir.join(name);
         let file = fs::File::create(&cache_path).unwrap();
-        let writer = BufWriter::new(file);
-        let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-        options.serialize_into(writer, entries).unwrap();
+        let mut writer = BufWriter::new(file);
+        encode_into_writer(entries, &mut writer, legacy_with_memory_limit()).unwrap();
         cache_path
     }
 
@@ -510,9 +504,8 @@ mod tests {
         assert_eq!(all.load(Ordering::Relaxed), 3);
 
         let file = fs::File::open(&cache_path).unwrap();
-        let reader = BufReader::new(file);
-        let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-        let cleaned_entries: Vec<TestCacheEntry> = options.deserialize_from(reader).unwrap();
+        let mut reader = BufReader::new(file);
+        let cleaned_entries: Vec<TestCacheEntry> = decode_from_reader(&mut reader, legacy_with_memory_limit()).unwrap();
         assert_eq!(cleaned_entries.len(), 1);
         assert_eq!(cleaned_entries[0].path, valid_path);
     }
@@ -681,9 +674,8 @@ mod tests {
         assert_eq!(remaining, 0);
 
         let file = fs::File::open(&cache_path).unwrap();
-        let reader = BufReader::new(file);
-        let options = bincode::DefaultOptions::new().with_limit(MEMORY_LIMIT);
-        let cleaned_entries: Vec<TestCacheEntry> = options.deserialize_from(reader).unwrap();
+        let mut reader = BufReader::new(file);
+        let cleaned_entries: Vec<TestCacheEntry> = decode_from_reader(&mut reader, legacy_with_memory_limit()).unwrap();
         assert_eq!(cleaned_entries.len(), 0);
     }
 

@@ -254,14 +254,15 @@ pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientatio
 
     let res = panic::catch_unwind(|| {
         let mut parser = MediaParser::new();
-        let ms = MediaSource::file_path(path)?;
-        if !ms.has_exif() {
-            return Ok(None);
-        }
-        let exif_iter: ExifIter = parser.parse(ms)?;
+        let ms = MediaSource::open(path)?;
+        let exif_iter: ExifIter = match parser.parse_exif(ms) {
+            Ok(iter) => iter,
+            Err(nom_exif::Error::ExifNotFound) => return Ok(None),
+            Err(e) => return Err(e),
+        };
         for exif_entry in exif_iter {
-            if exif_entry.tag() == Some(ExifTag::Orientation)
-                && let Some(value) = exif_entry.get_value()
+            if exif_entry.tag() == nom_exif::TagOrCode::Tag(ExifTag::Orientation)
+                && let Some(value) = exif_entry.value()
             {
                 return match value.to_string().as_str() {
                     "1" => Ok(Some(ExifOrientation::Normal)),
@@ -282,7 +283,7 @@ pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientatio
     res.unwrap_or_else(|_| {
         let message = create_crash_message("nom-exif", path, "https://github.com/mindeng/nom-exif");
         error!("{message}");
-        Err(nom_exif::Error::IOError(std::io::Error::other("Panic in get_rotation_from_exif")))
+        Err(nom_exif::Error::Io(std::io::Error::other("Panic in get_rotation_from_exif")))
     })
 }
 

@@ -139,7 +139,18 @@ fn test_similar_images_mirror_flip_invariance() {
     let base = create_asymmetric_test_image(&base_path);
     base.fliph().save(&flipped_path).expect("Failed to save flipped image");
 
-    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::MirrorFlip);
+    let params = SimilarImagesParameters::new(
+        0,
+        8,
+        HashAlg::Gradient,
+        FilterType::Lanczos3,
+        false,
+        false,
+        false,
+        0.0,
+        false,
+        GeometricInvariance::MirrorFlip,
+    );
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![temp_dir.path().to_path_buf()]);
     finder.set_recursive_search(true);
@@ -166,7 +177,18 @@ fn test_similar_images_rotate_invariance() {
     let base = create_asymmetric_test_image(&base_path);
     base.rotate90().save(&rotated_path).expect("Failed to save rotated image");
 
-    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::MirrorFlipRotate90);
+    let params = SimilarImagesParameters::new(
+        0,
+        8,
+        HashAlg::Gradient,
+        FilterType::Lanczos3,
+        false,
+        false,
+        false,
+        0.0,
+        false,
+        GeometricInvariance::MirrorFlipRotate90,
+    );
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![temp_dir.path().to_path_buf()]);
     finder.set_recursive_search(true);

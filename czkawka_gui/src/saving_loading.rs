@@ -676,7 +676,7 @@ fn gui_to_settings(upper_notebook: &GuiUpperNotebook, main_notebook: &GuiMainNot
         combo_box_image_resize_algorithm: main_notebook.combo_box_image_resize_algorithm.selected(),
         combo_box_image_hash_type: main_notebook.combo_box_image_hash_algorithm.selected(),
         combo_box_image_hash_size: main_notebook.combo_box_image_hash_size.selected().max(1),
-        similar_images_geometric_invariance: main_notebook.combo_box_image_geometric_invariance.selected().max(0),
+        similar_images_geometric_invariance: main_notebook.combo_box_image_geometric_invariance.selected(),
         number_of_biggest_files: main_notebook.entry_big_files_number.text().to_string(),
         similar_images_similarity: main_notebook.scale_similarity_similar_images.value(),
         similar_images_ignore_same_size: main_notebook.check_button_image_ignore_same_size.is_active(),

@@ -71,6 +71,10 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 - **Simplified Chinese (zh-CN)** – Noto Sans SC bundled in Krokiet/Cedinia; maintain with `just sync-zh-cn`; system locales like `zh` / `zh-CN` map to zh-CN on first run.
 - **GTK layout fixes** – several upstream GTK measurement warnings resolved; default window size increased to 1200×700 to prevent layout overflow.
 
+### Dependency stack (fork maintenance)
+
+Direct `czkawka_core` crates recently modernized on this branch: **symphonia 0.6**, **nom-exif 3.6**, **bincode 2** (legacy wire format — existing cache binaries keep working), **quick-xml 0.40**, **sevenz-rust2 0.21**. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+
 ### Maintaining the fork
 
 ```bash

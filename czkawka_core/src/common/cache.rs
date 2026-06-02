@@ -7,7 +7,9 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use std::{fs, mem};
 
-use bincode::Options;
+mod bincode_cache;
+
+use bincode_cache::{decode_from_reader, encode_into_writer, legacy_no_limit};
 pub use cleaning::{CacheCleaningStatistics, CacheProgressCleaning, clean_all_cache_files};
 use fun_time::fun_time;
 use humansize::{BINARY, format_size};
@@ -55,9 +57,8 @@ where
         let hashmap_to_save = hashmap.values().filter(|t| t.get_size() >= minimum_file_size).collect::<Vec<_>>();
 
         {
-            let writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
-            let options = bincode::DefaultOptions::new().with_no_limit();
-            if let Err(e) = options.serialize_into(writer, &hashmap_to_save) {
+            let mut writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
+            if let Err(e) = encode_into_writer(&hashmap_to_save, &mut writer, legacy_no_limit()) {
                 text_messages
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
@@ -211,8 +212,7 @@ where
             cache_full_name = cache_file.clone();
             let mut reader = BufReader::new(file_handler);
 
-            let options = bincode::DefaultOptions::new().with_no_limit();
-            vec_loaded_entries = match options.deserialize_from(&mut reader) {
+            vec_loaded_entries = match decode_from_reader(&mut reader, legacy_no_limit()) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages

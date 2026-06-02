@@ -275,6 +275,7 @@ After merging: `just fix`, `cargo check -p krokiet -p czkawka_core`, update `REA
 - **Non-English translations are AI-generated** – only the English `.ftl` files are hand-edited; all other locales are machine-translated via Crowdin and may contain errors or missing entries.
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
 - **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
+- **bincode 2 on fork (`all-features`)** – core cache I/O uses bincode 2 with the legacy 1.3+ encoding; existing `.bin` cache files should load without regeneration. A future bincode 3 migration would break on-disk caches unless versioned filenames are introduced.
 - **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
 - **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools. Its visibility toggle is persisted in `BasicSettings.select_show_except_highest_quality`.
 

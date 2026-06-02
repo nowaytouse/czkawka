@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm]
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
     steps:
       - uses: actions/checkout@v6
 
@@ -222,7 +222,7 @@ jobs:
   # https://github.com/slint-ui/slint/issues/7586
   # https://github.com/rust-windowing/winit/issues/1818
   linux-cli-musl:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
@@ -274,7 +274,7 @@ jobs:
   ### 32 bit CLI and Krokiet Release and Debug - TODO test also gtk gui but it requires gtk4:i386 and also would be good to test libraw and heif
   linux-all-debug-32bit:
     if: ${{ github.ref != 'refs/heads/master' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
@@ -345,7 +345,7 @@ jobs:
           bash misc/compare_files.sh
 
   linux-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
@@ -362,7 +362,7 @@ jobs:
           xvfb-run cargo test
 
   linux-regression-tests-on-minimal-rust-version:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
@@ -389,7 +389,7 @@ jobs:
 
   android:
     if: ${{ github.ref == 'refs/heads/master' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 

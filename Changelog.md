@@ -81,6 +81,7 @@ The project will remain available in the repository. For some time I will ensure
 - **nom-exif 3.6** — `MediaSource::open`, `parse_exif`, and revised error/EXIF value types for image orientation.
 - **quick-xml 0.40**, **sevenz-rust2 0.21** — minor crate bumps in broken-file validation.
 - **bincode 2** — cache read/write uses `config::legacy().with_variable_int_encoding()` so existing on-disk cache files from bincode 1.3+ remain compatible; centralized in `czkawka_core/src/common/cache/bincode_cache.rs`.
+- **Slint 1.16.1** — aligned `krokiet` and `cedinia` manifests to current Slint release line (`slint`/`slint-build`), matching the lockfile and current build output.
 - **bincode 3** is not adopted yet (would require a separate wire-format migration).
 
 ### Upstream sync — 2026-06-02 (`66db83f`, merges `qarmin/czkawka` through `4fab31c`)

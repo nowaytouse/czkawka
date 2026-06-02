@@ -33,8 +33,6 @@ pub(crate) const CACHE_VIDEO_VERSION: u8 = 110;
 pub(crate) const CACHE_BROKEN_FILES_VERSION: u8 = 120;
 pub(crate) const CACHE_VIDEO_OPTIMIZE_VERSION: u8 = 110;
 
-pub(crate) const MEMORY_LIMIT: u64 = 14 * 1024 * 1024 * 1024; // 14 GB
-
 const CLEANING_TIMESTAMPS_FILE: &str = "cleaning_timestamps.json";
 
 static CACHE_CLEANING_INTERVAL_SECONDS: Lazy<u64> = Lazy::new(|| {

@@ -260,6 +260,14 @@ just androidr             # release variant
 
 ---
 
+## Upstream sync (fork maintenance)
+
+The `all-features` branch periodically merges `upstream/master` (`git remote add upstream https://github.com/qarmin/czkawka.git`).
+When resolving conflicts in Similar Images, keep **both** upstream fields (e.g. `geometric_invariance`) **and** fork fields (`only_images_with_same_size`, `size_ratio_*`, `hash_size: u16` up to 8192).
+After merging: `just fix`, `cargo check -p krokiet -p czkawka_core`, update `README.md` and the “Fork Modifications” section in `Changelog.md`.
+
+---
+
 ## Known Defects / Limitations (this fork)
 
 - **GTK frontend maintenance-only** – `czkawka_gui` receives no new features; all active development targets Krokiet. Upstream has announced it will eventually stop providing GTK binaries.

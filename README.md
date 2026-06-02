@@ -55,13 +55,31 @@ You can read more about the 11.0.0 release, its new features, and the issues tha
 
 ## Fork-specific features (all-features branch)
 
-This fork adds the following on top of upstream `qarmin/czkawka`:
+This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `4fab31c`, geometric invariance) and adds:
+
+### From upstream (merged regularly)
+
+- **Geometric invariance (Similar Images)** – match mirrored/flipped images; optional 90° rotation (`Off` / `Mirror + Flip` / `Mirror + Flip + Rotate 90`) in Krokiet, Cedinia, GTK, and CLI. Similar-images cache files change when this setting changes; the cache is regenerated automatically.
+- Other upstream fixes and features from the 11.0.x line (see [Changelog.md](Changelog.md)).
+
+### Fork-only
 
 - **File protection** – mark any result as protected so it is never deleted, moved, hardlinked, symlinked or renamed by the app. Protected files stay visible in the results with an amber marker and a disabled checkbox, and are remembered across scans and restarts (stored in `protected_files.json`). Protect/unprotect a whole selection with the toolbar buttons, or a single file from the right-click context menu; clear the whole set from Settings.
-- **Select all except highest quality** – a new selection mode in the Similar Images tool that spares the item with the largest pixel count in each duplicate group, checking all lower-quality copies for deletion.
+- **Similar Images extras** – hash sizes up to `8192`, **only same size** filter, **size ratio** filter, and exact byte size in results (on top of upstream similarity settings).
+- **Select all except highest quality** – selection mode in Similar Images that spares the largest pixel count in each group (file size breaks ties).
 - **`run_gui.py` launcher** – interactive script to choose Krokiet or Czkawka at startup; rebuilds when `src/`, `ui/`, `Cargo.toml`, `build.rs`, or `Cargo.lock` change.
-- **Simplified Chinese (zh-CN)** – Noto Sans SC bundled in Krokiet/Cedinia; fork strings synced with `just sync-zh-cn`; system locales like `zh` / `zh-CN` select zh-CN on first run.
+- **Simplified Chinese (zh-CN)** – Noto Sans SC bundled in Krokiet/Cedinia; maintain with `just sync-zh-cn`; system locales like `zh` / `zh-CN` map to zh-CN on first run.
 - **GTK layout fixes** – several upstream GTK measurement warnings resolved; default window size increased to 1200×700 to prevent layout overflow.
+
+### Maintaining the fork
+
+```bash
+git fetch upstream
+git merge upstream/master   # resolve conflicts; keep fork-only fields in SimilarImagesParameters
+just fix
+```
+
+See [AGENTS.md](AGENTS.md) for i18n (`just sync-zh-cn`) and architecture notes.
 
 ## Usage, installation, compilation, requirements, license
 

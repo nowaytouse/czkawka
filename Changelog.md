@@ -74,8 +74,18 @@ The project will remain available in the repository. For some time I will ensure
 - Added installation scripts (`misc/install_scripts/`) for Linux (apt/dnf/pacman/zypper), macOS (Homebrew), and Windows (winget)
 
 ## Fork Modifications (nowaytouse/czkawka)
-### Local additions kept during upstream sync
-- Extended Similar Images hash sizes up to `8192`, added `only same size` and `size ratio` filters, and kept exact size display in results.
+
+### Upstream sync — 2026-06-02 (`66db83f`, merges `qarmin/czkawka` through `4fab31c`)
+
+- Merged upstream **geometric invariance** for Similar Images ([#1944](https://github.com/qarmin/czkawka/pull/1944)) into Krokiet, Cedinia, GTK, and CLI while keeping fork parameters (`only_same_size`, `size_ratio`, hash sizes up to `8192`).
+- Similar-images cache filenames now include the geometric-invariance mode; existing caches are regenerated (same as upstream).
+- Resolved merge conflicts in `czkawka_core`, `czkawka_gui`, `czkawka_cli`, `cedinia`, and `krokiet`.
+
+### Fork-only changes (retained across upstream syncs)
+
+- Extended Similar Images hash sizes up to `8192`, `only same size` and `size ratio` filters, and exact size display in results.
+- Krokiet file protection (visible per-row marker; post-scan marking deferred via `invoke_from_event_loop` in `file_protection/connect.rs`).
+- Simplified Chinese: Noto Sans SC in Krokiet/Cedinia; `just sync-zh-cn` for fork zh-CN strings.
 - Preserved the GTK4 migration work in `czkawka_gui`, including the ColumnView-based simple tabs, image preview improvements, and related stability fixes.
 - Kept the fork-specific file protection UX and batch-selection improvements in the GTK frontend.
 - Retained the raised cache/image allocation limits used for very large Similar Images hashes.

@@ -73,7 +73,7 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 
 ### Dependency stack (fork maintenance)
 
-Direct dependencies recently modernized on this branch: **symphonia 0.6**, **nom-exif 3.6**, **bincode 2** (legacy wire format — existing cache binaries keep working), **quick-xml 0.40**, **sevenz-rust2 0.21**, plus **Slint 1.16.1** (`krokiet`/`cedinia` manifests aligned). See [Changelog.md](Changelog.md) under *Fork Modifications*.
+Direct dependencies recently modernized on this branch: **symphonia 0.6**, **nom-exif 3.6**, **bincode 2** (legacy wire format — existing cache binaries keep working), **quick-xml 0.40**, **sevenz-rust2 0.21**, plus **Slint 1.16.1** (`krokiet`/`cedinia` manifests aligned). The fork also refreshed common manifests to newer patch lines (`log`, `chrono`, `rust-embed`, `tempfile`, `regex`, `num_enum`, `trash`) in `czkawka_core`, `krokiet`, and `cedinia`. See [Changelog.md](Changelog.md) under *Fork Modifications*.
 
 ### Maintaining the fork
 

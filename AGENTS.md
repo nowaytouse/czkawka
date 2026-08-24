@@ -8,8 +8,8 @@ All code, comments, commit messages, and documentation must be written in **Engl
 
 ## Rust Style
 
-Applies to every Rust crate in the workspace (`czkawka_core`, `czkawka_cli`, `czkawka_gui`,
-`krokiet`, `cedinia`). Program-specific deviations or elaborations live in that program's own
+Applies to every Rust crate in the workspace (`czkawka_core`, `czkawka_cli`, `krokiet`,
+`cedinia`). Program-specific deviations or elaborations live in that program's own
 `AGENTS.md`.
 
 **Formatting & lints**
@@ -150,7 +150,6 @@ If `just fix` produces any output on stderr or exits non-zero the code is not re
 czkawka/
 ├── czkawka_core/   # Scanning logic – shared library used by all frontends
 ├── czkawka_cli/    # Command-line interface
-├── czkawka_gui/    # Legacy GTK 4 GUI (maintenance mode only)
 ├── krokiet/        # Primary desktop GUI – Slint-based
 ├── cedinia/        # Android / mobile GUI – Slint-based
 └── misc/           # Scripts: AI translation, validation, benchmarks, CI helpers
@@ -251,13 +250,6 @@ for progress bars. No GUI code. Results printed via the tool's `PrintResults` tr
 
 ---
 
-## czkawka_gui
-
-Legacy GTK 4 GUI. **Maintenance mode only** – no new features are added. Bug-fixes that
-keep it compatible with core API changes are accepted.
-
----
-
 ## misc/
 
 **Translation tooling** (`ai_translate/`):
@@ -305,7 +297,6 @@ All user-visible strings use [Fluent](https://projectfluent.org/) (`.ftl` files)
 | krokiet      | `flk!` | `krokiet/i18n/<lang>/krokiet.ftl`           |
 | cedinia      | `flc!` | `cedinia/i18n/<lang>/cedinia.ftl`           |
 | czkawka_core | `flc!` | `czkawka_core/i18n/<lang>/czkawka_core.ftl` |
-| czkawka_gui  | `flg!` | `czkawka_gui/i18n/<lang>/czkawka_gui.ftl`   |
 
 English is the source/fallback language. All other locales are AI-translated and then validated.
 
@@ -315,11 +306,10 @@ All other language files are managed through [Crowdin](https://crowdin.com/) and
 `.ftl` files in the repo will be lost on the next `just unpack_translations` run.
 
 **Fork (Simplified Chinese):** This branch maintains **zh-CN only** beyond Crowdin. Use
-`just sync-zh-cn` (runs `misc/fill_zh_cn_missing.py` and `misc/sync_fork_i18n.py` for
-`zh-CN` / GTK+core fork keys). Krokiet and Cedinia bundle **Noto Sans SC**
-(`ui/fonts/NotoSansSC-Regular.otf`, `default-font-family` in `main_window.slint`). After
-editing fork strings, validate with
-`uv run misc/ai_translate/validate_translations.py <project>/i18n --languages zh-CN`.
+`just sync-zh-cn` (runs `misc/fill_zh_cn_missing.py` and validates Krokiet zh-CN).
+Krokiet bundles **Noto Sans SC** (`krokiet/ui/fonts/NotoSansSC-Regular.otf`,
+`default-font-family` in `main_window.slint`). After editing fork strings, validate with
+`uv run misc/ai_translate/validate_translations.py krokiet/i18n --languages zh-CN`.
 Tracked zh-CN files live under `i18n/zh-CN/` (gitignored by default — `git add -f` when
 committing).
 
@@ -357,7 +347,7 @@ just runr krokiet         # fast_release run
 just fix                  # format + clippy + Python checks
 just translate            # AI-translate all projects
 just validate_translations [--fix]
-just sync-zh-cn           # fork: fill zh-CN gaps + GTK/core fork strings (zh-CN only)
+just sync-zh-cn           # fork: fill and validate Krokiet zh-CN gaps
 just pack_translations    # create i18n_translations.zip for Crowdin
 just unpack_translations <path>
 just android              # build + install + launch on device
@@ -369,14 +359,14 @@ just androidr             # release variant
 ## Upstream sync (fork maintenance)
 
 The `all-features` branch periodically merges `upstream/master` (`git remote add upstream https://github.com/qarmin/czkawka.git`).
-When resolving conflicts in Similar Images, keep **both** upstream fields (e.g. `geometric_invariance`) **and** fork fields (`only_images_with_same_size`, `size_ratio_*`, `hash_size: u16` up to 8192).
-After merging: `just fix`, `cargo check -p krokiet -p czkawka_core`, update `README.md` and the “Fork Modifications” section in `Changelog.md`.
+Always preserve the deletion of `czkawka_gui`. Keep fork-only user experience in Krokiet; shared core changes are limited to Krokiet's required scanning capabilities and cache compatibility. Similar Images keeps upstream's constructor defaults plus Krokiet's explicit `with_size_filters` configuration and `hash_size: u16` up to 8192.
+After merging: `just fix`, `just clip`, `cargo test -p krokiet -p czkawka_core`, update `README.md` and the “Fork Modifications” section in `Changelog.md`.
 
 ---
 
 ## Known Defects / Limitations (this fork)
 
-- **GTK frontend maintenance-only** – `czkawka_gui` receives no new features; all active development targets Krokiet. Upstream has announced it will eventually stop providing GTK binaries.
+- **GTK frontend removed** – `czkawka_gui` source, builds, packaging, translations, and launchers are intentionally absent from this fork. Future upstream merges must preserve the deletion.
 - **Cedinia is experimental** – the Android frontend lacks video tools (ffmpeg unavailable on Android) and has no stable release.
 - **Non-English translations are AI-generated** – only the English `.ftl` files are hand-edited; all other locales are machine-translated via Crowdin and may contain errors or missing entries.
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.

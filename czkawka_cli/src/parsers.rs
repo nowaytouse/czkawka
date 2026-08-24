@@ -294,19 +294,13 @@ pub(crate) fn parse_similar_hash_algorithm(src: &str) -> Result<HashAlg, String>
     Ok(algorithm)
 }
 
-pub(crate) fn parse_image_hash_size(src: &str) -> Result<u16, String> {
+pub(crate) fn parse_image_hash_size(src: &str) -> Result<u8, String> {
     let hash_size = match src.to_lowercase().as_str() {
         "8" => 8,
         "16" => 16,
         "32" => 32,
         "64" => 64,
-        "256" => 256,
-        "512" => 512,
-        "1024" => 1024,
-        "2048" => 2048,
-        "4096" => 4096,
-        "8192" => 8192,
-        _ => return Err("Couldn't parse the image hash size (allowed: 8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192)".to_string()),
+        _ => return Err("Couldn't parse the image hash size (allowed: 8, 16, 32, 64)".to_string()),
     };
     Ok(hash_size)
 }
@@ -376,11 +370,5 @@ mod tests {
         assert_eq!(parse_geometric_invariance("off"), Ok(GeometricInvariance::Off));
         assert_eq!(parse_geometric_invariance("mirror-flip"), Ok(GeometricInvariance::MirrorFlip));
         assert_eq!(parse_geometric_invariance("mirror-flip-rotate90"), Ok(GeometricInvariance::MirrorFlipRotate90));
-    }
-
-    #[test]
-    fn test_parse_image_hash_size() {
-        assert_eq!(parse_image_hash_size("8192"), Ok(8192));
-        parse_image_hash_size("128").unwrap_err();
     }
 }

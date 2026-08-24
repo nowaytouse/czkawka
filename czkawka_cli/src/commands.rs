@@ -346,10 +346,10 @@ pub struct SimilarImagesArgs {
         long,
         default_value = "16",
         value_parser = parse_image_hash_size,
-        help = "Hash size (8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192)",
-        long_help = "Size of the perceptual hash. Larger values provide more detailed comparison but require higher max_difference values. 8 is fastest and least detailed, 8192 is slowest but most detailed. Recommended: 8 or 16 for typical use."
+        help = "Hash size (8, 16, 32, 64)",
+        long_help = "Size of the perceptual hash. Larger values provide more detailed comparison but require higher max_difference values. 8 is fastest and least detailed, 64 is slowest but most detailed. Recommended: 8 or 16 for typical use."
     )]
-    pub hash_size: u16,
+    pub hash_size: u8,
     #[clap(
         long,
         default_value = "off",
@@ -358,22 +358,6 @@ pub struct SimilarImagesArgs {
         long_help = "Geometric invariance mode for similar image matching. off compares images as-is, mirror-flip also compares mirrored/flipped variants, mirror-flip-rotate90 also compares 90-degree rotations."
     )]
     pub geometric_invariance: GeometricInvariance,
-    #[clap(
-        short = 'O',
-        long,
-        help = "Only show images with same size",
-        long_help = "Show only images with exactly the same file size, ignoring similarity threshold"
-    )]
-    pub only_same_size: bool,
-    #[clap(short = 'S', long, help = "Enable size ratio filter", long_help = "Filter results by file size ratio")]
-    pub size_ratio_enabled: bool,
-    #[clap(
-        long = "size-ratio-value",
-        default_value = "0.0",
-        help = "File size ratio (0.0-1.0)",
-        long_help = "Maximum allowed file size ratio between similar images"
-    )]
-    pub size_ratio: f64,
 }
 
 #[derive(Debug, clap::Args)]

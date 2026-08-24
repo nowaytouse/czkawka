@@ -82,6 +82,11 @@ fn connect_rename_single_file(app: &MainWindow) {
         let old_full_path = build_full_path(&folder, &old_name);
         let new_full_path = build_full_path(&folder, new_name);
 
+        if is_single_rename_protected(row.protected, &old_full_path) {
+            warn!("Single rename rejected: source {old_full_path:?} is protected");
+            report_failure(&app, crate::flk!("rust_rename_single_protected"));
+            return;
+        }
         if Path::new(&new_full_path).exists() {
             warn!("Single rename rejected: target {new_full_path:?} already exists");
             report_failure(&app, crate::flk!("rust_rename_single_target_exists"));
@@ -151,6 +156,10 @@ fn build_full_path(folder: &str, name: &str) -> String {
     } else {
         format!("{folder}{MAIN_SEPARATOR}{name}")
     }
+}
+
+fn is_single_rename_protected(row_protected: bool, full_path: &str) -> bool {
+    row_protected || is_file_protected(full_path)
 }
 
 impl ModelProcessor {
@@ -369,5 +378,10 @@ mod tests {
     #[test]
     fn test_build_full_path_with_folder() {
         assert_eq!(build_full_path("/home/user", "file.txt"), format!("/home/user{MAIN_SEPARATOR}file.txt"));
+    }
+
+    #[test]
+    fn single_rename_rejects_protected_row() {
+        assert!(is_single_rename_protected(true, "/does/not/need/to/exist"));
     }
 }

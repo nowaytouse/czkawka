@@ -37,6 +37,7 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
             original_height: orig_height,
         } = request;
         let app = a.upgrade().expect("Failed to upgrade app :(");
+        let generation = preview_generation.fetch_add(1, Ordering::Relaxed) + 1;
 
         let settings = app.global::<Settings>();
         let gui_state = app.global::<GuiState>();
@@ -80,7 +81,6 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
 
         let path = image_path.to_string();
 
-        let generation = preview_generation.fetch_add(1, Ordering::Relaxed) + 1;
         let preview_generation_done = preview_generation.clone();
         let app_weak = a.clone();
 
@@ -98,7 +98,7 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
                 images_in_thumbnails_line,
             ) else {
                 let _ = slint::invoke_from_event_loop(move || {
-                    if preview_generation_done.load(Ordering::Relaxed) != generation {
+                    if !is_current_generation(&preview_generation_done, generation) {
                         return;
                     }
                     let Some(app) = app_weak.upgrade() else {
@@ -111,7 +111,7 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
             };
 
             let _ = slint::invoke_from_event_loop(move || {
-                if preview_generation_done.load(Ordering::Relaxed) != generation {
+                if !is_current_generation(&preview_generation_done, generation) {
                     return;
                 }
                 let Some(app) = app_weak.upgrade() else {
@@ -127,6 +127,10 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
             });
         });
     });
+}
+
+fn is_current_generation(preview_generation: &AtomicU64, generation: u64) -> bool {
+    preview_generation.load(Ordering::Relaxed) == generation
 }
 
 fn load_preview_in_background(
@@ -294,5 +298,20 @@ fn get_pixel_color(x: u32, y: u32) -> Rgba<u8> {
         7 => Rgba([128u8, 0u8, 128u8, 255u8]),
         8 => Rgba([0u8, 0u8, 0u8, 255u8]),
         _ => unreachable!("Modulo 9 should always be in 0..8"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use super::is_current_generation;
+
+    #[test]
+    fn preview_generation_rejects_stale_results() {
+        let generation = AtomicU64::new(1);
+        assert!(is_current_generation(&generation, 1));
+        generation.fetch_add(1, Ordering::Relaxed);
+        assert!(!is_current_generation(&generation, 1));
     }
 }

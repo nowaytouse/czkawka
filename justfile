@@ -136,11 +136,9 @@ unused_features:
     unused-features build-report --input krokiet/report.json
     unused-features build-report --input czkawka_cli/report.json
     unused-features build-report --input czkawka_core/report.json
-    unused-features build-report --input czkawka_gui/report.json
     xdg-open krokiet/report.html
     xdg-open czkawka_cli/report.html
     xdg-open czkawka_core/report.html
-    xdg-open czkawka_gui/report.html
 
 ##################### VERSION #####################
 
@@ -375,7 +373,6 @@ tags:
 install:
     cargo install --path czkawka_cli --locked
     cargo install --path krokiet --locked
-    cargo install --path czkawka_gui --locked
 
 ##################### TRANSLATIONS #####################
 
@@ -390,19 +387,17 @@ prepare_translations_deps:
     export OLLAMA_VULKAN=1; export HSA_OVERRIDE_GFX_VERSION=10.3.0; ollama pull translategemma:12b
 
 translate:
-    uv run misc/ai_translate/translate.py czkawka_gui/i18n
     uv run misc/ai_translate/translate.py czkawka_core/i18n
     uv run misc/ai_translate/translate.py krokiet/i18n
     uv run misc/ai_translate/translate.py cedinia/i18n
-# Fork-only: maintain Simplified Chinese (Crowdin gaps + GTK/core fork strings)
+# Fork-only: maintain Simplified Chinese for Krokiet
 sync-zh-cn:
-    uv run python misc/fill_zh_cn_missing.py both
-    uv run python misc/sync_fork_i18n.py all --langs zh-CN --fix-ref
+    uv run python misc/fill_zh_cn_missing.py
+    uv run misc/ai_translate/validate_translations.py krokiet/i18n --languages zh-CN
 
 sync-fork-i18n: sync-zh-cn
 
 validate_translations *args: # Available --fix argument, which removes invalid translations
-    uv run misc/ai_translate/validate_translations.py czkawka_gui/i18n {{args}}
     uv run misc/ai_translate/validate_translations.py czkawka_core/i18n {{args}}
     uv run misc/ai_translate/validate_translations.py krokiet/i18n {{args}}
     uv run misc/ai_translate/validate_translations.py cedinia/i18n {{args}}
@@ -411,11 +406,10 @@ validate_translations *args: # Available --fix argument, which removes invalid t
 pack_translations:
     rm -f i18n_translations.zip
     mkdir -p /tmp/czkawka_i18n
-    for lang in czkawka_gui/i18n/*/; do \
+    for lang in krokiet/i18n/*/; do \
         lang_code=$(basename "$lang"); \
         [ "$lang_code" = "en" ] && continue; \
         mkdir -p "/tmp/czkawka_i18n/i18n/$lang_code"; \
-        [ -f "czkawka_gui/i18n/$lang_code/czkawka_gui.ftl" ] && cp "czkawka_gui/i18n/$lang_code/czkawka_gui.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
         [ -f "czkawka_core/i18n/$lang_code/czkawka_core.ftl" ] && cp "czkawka_core/i18n/$lang_code/czkawka_core.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
         [ -f "krokiet/i18n/$lang_code/krokiet.ftl" ] && cp "krokiet/i18n/$lang_code/krokiet.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
         [ -f "cedinia/i18n/$lang_code/cedinia.ftl" ] && cp "cedinia/i18n/$lang_code/cedinia.ftl" "/tmp/czkawka_i18n/i18n/$lang_code/" || true; \
@@ -428,9 +422,8 @@ unpack_translations path_to_file:
     @echo "Unpacking translations from {{path_to_file}}..."
     mkdir -p /tmp/czkawka_unpack
     unzip -q "{{path_to_file}}" -d /tmp/czkawka_unpack
-    for lang_dir in /tmp/czkawka_unpack/*/; do \
+    for lang_dir in /tmp/czkawka_unpack/i18n/*/; do \
         lang_code=$(basename "$lang_dir"); \
-        [ -f "$lang_dir/czkawka_gui.ftl" ] && mkdir -p "czkawka_gui/i18n/$lang_code" && cp "$lang_dir/czkawka_gui.ftl" "czkawka_gui/i18n/$lang_code/" && echo "Copied czkawka_gui.ftl to czkawka_gui/i18n/$lang_code/" || true; \
         [ -f "$lang_dir/czkawka_core.ftl" ] && mkdir -p "czkawka_core/i18n/$lang_code" && cp "$lang_dir/czkawka_core.ftl" "czkawka_core/i18n/$lang_code/" && echo "Copied czkawka_core.ftl to czkawka_core/i18n/$lang_code/" || true; \
         [ -f "$lang_dir/krokiet.ftl" ] && mkdir -p "krokiet/i18n/$lang_code" && cp "$lang_dir/krokiet.ftl" "krokiet/i18n/$lang_code/" && echo "Copied krokiet.ftl to krokiet/i18n/$lang_code/" || true; \
         [ -f "$lang_dir/cedinia.ftl" ] && mkdir -p "cedinia/i18n/$lang_code" && cp "$lang_dir/cedinia.ftl" "cedinia/i18n/$lang_code/" && echo "Copied cedinia.ftl to cedinia/i18n/$lang_code/" || true; \
@@ -457,33 +450,29 @@ setup_verify_tools:
 # Prints lines of certain functions in binary
 llvm_lines:
     cargo llvm-lines -p krokiet --bin krokiet | head -40
-    cargo llvm-lines -p czkawka_gui --bin czkawka_gui | head -40
     cargo llvm-lines -p czkawka_cli --bin czkawka_cli | head -40
 
 # Prints size of functions in binary
 bloat_by_function:
     cargo bloat --release --bin czkawka_cli -n 30
-    cargo bloat --release --bin czkawka_gui -n 30
     cargo bloat --release --bin krokiet -n 30
 
 # Prints size of crates in binary
 bloat_by_crate:
     cargo bloat --release --crates --bin czkawka_cli
-    cargo bloat --release --crates --bin czkawka_gui
     cargo bloat --release --crates --bin krokiet
 
 # Draws dependency graphs of certain binaries(like regex, image, etc)
 dependencies_graph:
     cd czkawka_core;cargo deps --all-deps | dot -Tpng > deps.png;cd ..
     cd czkawka_cli;cargo deps --all-deps | dot -Tpng > deps.png;cd ..
-    cd czkawka_gui;cargo deps --all-deps | dot -Tpng > deps.png;cd ..
     cd krokiet;cargo deps --all-deps | dot -Tpng > deps.png;cd ..
 
 # Shows llvm compilation data summary
 profiling profile='debug' mode='build':
     if [ "{{profile}}" = "release" ]; then release_flag="--release"; else release_flag=""; fi; \
     cargo clean; \
-    for crate in czkawka_core czkawka_gui czkawka_cli krokiet; do \
+    for crate in czkawka_core czkawka_cli krokiet; do \
         cd "$crate"; \
         rm ../*.mm_profdata || true; \
         rm *.mm_profdata || true; \
@@ -496,7 +485,7 @@ profiling profile='debug' mode='build':
 timings profile='debug' mode='build':
     if [ "{{profile}}" = "release" ]; then release_flag="--release"; else release_flag=""; fi; \
     cargo clean; \
-    for crate in czkawka_core czkawka_gui czkawka_cli krokiet; do \
+    for crate in czkawka_core czkawka_cli krokiet; do \
         cd "$crate"; \
         rm ../target/cargo-timings/*.html || true; \
         cargo "{{mode}}" $release_flag --timings; \
@@ -505,8 +494,6 @@ timings profile='debug' mode='build':
     done
     #cargo clean
 #    cd czkawka_core; RUSTFLAGS="-Ztime" cargo +nightly rustc; cd ..;
-#    cargo clean
-#    cd czkawka_gui; RUSTFLAGS="-Ztime" cargo +nightly rustc; cd ..;
 #    cargo clean
 #    cd czkawka_cli; RUSTFLAGS="-Ztime" cargo +nightly rustc; cd ..;
 #    cargo clean
@@ -517,8 +504,6 @@ timings profile='debug' mode='build':
 time_passes:
     cargo clean
     cd czkawka_core; RUSTFLAGS="-Ztime-passes" cargo +nightly rustc; cd ..;
-    cargo clean
-    cd czkawka_gui; RUSTFLAGS="-Ztime-passes" cargo +nightly rustc; cd ..;
     cargo clean
     cd czkawka_cli; RUSTFLAGS="-Ztime-passes" cargo +nightly rustc; cd ..;
     cargo clean

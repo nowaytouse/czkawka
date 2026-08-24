@@ -1,3 +1,6 @@
+# Cedinia - English (fallback)
+
+# App / top bar titles
 tool_duplicate_files = 重复项
 tool_empty_folders = 空文件夹
 tool_similar_images = 相似图像
@@ -12,6 +15,7 @@ tool_exif_remover = EXIF 数据
 tool_similar_videos = 相似视频 (音频)
 tool_directories = 目录
 tool_settings = 设置
+# Home screen tool card descriptions
 home_dup_description = 查找具有相同内容的文件
 home_empty_folders_description = 没有内容的目录
 home_similar_images_description = 查找视觉上相似的照片
@@ -24,6 +28,7 @@ home_same_music_description = 按标签查找相似的音频文件
 home_bad_names_description = 名称含有问题字符的文件
 home_exif_description = 带有 EXIF 元数据的图像
 home_similar_videos_description = 找到具有相似音频的视频
+# Results list
 scanning = 正在扫描...
 stopping = 正在停止...
 no_results = 没有结果
@@ -32,6 +37,7 @@ select_label = 选择.
 deselect_label = 取消选择.
 list_label = 列表
 gallery_label = 图库
+# Selection popup
 selection_popup_title = 选择
 select_all = 选择所有
 select_except_one = 选择除一个外的所有
@@ -45,25 +51,32 @@ select_highest_res = 选择最高分辨率
 select_lowest_res = 选择最低分辨率
 invert_selection = 反转选择
 close = 关闭
+# Deselection popup
 deselection_popup_title = 取消选择
 deselect_all = 取消全选
 deselect_except_one = 取消选择除一个外的所有
+# Confirm popup
 cancel = 取消
 delete = 删除
 rename = 重命名
+# Delete errors popup
 delete_errors_title = 部分文件删除失败：
 ok = 确定
+# Stopping overlay
 stopping_overlay_title = 正在停止
 stopping_overlay_body =
     正在完成当前扫描...
-    请稍候.
+    请稍候。
+# Permission popup
 permission_title = 文件访问权限
-permission_body = 要扫描文件，应用程序需要访问设备存储。没有此权限，扫描将无法进行.
+permission_body = 要扫描文件，应用程序需要访问设备存储。没有此权限，扫描将无法进行。
 grant = 授权
 no_permission_scan_warning = 无文件访问权限 - 请授予权限以扫描
+# Settings screen tabs
 settings_tab_general = 常规
 settings_tab_tools = 工具
 settings_tab_diagnostics = 信息
+# Settings - General tab
 settings_use_cache = 使用缓存
 settings_use_cache_desc = 加快后续扫描速度（哈希/图像）
 settings_ignore_hidden = 忽略隐藏文件
@@ -87,6 +100,7 @@ settings_allowed_extensions = 允许的扩展名（留空 = 全部）
 settings_allowed_extensions_placeholder = 例如：jpg, png, mp4
 settings_excluded_extensions = 排除的扩展名
 settings_excluded_extensions_placeholder = 例如：bak、tmp、log
+# Settings - Tools section labels
 settings_duplicates_header = 重复项
 settings_check_method_label = 比较方法
 settings_check_method = 方法
@@ -122,7 +136,7 @@ settings_temporary_files_extensions_label = 扩展名
 settings_temporary_files_extensions_placeholder = 例如：.tmp、.bak、~
 settings_temporary_files_reset = 重置为默认值
 settings_broken_files_header = 损坏的文件
-settings_broken_files_note = 资源密集型扫描。为获得最佳性能，请在桌面端使用 Krokiet.
+settings_broken_files_note = 资源密集型扫描。为获得最佳性能，请在桌面端使用 Krokiet。
 settings_broken_files_types_label = 检查的类型
 settings_broken_audio = 音频
 settings_broken_pdf = PDF
@@ -141,9 +155,11 @@ settings_bad_names_space = 首尾空格
 settings_bad_names_non_ascii = 非 ASCII 字符
 settings_bad_names_duplicated = 重复字符
 settings_ignore_same_resolution = 忽略具有相同分辨率的图像
+# Settings - Appearance section
 settings_appearance_label = 外观
 settings_dark_theme = 暗色主题
 settings_dark_theme_desc = 使用暗色方案
+# Settings - Diagnostics tab
 diagnostics_header = 诊断
 diagnostics_thumbnails = 缩略图缓存
 diagnostics_app_cache = 应用缓存
@@ -167,14 +183,17 @@ diag_confirm_clear_cache = 清除所有应用缓存？
 about_repo = 存储库
 about_translate = 翻译
 about_donate = 捐助
+# Collect-test result popup
 collect_test_title = 测试结果
 collect_test_volumes = 卷：
 collect_test_folders = 文件夹：
 collect_test_files = 文件：
 collect_test_time = 时间：
+# Licenses
 licenses_label = 许可证
 third_party_licenses = 第三方许可证
 licenses_popup_title = 第三方许可证
+# Directories screen
 directories_include_header = 包含
 directories_included = 包含
 directories_exclude_header = 不包含
@@ -184,9 +203,11 @@ no_paths = 没有路径 - 在下方添加
 directories_volume_header = 卷
 directories_volume_refresh = 刷新
 directories_volume_add = 添加
+# Bottom navigation
 nav_home = 开始
 nav_dirs = 目录
 nav_settings = 设置
+# Status messages set from Rust
 status_ready = 就绪
 status_stopped = 已停止
 status_no_results = 没有结果
@@ -208,6 +229,7 @@ rename_error_read_file_name = 无法读取文件名
 rename_error_read_directory = 无法读取目录
 and_more_prefix = ...以及另外
 and_more_suffix = 项
+# Gallery / delete popups
 gallery_delete_button = 删除
 gallery_back = 后退
 gallery_confirm_delete = 是，删除
@@ -218,17 +240,24 @@ app_subtitle = 为纪念 Cedynia 战役（公元 972 年）
 app_license = Czkawka Core 的前端 - GPL-3.0
 about_app_label = 关于
 cache_label = 缓存
+# Notification
 scan_completed_notification = 扫描完成 - 找到 { $file_count } 个项目
+# Confirm popups (set from Rust)
 confirm_clean_exif = 您确定要从 { $n } 个选定的文件中清除 EXIF 标签吗？
 confirm_delete_items = 您确定要删除 { $n } 个选中的项目吗？
-gallery_confirm_delete_msg = 您即将删除 { $total_images } 张图片，这些图片位于 { $total_groups } 个分组中.
+gallery_confirm_delete_msg = 您即将删除 { $total_images } 张图片，这些图片位于 { $total_groups } 个分组中。
 gallery_confirm_delete_warning = 有 { $unsafe_groups } 个组的所有项目均被选中！
-same_music_fingerprint_warning = 计算和比较音频指纹耗费大量资源，可能需要很长时间。 建议在桌面系统上使用Krokiet来完成这项任务.
+# Settings - SameMusic fingerprint warning
+same_music_fingerprint_warning = 计算和比较音频指纹耗费大量资源，可能需要很长时间。 建议在桌面系统上使用Krokiet来完成这项任务。
+# Scan stage labels (shown during scan progress)
+# Group headers in scan results
 duplicates_group_header = { $count } 个文件 × 每个 { $per_file } = 共 { $total }
 similar_images_group_header = { $count } 张相似图片
 same_music_group_header = { $count } 首相似歌曲
 similar_videos_group_header = { $count } 个相似视频
+# Rename confirmation
 confirm_rename_items = 您确定要重命名所选中的 { $n } 个文件吗？
+# Combo-box option labels (translatable display names)
 option_search_mode_biggest = 最大的
 option_search_mode_smallest = 最小的
 option_similarity_very_high = 非常高
@@ -248,9 +277,11 @@ option_max_size_unlimited = 无限制
 option_audio_preset_identical = 相同
 option_audio_preset_clip = 长视频中的片段
 option_audio_preset_similar = 相似
+# Volume labels (shown in the directories screen)
 volume_internal_storage = 内部存储
 volume_sd_card = 存储卡 (SD 卡)
 volume_storage = 存储卷
+# Directories screen
 directories_referenced_tooltip = 参考（不删除）
 directories_include_section_header = 包含
 directories_exclude_section_header = 排除
@@ -275,6 +306,7 @@ ctx_menu_title = 打开
 ctx_open_file = 打开项目
 ctx_open_folder = 打开父文件夹
 dir_open_folder = 打开文件夹
+# Compare view
 compare_label = 比较
 compare_loading = 正在加载图像...
 compare_cancelling = 正在取消...

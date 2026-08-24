@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import argparse
 import pathlib
 import sys
 
@@ -22,6 +21,8 @@ KROKIET_ZH_CN: dict[str, str] = {
     "context_menu_remove_all_from_folder_recursive_text": "从文件夹移除全部（递归）",
     "context_menu_select_all_from_folder_recursive_text": "从文件夹全选（递归）",
     "context_menu_unprotect_text": "取消保护此文件",
+    "rust_protected_files_storage_error": "受保护文件列表不可用：{ $error }。已阻止破坏性文件操作。",
+    "rust_rename_single_protected": "无法重命名受保护的文件。",
     "optimize_crf_hint": "数值越低画质越好。0 接近无损，51 最差。建议：18–28。",
     "optimize_noise_reduction_hint": "降噪可能显著增加编码时间。",
     "optimize_noise_reduction_strength_hint": "1 = 最轻，10 = 最强降噪。",
@@ -115,40 +116,6 @@ KROKIET_ZH_CN: dict[str, str] = {
     "trash_button": "回收站",
 }
 
-CEDINIA_ZH_CN: dict[str, str] = {
-    "compare_cancelling": "正在取消…",
-    "compare_computing": "正在计算差异…",
-    "compare_label": "比较",
-    "compare_loading": "正在加载图片…",
-    "compare_mode_diff": "差异",
-    "compare_mode_normal": "并排",
-    "compare_mode_overlay": "叠加",
-    "compare_mode_split": "分屏",
-    "compare_res_mismatch": "分辨率不同——差异结果可能不准确",
-    "dir_open_folder": "打开文件夹",
-    "home_similar_videos_description": "查找音频相似的视频（无需 FFmpeg）",
-    "option_audio_preset_clip": "较长视频中的片段",
-    "option_audio_preset_identical": "相同",
-    "option_audio_preset_similar": "相似",
-    "settings_appearance_label": "外观",
-    "settings_broken_font": "字体",
-    "settings_broken_markup": "标记（JSON/XML/TOML）",
-    "settings_dark_theme": "深色主题",
-    "settings_dark_theme_desc": "使用深色配色方案",
-    "settings_ignore_same_resolution": "忽略分辨率相同的图片",
-    "settings_similar_videos_audio_preset": "音频相似度预设",
-    "settings_similar_videos_audio_preset_desc": "控制音频必须匹配的严格程度",
-    "settings_similar_videos_header": "相似视频（音频）",
-    "settings_temporary_files_extensions_label": "扩展名",
-    "settings_temporary_files_extensions_placeholder": "例如 .tmp,.bak,~",
-    "settings_temporary_files_header": "临时文件",
-    "settings_temporary_files_reset": "恢复默认",
-    "similar_videos_group_header": "{ $count } 个相似视频",
-    "stage_all_hiding_links": "正在隐藏硬链接",
-    "stage_empty_files_checking_content": "正在检查文件内容",
-    "tool_similar_videos": "相似视频（音频）",
-}
-
 
 def merge_zh_cn(i18n_root: pathlib.Path, project: str, extra: dict[str, str]) -> int:
     en_file = i18n_root / "en" / f"{project}.ftl"
@@ -206,21 +173,10 @@ def fix_trailing_dots(en_entries: dict[str, str], zh_entries: dict[str, str]) ->
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("project", choices=["krokiet", "cedinia", "both"], default="both", nargs="?")
-    args = parser.parse_args()
-
     root = pathlib.Path(__file__).resolve().parent.parent
-    total = 0
-    if args.project in ("krokiet", "both"):
-        n = merge_zh_cn(root / "krokiet/i18n", "krokiet", KROKIET_ZH_CN)
-        print(f"krokiet: added {n} zh-CN keys")
-        total += n
-    if args.project in ("cedinia", "both"):
-        n = merge_zh_cn(root / "cedinia/i18n", "cedinia", CEDINIA_ZH_CN)
-        print(f"cedinia: added {n} zh-CN keys")
-        total += n
-    if total == 0:
+    added = merge_zh_cn(root / "krokiet/i18n", "krokiet", KROKIET_ZH_CN)
+    print(f"krokiet: added {added} zh-CN keys")
+    if added == 0:
         print("Nothing to add.")
 
 

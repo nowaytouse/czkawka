@@ -89,7 +89,7 @@ pub struct StringComboBoxItems {
     pub max_file_size: Vec<StringComboBoxItem<MaxFileSize>>,
     pub duplicates_check_method: Vec<StringComboBoxItem<CheckingMethod>>,
     pub duplicates_hash_type: Vec<StringComboBoxItem<HashType>>,
-    pub hash_size: Vec<StringComboBoxItem<u16>>,
+    pub hash_size: Vec<StringComboBoxItem<u8>>,
     pub biggest_files_method: Vec<StringComboBoxItem<SearchMode>>,
     pub big_files_count: Vec<StringComboBoxItem<usize>>,
     pub similarity_preset: Vec<StringComboBoxItem<SimilarityPreset>>,
@@ -137,18 +137,7 @@ impl StringComboBoxItems {
             ("xxh3", "XXH3", HashType::Xxh3),
         ]);
 
-        let hash_size = Self::convert(&[
-            ("8", "8", 8u16),
-            ("16", "16", 16),
-            ("32", "32", 32),
-            ("64", "64", 64),
-            ("256", "256", 256),
-            ("512", "512", 512),
-            ("1024", "1024", 1024),
-            ("2048", "2048", 2048),
-            ("4096", "4096", 4096),
-            ("8192", "8192", 8192),
-        ]);
+        let hash_size = Self::convert(&[("8", "8", 8u8), ("16", "16", 16), ("32", "32", 32), ("64", "64", 64)]);
 
         let biggest_files_method = Self::convert_i18n(&[
             ("biggest", SearchMode::BiggestFiles, DisplaySpec::Translatable("option_search_mode_biggest")),
@@ -356,15 +345,15 @@ mod tests {
     #[test]
     fn value_from_idx_in_range() {
         let items = StringComboBoxItems::new();
-        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 0, 0u16), 8u16);
-        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 2, 0u16), 32u16);
-        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 9, 0u16), 8192u16);
+        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 0, 0u8), 8u8);
+        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 2, 0u8), 32u8);
+        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 3, 0u8), 64u8);
     }
 
     #[test]
     fn value_from_idx_out_of_range_returns_default() {
         let items = StringComboBoxItems::new();
-        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 100, 99u16), 99u16);
+        assert_eq!(StringComboBoxItems::value_from_idx(&items.hash_size, 100, 99u8), 99u8);
     }
 
     #[test]
@@ -382,14 +371,14 @@ mod tests {
     #[test]
     fn value_from_config_name_found() {
         let items = StringComboBoxItems::new();
-        assert_eq!(StringComboBoxItems::value_from_config_name("8", &items.hash_size, 0u16), 8u16);
-        assert_eq!(StringComboBoxItems::value_from_config_name("8192", &items.hash_size, 0u16), 8192u16);
+        assert_eq!(StringComboBoxItems::value_from_config_name("8", &items.hash_size, 0u8), 8u8);
+        assert_eq!(StringComboBoxItems::value_from_config_name("64", &items.hash_size, 0u8), 64u8);
     }
 
     #[test]
     fn value_from_config_name_unknown_returns_default() {
         let items = StringComboBoxItems::new();
-        assert_eq!(StringComboBoxItems::value_from_config_name("999kb", &items.hash_size, 0u16), 0u16);
+        assert_eq!(StringComboBoxItems::value_from_config_name("999kb", &items.hash_size, 0u8), 0u8);
     }
 
     #[test]

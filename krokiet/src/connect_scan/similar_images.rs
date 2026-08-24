@@ -7,7 +7,6 @@ use czkawka_core::common::traits::{ResultEntry, Search};
 use czkawka_core::common::{format_time, split_path};
 use czkawka_core::tools::similar_images;
 use czkawka_core::tools::similar_images::core::get_string_from_similarity;
-use czkawka_core::tools::similar_images::traits::format_size_exact;
 use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters};
 use rayon::prelude::*;
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
@@ -35,11 +34,14 @@ pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
                 hash_alg,
                 resize_algorithm,
                 sd.custom_settings.similar_images_sub_ignore_same_size,
-                sd.custom_settings.similar_images_sub_only_same_size,
-                sd.custom_settings.similar_images_sub_size_ratio_enabled,
-                sd.custom_settings.similar_images_sub_size_ratio,
                 sd.custom_settings.similar_images_sub_ignore_same_resolution,
                 geometric_invariance,
+            )
+            .with_size_filters(
+                sd.custom_settings.similar_images_sub_only_same_size,
+                sd.custom_settings
+                    .similar_images_sub_size_ratio_enabled
+                    .then_some(sd.custom_settings.similar_images_sub_size_ratio),
             );
             let mut tool = SimilarImages::new(params);
 
@@ -146,4 +148,40 @@ fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelR
     ];
     let data_model_int = VecModel::from_slice(&data_model_int_arr);
     (data_model_str, data_model_int)
+}
+
+fn format_size_exact(size: u64) -> String {
+    const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+    let mut divisor = 1_u64;
+    let mut unit = UNITS[0];
+    for candidate in UNITS.iter().skip(1) {
+        if size < divisor.saturating_mul(1_000) {
+            break;
+        }
+        divisor = divisor.saturating_mul(1_000);
+        unit = candidate;
+    }
+    if divisor == 1 {
+        format!("{size} {unit}")
+    } else {
+        let whole = size / divisor;
+        let remainder = size % divisor;
+        if remainder == 0 {
+            format!("{whole} {unit}")
+        } else {
+            format!("{whole}.{remainder:0width$} {unit}", width = divisor.ilog10() as usize)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::format_size_exact;
+
+    #[test]
+    fn exact_size_formatting_preserves_remainder() {
+        assert_eq!(format_size_exact(999), "999 B");
+        assert_eq!(format_size_exact(1_001), "1.001 KB");
+        assert_eq!(format_size_exact(1_000_001), "1.000001 MB");
+    }
 }

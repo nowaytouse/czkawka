@@ -32,13 +32,11 @@ pub(crate) enum ImageType {
 /// No EXIF rotation is applied (no path available); call-sites that need rotation handle it separately.
 pub(crate) fn get_dynamic_image_from_bytes(bytes: &[u8], image_type: ImageType) -> Result<DynamicImage, String> {
     match image_type {
-        ImageType::Normal => {
-            let mut reader = ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|e| e.to_string())?;
-            let mut limits = image::Limits::default();
-            limits.max_alloc = Some(14 * 1024 * 1024 * 1024);
-            reader.limits(limits);
-            reader.decode().map_err(|e| e.to_string())
-        }
+        ImageType::Normal => ImageReader::new(std::io::Cursor::new(bytes))
+            .with_guessed_format()
+            .map_err(|e| e.to_string())?
+            .decode()
+            .map_err(|e| e.to_string()),
         ImageType::Raw => get_raw_image_from_bytes(bytes),
     }
 }
@@ -164,6 +162,7 @@ pub fn resize_image_exact(img: &DynamicImage, width: u32, height: u32, filter: F
         Err(_) => img.resize_exact(width, height, image::imageops::FilterType::Lanczos3),
     }
 }
+
 fn resize_image(img: DynamicImage, opts: ImgResizeOptions) -> DynamicImage {
     let orig_w = img.width();
     let orig_h = img.height();

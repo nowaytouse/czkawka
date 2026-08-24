@@ -25,18 +25,14 @@
           inherit self pkgs crane;
           msrvRust = pkgs.rust-bin.stable.${cargoToml.package.rust-version}.minimal;
           buildInputs = with pkgs; [
-            atk
-            cairo
-            gdk-pixbuf
-            glib
-            gtk4
-            pango
+            fontconfig
+            libxkbcommon
+            wayland
+            xorg.libX11
+            xorg.libxcb
           ];
           nativeBuildInputs = with pkgs; [
             pkg-config
-            gobject-introspection
-            gsettings-desktop-schemas
-            wrapGAppsHook4
           ];
         });
       }

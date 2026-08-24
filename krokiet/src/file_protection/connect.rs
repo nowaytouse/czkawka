@@ -12,6 +12,9 @@ pub(crate) fn connect_file_protection(app: &MainWindow) {
     {
         let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
         app.global::<GuiState>().set_protected_files_count(pf.count() as i32);
+        if let Some(error) = pf.storage_error() {
+            report_storage_error(app, error);
+        }
     }
 
     connect_protect(app);
@@ -44,31 +47,32 @@ fn connect_protect(app: &MainWindow) {
         let path_idx = active_tab.get_str_path_idx();
         let name_idx = active_tab.get_str_name_idx();
 
+        let rows: Vec<_> = (0..model.row_count())
+            .filter_map(|idx| {
+                let item = model.row_data(idx)?;
+                (item.checked && !item.header_row)
+                    .then(|| row_full_path(&item, path_idx, name_idx).map(|full_path| (idx, full_path)))
+                    .flatten()
+            })
+            .collect();
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-        let mut protected_count = 0;
-
-        // Mark every checked data row as protected and clear its checkbox, so it
-        // leaves the deletion queue but STAYS visible in the list. Mutating rows in
-        // place keeps row indices (and therefore TOOLS_SELECTION) valid.
-        for idx in 0..model.row_count() {
-            if let Some(mut item) = model.row_data(idx)
-                && item.checked
-                && !item.header_row
-                && let Some(full_path) = row_full_path(&item, path_idx, name_idx)
-            {
-                if pf.files.insert(full_path) {
-                    protected_count += 1;
-                }
-                item.protected = true;
-                item.checked = false;
-                model.set_row_data(idx, item);
+        let protected_count = match pf.protect(rows.iter().map(|(_, path)| path.clone())) {
+            Ok(count) => count,
+            Err(error) => {
+                report_storage_error(&app, &error);
+                return;
             }
-        }
+        };
 
-        if protected_count > 0 {
-            pf.save();
-            info!("Protected {} files, total: {}", protected_count, pf.count());
+        for (idx, _) in rows {
+            let mut item = model
+                .row_data(idx)
+                .unwrap_or_else(|| panic!("Protect row index {idx} out of bounds (row_count={})", model.row_count()));
+            item.protected = true;
+            item.checked = false;
+            model.set_row_data(idx, item);
         }
+        info!("Protected {} files, total: {}", protected_count, pf.count());
 
         // Unchecked rows changed the enabled-items counter; recompute from scratch.
         let checked_count = model.iter().filter(|i| !i.header_row && i.checked).count() as u64;
@@ -90,30 +94,31 @@ fn connect_unprotect(app: &MainWindow) {
         let path_idx = active_tab.get_str_path_idx();
         let name_idx = active_tab.get_str_name_idx();
 
+        let rows: Vec<_> = (0..model.row_count())
+            .filter_map(|idx| {
+                let item = model.row_data(idx)?;
+                (item.focused_row && item.protected)
+                    .then(|| row_full_path(&item, path_idx, name_idx).map(|full_path| (idx, full_path)))
+                    .flatten()
+            })
+            .collect();
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-        let mut unprotected_count = 0;
-
-        // Protected rows can't be checked (their checkbox is disabled), so the bulk
-        // Unprotect button acts on FOCUSED (highlighted) rows instead. The user clicks
-        // the protected rows to highlight them, then presses Unprotect.
-        for idx in 0..model.row_count() {
-            if let Some(mut item) = model.row_data(idx)
-                && item.focused_row
-                && item.protected
-                && let Some(full_path) = row_full_path(&item, path_idx, name_idx)
-            {
-                if pf.files.remove(&full_path) {
-                    unprotected_count += 1;
-                }
-                item.protected = false;
-                model.set_row_data(idx, item);
+        let unprotected_count = match pf.unprotect(rows.iter().map(|(_, path)| path.clone())) {
+            Ok(count) => count,
+            Err(error) => {
+                report_storage_error(&app, &error);
+                return;
             }
-        }
+        };
 
-        if unprotected_count > 0 {
-            pf.save();
-            info!("Unprotected {} files, total: {}", unprotected_count, pf.count());
+        for (idx, _) in rows {
+            let mut item = model
+                .row_data(idx)
+                .unwrap_or_else(|| panic!("Unprotect row index {idx} out of bounds (row_count={})", model.row_count()));
+            item.protected = false;
+            model.set_row_data(idx, item);
         }
+        info!("Unprotected {} files, total: {}", unprotected_count, pf.count());
 
         app.global::<GuiState>().set_protected_files_count(pf.count() as i32);
         let info = format!("Unprotected {} files (total protected: {})", unprotected_count, pf.count());
@@ -144,16 +149,17 @@ fn connect_toggle_single(app: &MainWindow) {
         };
 
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-        let now_protected = !item.protected;
+        let now_protected = match pf.toggle(full_path) {
+            Ok(now_protected) => now_protected,
+            Err(error) => {
+                report_storage_error(&app, &error);
+                return;
+            }
+        };
         if now_protected {
-            pf.files.insert(full_path);
-            // A newly protected row must leave the deletion queue.
             item.checked = false;
-        } else {
-            pf.files.remove(&full_path);
         }
         item.protected = now_protected;
-        pf.save();
         model.set_row_data(idx as usize, item);
 
         // The checkbox may have been cleared above; recompute the enabled-items counter.
@@ -175,8 +181,13 @@ fn connect_clear_all(app: &MainWindow) {
     app.global::<Callabler>().on_clear_all_protected_files(move || {
         let app = a.upgrade().expect("Failed to upgrade app :(");
         let mut pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-        let count = pf.count();
-        pf.clear();
+        let count = match pf.clear() {
+            Ok(count) => count,
+            Err(error) => {
+                report_storage_error(&app, &error);
+                return;
+            }
+        };
         drop(pf);
         info!("Cleared all {count} protected files");
 
@@ -233,7 +244,13 @@ fn active_tab_is_tool(app: &MainWindow) -> bool {
 /// Check if a file path is protected. Used as a safety net in delete/move/link/rename operations.
 pub fn is_file_protected(path: &str) -> bool {
     let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
-    pf.files.contains(&PathBuf::from(path))
+    pf.storage_error().is_some() || pf.files.contains(&PathBuf::from(path))
+}
+
+fn report_storage_error(app: &MainWindow, error: &str) {
+    let message = crate::flk!("rust_protected_files_storage_error", error = error.to_string());
+    app.global::<GuiState>().set_info_text(message.clone().into());
+    app.invoke_show_error_popup(message.into());
 }
 
 /// Mark rows whose absolute path is in `protected` with `protected = true` (and uncheck them),

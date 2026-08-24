@@ -16,8 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Gtk 4
-        run: sudo apt update || true; sudo apt install -y libgtk-4-dev libraw-dev libheif-dev libavif-dev libdav1d-dev libasound2-dev -y
+      - name: Install native libraries
+        run: sudo apt update || true; sudo apt install -y libraw-dev libheif-dev libavif-dev libdav1d-dev libasound2-dev
 
       - name: Setup rust version
         run: |

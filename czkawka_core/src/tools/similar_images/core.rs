@@ -553,20 +553,20 @@ impl SimilarImages {
     fn exclude_items_with_same_size(&mut self) {
         if self.get_params().exclude_images_with_same_size {
             for vec_file_entry in mem::take(&mut self.similar_vectors) {
-                let first_size = vec_file_entry.first().expect("At least one element must exist in group").size;
-                let all_same_size = vec_file_entry.iter().all(|e| e.size == first_size);
-                if !all_same_size {
-                    self.similar_vectors.push(vec_file_entry);
+                let mut sizes = BTreeSet::new();
+                let entries: Vec<_> = vec_file_entry.into_iter().filter(|entry| sizes.insert(entry.size)).collect();
+                if entries.len() > 1 {
+                    self.similar_vectors.push(entries);
                 }
             }
         }
         if self.get_params().only_images_with_same_size {
             for vec_file_entry in mem::take(&mut self.similar_vectors) {
-                let first_size = vec_file_entry.first().expect("At least one element must exist in group").size;
-                let all_same_size = vec_file_entry.iter().all(|e| e.size == first_size);
-                if all_same_size {
-                    self.similar_vectors.push(vec_file_entry);
+                let mut entries_by_size: BTreeMap<u64, Vec<_>> = BTreeMap::new();
+                for entry in vec_file_entry {
+                    entries_by_size.entry(entry.size).or_default().push(entry);
                 }
+                self.similar_vectors.extend(entries_by_size.into_values().filter(|entries| entries.len() > 1));
             }
         }
         if self.get_params().size_ratio_enabled {
@@ -815,7 +815,8 @@ pub fn get_string_from_similarity(similarity: u32, hash_size: u16) -> String {
 }
 
 #[expect(clippy::indexing_slicing)] // Because hash size is validated before
-pub fn return_similarity_from_similarity_preset(similarity_preset: SimilarityPreset, hash_size: u16) -> u32 {
+pub fn return_similarity_from_similarity_preset(similarity_preset: SimilarityPreset, hash_size: impl Into<u16>) -> u32 {
+    let hash_size = hash_size.into();
     let index_preset = match hash_size {
         8 => 0,
         16 => 1,
@@ -966,7 +967,7 @@ mod tests {
             exclude_images_with_same_size: false,
             only_images_with_same_size: false,
             size_ratio_enabled: false,
-            size_ratio: 0.0,
+            size_ratio: 1.0,
             exclude_images_with_same_resolution: false,
             geometric_invariance: GeometricInvariance::Off,
         }
@@ -1581,6 +1582,43 @@ mod tests {
         assert_eq!(similarity, 1);
     }
 
+    #[test]
+    fn size_filters_keep_only_valid_groups() {
+        let entry = |size, name| {
+            let mut entry = create_random_file_entry(vec![0; 8], name);
+            entry.size = size;
+            entry
+        };
+
+        let mut exclude_same = SimilarImages::new(SimilarImagesParameters::new(
+            10,
+            8_u8,
+            HashAlg::Gradient,
+            FilterType::Lanczos3,
+            true,
+            false,
+            GeometricInvariance::Off,
+        ));
+        exclude_same.similar_vectors = vec![vec![entry(100, "a"), entry(100, "b"), entry(200, "c")]];
+        exclude_same.exclude_items_with_same_size();
+        assert_eq!(exclude_same.similar_vectors[0].iter().map(|entry| entry.size).collect::<Vec<_>>(), [100, 200]);
+
+        let mut only_same = SimilarImages::new(
+            SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(true, None),
+        );
+        only_same.similar_vectors = vec![vec![entry(100, "a"), entry(100, "b"), entry(200, "c"), entry(300, "d"), entry(300, "e")]];
+        only_same.exclude_items_with_same_size();
+        assert_eq!(only_same.similar_vectors.iter().map(|group| group[0].size).collect::<Vec<_>>(), [100, 300]);
+
+        let mut ratio = SimilarImages::new(
+            SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(false, Some(1.5)),
+        );
+        ratio.similar_vectors = vec![vec![entry(100, "a"), entry(150, "b")], vec![entry(100, "c"), entry(151, "d")]];
+        ratio.exclude_items_with_same_size();
+        assert_eq!(ratio.similar_vectors.len(), 1);
+        assert_eq!(ratio.similar_vectors[0].iter().map(|entry| entry.size).collect::<Vec<_>>(), [100, 150]);
+    }
+
     fn add_hashes(hashmap: &mut IndexMap<ImHash, Vec<ImagesEntry>>, file_entries: Vec<ImagesEntry>) {
         for fe in file_entries {
             for hash in &fe.hashes {
@@ -1611,7 +1649,7 @@ mod connect_results_tests {
 
     #[test]
     fn test_connect_results_real_case() {
-        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let _finder = SimilarImages::new(params);
 
         let hash1: ImHash = vec![59, 41, 53, 27, 19, 143, 228, 228];

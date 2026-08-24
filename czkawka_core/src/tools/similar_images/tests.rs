@@ -57,7 +57,7 @@ fn test_similar_images() {
     ];
 
     for (idx, (hash_alg, filter_type, hash_size, similarity, duplicates, groups, all_in_similar)) in algo_filter_hash_sim_found.into_iter().enumerate() {
-        let params = SimilarImagesParameters::new(similarity, hash_size, hash_alg, filter_type, false, false, false, 0.0, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(similarity, hash_size, hash_alg, filter_type, false, false, GeometricInvariance::Off);
 
         let mut finder = SimilarImages::new(params);
         finder.set_included_paths(vec![test_path.clone()]);
@@ -84,7 +84,7 @@ fn test_similar_images() {
 fn test_similar_images_exclude_same_size() {
     let test_path = get_test_resources_path();
 
-    let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, true, false, false, 0.0, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, true, false, GeometricInvariance::Off);
 
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
@@ -112,7 +112,7 @@ fn test_similar_images_empty_directory() {
     let temp_dir = TempDir::new().unwrap();
     let path = temp_dir.path();
 
-    let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
 
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![path.to_path_buf()]);
@@ -139,18 +139,7 @@ fn test_similar_images_mirror_flip_invariance() {
     let base = create_asymmetric_test_image(&base_path);
     base.fliph().save(&flipped_path).expect("Failed to save flipped image");
 
-    let params = SimilarImagesParameters::new(
-        0,
-        8,
-        HashAlg::Gradient,
-        FilterType::Lanczos3,
-        false,
-        false,
-        false,
-        0.0,
-        false,
-        GeometricInvariance::MirrorFlip,
-    );
+    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::MirrorFlip);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![temp_dir.path().to_path_buf()]);
     finder.set_recursive_search(true);
@@ -177,18 +166,7 @@ fn test_similar_images_rotate_invariance() {
     let base = create_asymmetric_test_image(&base_path);
     base.rotate90().save(&rotated_path).expect("Failed to save rotated image");
 
-    let params = SimilarImagesParameters::new(
-        0,
-        8,
-        HashAlg::Gradient,
-        FilterType::Lanczos3,
-        false,
-        false,
-        false,
-        0.0,
-        false,
-        GeometricInvariance::MirrorFlipRotate90,
-    );
+    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::MirrorFlipRotate90);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![temp_dir.path().to_path_buf()]);
     finder.set_recursive_search(true);
@@ -231,7 +209,7 @@ fn test_similar_images_hide_hard_links() {
     }
 
     {
-        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let mut finder = SimilarImages::new(params);
         finder.set_hide_hard_links(true);
         finder.set_included_paths(vec![path.to_path_buf()]);
@@ -247,7 +225,7 @@ fn test_similar_images_hide_hard_links() {
     }
 
     {
-        let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let mut finder = SimilarImages::new(params);
         finder.set_hide_hard_links(false);
         finder.set_included_paths(vec![path.to_path_buf()]);
@@ -290,7 +268,7 @@ fn test_similar_images_reference_mode_deletes_only_non_reference() {
         difference: 0,
     };
 
-    let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_delete_method(DeleteMethod::Delete);
     finder.set_move_to_trash(false);
@@ -316,7 +294,7 @@ fn get_heif_images_path() -> PathBuf {
 fn test_similar_images_avif_files_are_found() {
     let test_path = get_heif_images_path();
 
-    let params = SimilarImagesParameters::new(30, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(30, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
     finder.set_recursive_search(false);
@@ -335,7 +313,7 @@ fn test_similar_images_avif_degenerate_gradient_hashes_are_ignored() {
     // Solid colors produce all-zero gradient hashes, which are intentionally ignored to avoid false positives.
     let test_path = get_heif_images_path();
 
-    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(0, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
     finder.set_recursive_search(false);

@@ -22,7 +22,7 @@
 ### Czkawka GTK Deprecation Notice
 **Version 12.0 is the last released version of Czkawka GTK.** No new binaries will be provided from this point on. All users are encouraged to migrate to Krokiet, the new Slint-based GUI frontend.
 
-The source code remains in the repository and compatibility with `czkawka_core` will be maintained for some time so the application can still be built manually. However, all issues and feature requests specific to Czkawka GTK will be closed, except for critical problems affecting widely used unofficial builds such as Debian or Docker packages.
+The upstream source code remained available for manual builds at this release. The `all-features` fork removed the GTK source and packaging on 2026-08-25; its desktop fork features now target Krokiet only.
 
 ### Breaking changes
 
@@ -102,6 +102,15 @@ The source code remains in the repository and compatibility with `czkawka_core` 
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Krokiet consolidation and reliability - 2026-08-25
+
+- Removed the `czkawka_gui` GTK crate, translations, launchers, desktop assets, Nix target, release artifacts, and CI jobs from this fork.
+- Restored Cedinia and CLI to upstream behavior. Fork-only UI, localization, and Similar Images controls now live in Krokiet; core retains only required scanning support and cache compatibility.
+- Restored the upstream-compatible Similar Images constructor and made Krokiet's same-size and size-ratio filters explicit through `with_size_filters`.
+- Fixed same-size filtering so mixed groups do not retain duplicate sizes, and made "only same size" split valid size subgroups instead of discarding mixed groups.
+- Made the protected-files list recoverable through temporary and backup files. Read or write failures now block destructive actions instead of silently treating the list as empty.
+- Closed the single-file rename protection bypass, prevented programmatic selection from checking protected rows, preserved full 64-bit file-size tiebreakers, and invalidated stale preview loads on every request.
+
 ### Upstream sync - 2026-08-24 (merges `qarmin/czkawka` through `105a520b`, release `12.0.1`)
 
 - Merged the current upstream scanner, video duplicate detection, Opus handling, progress reporting, runtime diagnostics, and Krokiet/Cedinia UI updates.
@@ -128,11 +137,9 @@ The source code remains in the repository and compatibility with `czkawka_core` 
 
 - Extended Similar Images hash sizes up to `8192`, `only same size` and `size ratio` filters, and exact size display in results.
 - Krokiet file protection (visible per-row marker; post-scan marking deferred via `invoke_from_event_loop` in `file_protection/connect.rs`).
-- UI modernisation pass for Slint frontends (Krokiet + Cedinia): refreshed theme palette, modernized action bars/top bars/bottom navigation, card-style surfaces for main content, and updated popup/list/table styling with improved visual hierarchy and spacing.
-- Simplified Chinese: Noto Sans SC in Krokiet/Cedinia; `just sync-zh-cn` for fork zh-CN strings.
-- Preserved the GTK4 migration work in `czkawka_gui`, including the ColumnView-based simple tabs, image preview improvements, and related stability fixes.
-- Kept the fork-specific file protection UX and batch-selection improvements in the GTK frontend.
-- Retained the raised cache/image allocation limits used for very large Similar Images hashes.
+- Krokiet UI modernization: refreshed theme palette, action bars, popup styling, list tables, and visual hierarchy.
+- Simplified Chinese: Noto Sans SC and `just sync-zh-cn` are maintained for Krokiet only.
+- The GTK implementation and the Cedinia fork UI refresh were intentionally retired on 2026-08-25.
 
 ## Version 11.0.1 - 20.02.2026r
 ### Core

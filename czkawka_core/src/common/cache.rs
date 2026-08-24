@@ -9,7 +9,7 @@ use std::{fs, mem};
 
 mod bincode_cache;
 
-use bincode_cache::{decode_from_reader, encode_into_writer, legacy_no_limit};
+use bincode_cache::{decode_from_reader, encode_into_writer, legacy_with_memory_limit};
 pub use cleaning::{CacheCleaningStatistics, CacheProgressCleaning, clean_all_cache_files};
 use fun_time::fun_time;
 use humansize::{BINARY, format_size};
@@ -57,7 +57,7 @@ where
 
         {
             let mut writer = BufWriter::new(file_handler.expect("Cannot fail, because for saving, this always exists"));
-            if let Err(e) = encode_into_writer(&hashmap_to_save, &mut writer, legacy_no_limit()) {
+            if let Err(e) = encode_into_writer(&hashmap_to_save, &mut writer, legacy_with_memory_limit()) {
                 text_messages
                     .warnings
                     .push(flc!("core_failed_to_write_data_to_cache", file = cache_file.to_string_lossy(), reason = e.to_string()));
@@ -211,7 +211,7 @@ where
             cache_full_name = cache_file.clone();
             let mut reader = BufReader::new(file_handler);
 
-            vec_loaded_entries = match decode_from_reader(&mut reader, legacy_no_limit()) {
+            vec_loaded_entries = match decode_from_reader(&mut reader, legacy_with_memory_limit()) {
                 Ok(t) => t,
                 Err(e) => {
                     text_messages

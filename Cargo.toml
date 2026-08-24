@@ -2,7 +2,6 @@
 members = [
     "czkawka_core",
     "czkawka_cli",
-    "czkawka_gui",
     "cedinia",
     "krokiet",
 ]
@@ -197,4 +196,3 @@ clippy.useless_let_if_seq = "warn"
 clippy.use_self = "warn"
 clippy.verbose_file_reads = "warn"
 clippy.wildcard_imports = "warn"
-

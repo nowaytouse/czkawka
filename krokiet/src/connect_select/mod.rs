@@ -38,7 +38,7 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
         let active_tab = app.global::<GuiState>().get_active_tab();
         let current_model = active_tab.get_tool_model(&app);
 
-        let (checked_items, unchecked_items, new_model) = match select_mode {
+        let (_, _, new_model) = match select_mode {
             SelectMode::SelectAll => select_all(&current_model),
             SelectMode::UnselectAll => deselect_all(&current_model),
             SelectMode::InvertSelection => invert_selection(&current_model),
@@ -63,6 +63,7 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
 
             SelectMode::SelectCustom => return,
         };
+        let (checked_items, unchecked_items, new_model) = prevent_selecting_protected_rows(&current_model, &new_model);
         active_tab.set_tool_model(&app, new_model);
         change_number_of_enabled_items(&app, active_tab, checked_items as i64 - unchecked_items as i64);
     });
@@ -153,8 +154,8 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
             }
         }
 
-        let (checked_items, unchecked_items, new_model) =
-            custom_select::select_custom_columns(&current_model, active_tab, select_mode, &columns, case_sensitive, leave_one_in_group);
+        let (_, _, new_model) = custom_select::select_custom_columns(&current_model, active_tab, select_mode, &columns, case_sensitive, leave_one_in_group);
+        let (checked_items, unchecked_items, new_model) = prevent_selecting_protected_rows(&current_model, &new_model);
         active_tab.set_tool_model(&app, new_model);
         change_number_of_enabled_items(&app, active_tab, checked_items as i64 - unchecked_items as i64);
     });
@@ -240,36 +241,32 @@ pub(crate) fn set_select_buttons(app: &MainWindow) {
     app.global::<GuiState>().set_select_results_list(ModelRc::new(VecModel::from(new_select_model)));
 }
 
-fn extract_comparable_field(model: &SingleMainListModel, property: Property, active_tab: ActiveTab) -> u64 {
+fn extract_comparable_field(model: &SingleMainListModel, property: Property, active_tab: ActiveTab) -> (u64, u64) {
     let mut val_ints = model.val_int.iter();
     match property {
         Property::Size => {
             let high = val_ints.nth(active_tab.get_int_size_idx()).expect("can find file size property");
             let low = val_ints.next().expect("can find file size property");
-            connect_i32_into_u64(high, low)
+            (connect_i32_into_u64(high, low), 0)
         }
         Property::Date => {
             let high = val_ints.nth(active_tab.get_int_modification_date_idx()).expect("can find file last modified property");
             let low = val_ints.next().expect("can find file last modified property");
-            connect_i32_into_u64(high, low)
+            (connect_i32_into_u64(high, low), 0)
         }
         Property::PathLength => {
             let path_len = model.val_str.iter().nth(active_tab.get_str_path_idx()).expect("can find file path property").len();
             let name_len = model.val_str.iter().nth(active_tab.get_str_name_idx()).expect("can find file name property").len();
-            // Primary key: directory path length; secondary key: filename length.
-            // Packed into a single u64 so the existing comparison infrastructure works unchanged.
-            ((path_len as u64) << 32) | (name_len as u64)
+            (path_len as u64, name_len as u64)
         }
-        Property::Resolution => val_ints.nth(active_tab.get_int_pixel_count_idx()).expect("can find pixel count proerty") as u64,
+        Property::Resolution => (val_ints.nth(active_tab.get_int_pixel_count_idx()).expect("can find pixel count property") as u64, 0),
         Property::Quality => {
             let pixel_count = model.val_int.iter().nth(active_tab.get_int_pixel_count_idx()).expect("can find pixel count property") as u64;
             let mut size_ints = model.val_int.iter();
             let high = size_ints.nth(active_tab.get_int_size_idx()).expect("can find file size property");
             let low = size_ints.next().expect("can find file size property");
             let size = connect_i32_into_u64(high, low);
-            // Primary key: pixel count; secondary key: file size (capped to 32 bits as a tiebreaker).
-            // Among images of equal resolution the larger, less-compressed file ranks higher.
-            (pixel_count << 32) | size.min(u32::MAX as u64)
+            (pixel_count, size)
         }
     }
 }
@@ -284,7 +281,7 @@ fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTa
     let headers_idx = find_header_idx_and_deselect_all(&mut old_data);
     if select_max {
         for i in 0..(headers_idx.len() - 1) {
-            let mut max_item = 0;
+            let mut max_item = (0, 0);
             let mut max_item_idx = 1;
             #[expect(clippy::needless_range_loop)]
             for j in (headers_idx[i] + 1)..headers_idx[i + 1] {
@@ -301,7 +298,7 @@ fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTa
         }
     } else {
         for i in 0..(headers_idx.len() - 1) {
-            let mut min_item = u64::MAX;
+            let mut min_item = (u64::MAX, u64::MAX);
             let mut min_item_idx = 1;
             #[expect(clippy::needless_range_loop)]
             for j in (headers_idx[i] + 1)..headers_idx[i + 1] {
@@ -342,7 +339,7 @@ fn select_all_except_by_property(model: &ModelRc<SingleMainListModel>, active_ta
         let group_end = headers_idx[i + 1];
 
         // Find the extreme item to spare.
-        let mut extreme_val = if spare_max { 0u64 } else { u64::MAX };
+        let mut extreme_val = if spare_max { (0, 0) } else { (u64::MAX, u64::MAX) };
         let mut extreme_idx = group_start;
         for j in group_start..group_end {
             let val = extract_comparable_field(&old_data[j], property, active_tab);
@@ -466,6 +463,22 @@ fn find_header_idx_and_deselect_all(old_data: &mut [SingleMainListModel]) -> Vec
     header_idx
 }
 
+fn prevent_selecting_protected_rows(previous_model: &ModelRc<SingleMainListModel>, new_model: &ModelRc<SingleMainListModel>) -> SelectionResult {
+    let previous_rows: Vec<_> = previous_model.iter().collect();
+    let mut new_rows: Vec<_> = new_model.iter().collect();
+    assert_eq!(previous_rows.len(), new_rows.len(), "Selection must not change the row count");
+
+    for row in &mut new_rows {
+        if row.protected {
+            row.checked = false;
+        }
+    }
+
+    let checked_items = previous_rows.iter().zip(&new_rows).filter(|(old, new)| !old.checked && new.checked).count() as u64;
+    let unchecked_items = previous_rows.iter().zip(&new_rows).filter(|(old, new)| old.checked && !new.checked).count() as u64;
+    (checked_items, unchecked_items, ModelRc::new(VecModel::from(new_rows)))
+}
+
 #[cfg(test)]
 mod tests {
     use slint::{ModelRc, SharedString, VecModel};
@@ -559,6 +572,22 @@ mod tests {
         assert!(new_model.row_data(2).unwrap().checked);
         assert!(new_model.row_data(3).unwrap().checked);
         assert!(new_model.row_data(4).unwrap().checked);
+    }
+
+    #[test]
+    fn programmatic_selection_never_checks_protected_rows() {
+        let mut rows = get_model_vec(3);
+        rows[1].protected = true;
+        let previous_model = create_model_from_model_vec(&rows);
+        let (_, _, selected_model) = select_all(&previous_model);
+
+        let (checked_items, unchecked_items, guarded_model) = prevent_selecting_protected_rows(&previous_model, &selected_model);
+
+        assert_eq!(checked_items, 2);
+        assert_eq!(unchecked_items, 0);
+        assert!(guarded_model.row_data(0).unwrap().checked);
+        assert!(!guarded_model.row_data(1).unwrap().checked);
+        assert!(guarded_model.row_data(2).unwrap().checked);
     }
 
     #[test]
@@ -863,8 +892,8 @@ mod tests {
         // Equal pixel count → larger (less-compressed) file is the higher-quality copy and is spared.
         let items = vec![
             header,
-            make_image_item(3_000, 1_000), // same res, smaller file
-            make_image_item(3_000, 9_000), // same res, larger file → spared
+            make_image_item(3_000, u32::MAX as u64 + 1), // same res, smaller file
+            make_image_item(3_000, u32::MAX as u64 + 2), // same res, larger file
         ];
         let model = create_model_from_model_vec(&items);
 

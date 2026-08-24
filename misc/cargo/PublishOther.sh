@@ -20,15 +20,6 @@ fi
 git reset --hard
 
 
-cd "$CZKAWKA_PATH/czkawka_gui"
-cargo package
-if [ $(echo $?) != "0"  ]
-then
-  echo "Cargo package failed GUI"
-  exit 1
-fi
-git reset --hard
-
 cd "$CZKAWKA_PATH/krokiet"
 cargo package
 if [ $(echo $?) != "0"  ]
@@ -46,12 +37,7 @@ cd "$CZKAWKA_PATH/czkawka_cli"
 cargo publish # --allow-dirty
 git reset --hard
 
-cd "$CZKAWKA_PATH/czkawka_gui"
-# sed -i "s/{ path = \"..\/czkawka_core\" }/\"=$NUMBER\"/g" "$CZKAWKA_PATH/czkawka_gui/Cargo.toml"
-cargo publish # --allow-dirty
-git reset --hard
-
 cd "$CZKAWKA_PATH/krokiet"
-# sed -i "s/{ path = \"..\/czkawka_core\" }/\"=$NUMBER\"/g" "$CZKAWKA_PATH/czkawka_gui/Cargo.toml"
+# sed -i "s/{ path = \"..\/czkawka_core\" }/\"=$NUMBER\"/g" "$CZKAWKA_PATH/krokiet/Cargo.toml"
 cargo publish # --allow-dirty
 git reset --hard

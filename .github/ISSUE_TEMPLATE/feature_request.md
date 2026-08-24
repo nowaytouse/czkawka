@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!-- Czkawka GTK GUI is no longer supported - version 12.0 was the last release, no new binaries or fixes will be provided. Feature requests unique to Czkawka GTK GUI will be closed. Please request features for Krokiet instead: https://github.com/qarmin/czkawka/tree/master/krokiet -->
+<!-- This fork does not contain the legacy GTK frontend. Request desktop GUI features for Krokiet. -->
 
 **Feature Description**
 ...

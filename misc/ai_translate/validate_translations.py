@@ -508,9 +508,8 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 misc/ai_translate/validate_translations.py czkawka_gui/i18n
   python3 misc/ai_translate/validate_translations.py krokiet/i18n
-  python3 misc/ai_translate/validate_translations.py czkawka_gui/i18n --languages pl de fr
+  python3 misc/ai_translate/validate_translations.py krokiet/i18n --languages pl de fr
         """,
     )
 

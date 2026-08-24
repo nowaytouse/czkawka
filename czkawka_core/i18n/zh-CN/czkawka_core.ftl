@@ -1,3 +1,4 @@
+# Core
 core_similarity_original = 原始
 core_similarity_very_high = 非常高
 core_similarity_high = 高
@@ -26,12 +27,12 @@ core_needs_allowed_extensions_limited_by_tool = 此工具支持的所有扩展�
 core_needs_allowed_extensions = 所有扩展名均已被排除，无法开始扫描
 core_needs_to_set_at_least_one_broken_option = 未设置任何要扫描的损坏文件类型，无法开始扫描
 core_needs_to_set_at_least_one_bad_name_option = 未设置任何要扫描的“错误名称”选项，无法开始扫描
-core_ffmpeg_not_found = 找不到正确安装的 FFmpeg 或 FFprobe。它们是外部程序，必须手动安装.
+core_ffmpeg_not_found = 找不到正确安装的 FFmpeg 或 FFprobe。它们是外部程序，必须手动安装。
 core_ffmpeg_not_found_windows = 请确保 ffmpeg.exe 和 ffprobe.exe 位于 PATH 中，或直接放在与应用程序可执行文件相同的文件夹中
 core_invalid_symlink_infinite_recursion = 无限递归
 core_invalid_symlink_non_existent_destination = 目标文件不存在
-core_messages_limit_reached_characters = 消息数量超过了设置的限制（{ $current }/{ $limit } 字符），输出已被截断。要查看完整输出，请在设置中禁用限制选项.
-core_messages_limit_reached_lines = 消息数量超过了设置的限制（{ $current }/{ $limit } 行），输出已被截断。要查看完整输出，请在设置中禁用限制选项.
+core_messages_limit_reached_characters = 消息数量超过了设置的限制（{ $current }/{ $limit } 字符），输出已被截断。要查看完整输出，请在设置中禁用限制选项。
+core_messages_limit_reached_lines = 消息数量超过了设置的限制（{ $current }/{ $limit } 行），输出已被截断。要查看完整输出，请在设置中禁用限制选项。
 core_error_moving_to_trash = 移动 "{ $file }" 到回收站时出错：{ $error }
 core_error_removing = 删除 "{ $file }" 时出错：{ $error }
 core_hardlink_unsupported_filesystem = “{ $path }”所在的文件系统不支持硬链接（{ $reason }）
@@ -85,8 +86,8 @@ core_failed_to_load_data_from_cache = 无法从缓存文件 { $file } 加载数�
 core_failed_to_load_data_from_json_cache = 未能从 json 缓存文件 { $file } 加载数据，原因 { $reason }
 core_failed_to_replace_with_optimized = 未能将文件“{ $file }”替换为优化版本：{ $reason }
 core_failed_to_write_data_to_cache = 无法将数据写入缓存文件 "{ $file }", 原因 { $reason }
-core_properly_saved_cache_entries = 已成功将 { $count } 个缓存条目保存到文件.
-core_properly_loaded_cache_entries = 已成功加载 { $count } 个缓存条目.
+core_properly_saved_cache_entries = 已成功将 { $count } 个缓存条目保存到文件。
+core_properly_loaded_cache_entries = 已成功加载 { $count } 个缓存条目。
 core_video_processing_stopped_by_user = 用户已停止视频处理
 core_thumbnail_generation_stopped_by_user = 缩略图生成已由用户停止
 core_failed_to_optimize_video = 视频优化失败 "{ $file }": { $reason }
@@ -95,18 +96,21 @@ core_failed_to_get_metadata_of_optimized_file = 获取优化文件 "{ $file }" �
 core_cannot_create_config_folder = 无法创建配置文件夹 "{ $folder }"，原因 { $reason }
 core_cannot_create_cache_folder = 无法创建缓存文件夹 "{ $folder }", 原因 { $reason }
 core_cannot_create_or_open_cache_file = 无法创建或打开缓存文件 "{ $file }", 原因 { $reason }
-core_cannot_set_config_cache_path = 无法设置配置/缓存路径 - 配置和缓存将不会被使用.
+core_cannot_set_config_cache_path = 无法设置配置/缓存路径 - 配置和缓存将不会被使用。
 core_invalid_extension_contains_space = { $extension } 不是有效的扩展名，因为其中包含空格
 core_invalid_extension_contains_dot = { $extension } 不是有效的扩展名，因为其中包含点号
-core_ffmpeg_unknown_encoder = 无法使用 { $encoder } 编码器对 { $file } 进行编码。当前的 FFmpeg 版本不支持此编码器。请使用支持所需编解码器的其他 FFmpeg 版本，或选择其他编码器.
+core_ffmpeg_unknown_encoder = 无法使用 { $encoder } 编码器对 { $file } 进行编码。当前的 FFmpeg 版本不支持此编码器。请使用支持所需编解码器的其他 FFmpeg 版本，或选择其他编码器。
 core_ffmpeg_error = FFmpeg 处理文件 { $file } 时发生错误，状态码为 { $code }，原因：{ $reason }
 core_custom_command_missing_path_placeholder = 自定义 FFmpeg 命令必须包含 { "{PATH}" } 作为输入文件的占位符
 core_custom_command_empty = 自定义 FFmpeg 命令不能为空
+# Scan stage labels
+# Collecting / scanning files (the { $entries_checked } counter grows while the disk is walked)
 stage_collecting_files = 正在扫描第 { $entries_checked } 个文件
 stage_collecting_folders = 正在扫描第 { $entries_checked } 个文件夹
 stage_scanning_name = 正在扫描第 { $entries_checked } 个文件的名称
 stage_scanning_size_name = 正在扫描第 { $entries_checked } 个文件的大小和名称
 stage_scanning_size = 正在扫描第 { $entries_checked } 个文件的大小
+# Cache load/save (indeterminate, no counters)
 stage_filtering_outdated_cache = 过滤过时的缓存条目
 stage_loading_prehash_cache = 正在加载预哈希缓存
 stage_saving_prehash_cache = 正在保存预哈希缓存
@@ -118,6 +122,7 @@ stage_loading_fingerprints_cache = 正在加载指纹缓存
 stage_saving_fingerprints_cache = 正在保存指纹缓存
 stage_loading_exif_cache = 正在加载 EXIF 缓存
 stage_saving_exif_cache = 正在保存 EXIF 缓存
+# Per-tool work stages - items_stats holds "checked/total", size_stats holds the byte sizes
 stage_hiding_links = 隐藏硬链接 { $items_stats }
 stage_analyzed_partial_hash = 已分析 { $items_stats } 个文件的部分哈希（{ $size_stats }）
 stage_analyzed_full_hash = 已分析 { $items_stats } 个文件的完整哈希（{ $size_stats }）
@@ -135,6 +140,7 @@ stage_checked_files = 已检查 { $items_stats } 个文件（{ $size_stats }）
 stage_checked_files_bad_extensions = 已检查 { $items_stats } 个文件
 stage_checked_files_bad_names = 已检查 { $items_stats } 个文件
 stage_checking_empty_files_content = 正在检查 { $items_stats } 个文件的内容（{ $size_stats }）
+# File operations (delete/rename/move/...); the "no_size" variant is used when no byte total is known
 stage_deleting_files = 正在删除 { $items_stats } 个文件（{ $size_stats }）
 stage_deleting_no_size_files = 正在删除 { $items_stats } 个文件
 stage_renaming_files = 正在重命名 { $items_stats } 个文件

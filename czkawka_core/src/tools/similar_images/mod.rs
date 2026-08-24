@@ -134,18 +134,16 @@ pub struct SimilarImagesParameters {
 }
 
 impl SimilarImagesParameters {
-    pub fn new(
+    pub fn new<HashSize: TryInto<u16>>(
         max_difference: u32,
-        hash_size: u16,
+        hash_size: HashSize,
         hash_alg: HashAlg,
         image_filter: FilterType,
         exclude_images_with_same_size: bool,
-        only_images_with_same_size: bool,
-        size_ratio_enabled: bool,
-        size_ratio: f64,
         exclude_images_with_same_resolution: bool,
         geometric_invariance: GeometricInvariance,
     ) -> Self {
+        let hash_size = hash_size.try_into().unwrap_or_else(|_| panic!("Hash size must fit in u16"));
         assert!([8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192].contains(&hash_size));
         Self {
             max_difference,
@@ -153,12 +151,25 @@ impl SimilarImagesParameters {
             hash_alg,
             image_filter,
             exclude_images_with_same_size,
-            only_images_with_same_size,
-            size_ratio_enabled,
-            size_ratio,
+            only_images_with_same_size: false,
+            size_ratio_enabled: false,
+            size_ratio: 1.0,
             exclude_images_with_same_resolution,
             geometric_invariance,
         }
+    }
+
+    /// Enables the optional file-size filters used by Krokiet.
+    pub fn with_size_filters(mut self, only_images_with_same_size: bool, maximum_size_ratio: Option<f64>) -> Self {
+        assert!(!only_images_with_same_size || !self.exclude_images_with_same_size);
+        assert!(!only_images_with_same_size || maximum_size_ratio.is_none());
+        if let Some(maximum_size_ratio) = maximum_size_ratio {
+            assert!(maximum_size_ratio.is_finite() && maximum_size_ratio >= 1.0);
+            self.size_ratio = maximum_size_ratio;
+            self.size_ratio_enabled = true;
+        }
+        self.only_images_with_same_size = only_images_with_same_size;
+        self
     }
 }
 

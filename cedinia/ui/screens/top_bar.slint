@@ -1,33 +1,31 @@
+import { Fonts } from "../globals/fonts.slint";
 import { CediniaColors } from "../globals/colors.slint";
 import { AppState } from "../globals/app_state.slint";
 import { ScanState } from "../globals/common.slint";
 
 export component TopAppBar {
     in property <string> title: "Cedinia";
-    height: 60px;
+    height: 56px;
 
     Rectangle {
         background: CediniaColors.bg_elevated;
-        border-width: 1px;
-        border-color: CediniaColors.border;
-        border-radius: 14px;
         drop-shadow-color: CediniaColors.shadow_sm;
-        drop-shadow-blur: 10px;
+        drop-shadow-blur: 6px;
         drop-shadow-offset-y: 2px;
 
         HorizontalLayout {
             height: parent.height;
-            padding-left: 14px;
-            padding-right: 14px;
-            spacing: 12px;
+            padding-left: 16px;
+            padding-right: 12px;
+            spacing: 10px;
             alignment: LayoutAlignment.start;
         
             VerticalLayout {
                 Rectangle {}
                 Image {
                     source: @image-url("../../icons/cedinia_logo.svg");
-                    width: 42px;
-                    height: 42px;
+                    width: 48px;
+                    height: 48px;
                     horizontal-alignment: ImageHorizontalAlignment.center;
                     vertical-alignment: ImageVerticalAlignment.center;
                 }
@@ -42,8 +40,8 @@ export component TopAppBar {
                     Text {
                         text: root.title;
                         color: CediniaColors.accent_light;
-                        font-size: 17px;
-                        font-weight: 700;
+                        font-size: Fonts.title_lg;
+                        font-weight: Fonts.bold;
                     }
                     if AppState.scan_state == ScanState.Scanning : Rectangle {
                         width: 10px;
@@ -61,7 +59,7 @@ export component TopAppBar {
                 Text {
                     text: AppState.status_message;
                     color: CediniaColors.text_secondary;
-                    font-size: 12px;
+                    font-size: Fonts.caption;
                     overflow: elide;
                 }
             }

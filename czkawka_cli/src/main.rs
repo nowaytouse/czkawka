@@ -245,9 +245,6 @@ fn similar_images(similar_images: SimilarImagesArgs, stop_flag: &Arc<AtomicBool>
         delete_method,
         allow_hard_links,
         ignore_same_size,
-        only_same_size,
-        size_ratio_enabled,
-        size_ratio,
         ignore_same_resolution,
     } = similar_images;
 
@@ -259,9 +256,6 @@ fn similar_images(similar_images: SimilarImagesArgs, stop_flag: &Arc<AtomicBool>
         hash_alg,
         image_filter,
         ignore_same_size.ignore_same_size,
-        only_same_size,
-        size_ratio_enabled,
-        size_ratio,
         ignore_same_resolution.ignore_same_resolution,
         geometric_invariance,
     );

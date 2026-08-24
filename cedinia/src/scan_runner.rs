@@ -76,7 +76,7 @@ pub enum ScanRequest {
     SimilarImages {
         dirs: Vec<PathBuf>,
         similarity_preset: SimilarityPreset,
-        hash_size: u16,
+        hash_size: u8,
         hash_alg: HashAlg,
         image_filter: FilterType,
         geometric_invariance: GeometricInvariance,

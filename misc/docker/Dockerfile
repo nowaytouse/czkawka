@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # curl is needed by Rust update tool
 RUN apt-get update \
-    && apt-get install -y curl build-essential libgtk-4-dev \
+    && apt-get install -y curl build-essential \
         libheif-dev libheif-plugin-libde265 libheif-plugin-dav1d libheif-plugin-aomdec \
     && apt-get clean ; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 

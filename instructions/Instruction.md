@@ -4,7 +4,6 @@ Czkawka consists of several independent frontends sharing a common core library.
 
 - [Krokiet GUI (Slint frontend)](Instruction_Krokiet.md) - recommended GUI for all platforms
 - [CLI (command-line frontend)](Instruction_CLI.md) - full flag reference and automation examples
-- [GTK GUI (legacy)](Instruction_GTK.md) - **12.0 is the last version**, migrate to Krokiet
 - [Core library integration](Instruction_Core.md) - tool descriptions, API, embedding czkawka_core
 - [FAQ](FAQ.md) - frequently asked questions from 1200+ GitHub issues (blank window, ffmpeg, min file size, etc.)
 - [Translations](Translations.md) - how to contribute or add a new language
@@ -35,7 +34,6 @@ Czkawka consists of several independent frontends sharing a common core library.
 
 **Configuration files (per frontend, not shared):**
 
-- GTK stores `czkawka_gui_config.txt` under the user config directory.
 - Krokiet stores `config_general.json` and `config_preset_N.json` under the user config directory (`~/.config/krokiet/` on Linux).
 - CLI does not store configuration files.
 

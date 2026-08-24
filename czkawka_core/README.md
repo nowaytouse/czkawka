@@ -1,6 +1,6 @@
 # Czkawka Core
 
-Core scanning library shared by Czkawka GUI, Czkawka CLI, Krokiet, and Cedinia.
+Core scanning library shared by Czkawka CLI, Krokiet, and Cedinia.
 
 ## Overview
 

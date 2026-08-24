@@ -25,27 +25,6 @@ IGNORED_KEYS = [
     "ok_button",
     "ref",
     # Technical terms / abbreviations the AI consistently returns unchanged
-    # czkawka_gui
-    "main_label_min_size",
-    "main_label_max_size",
-    "main_check_box_broken_files_video",
-    "music_genre_checkbox",
-    "duplicate_mode_name_combo_box",
-    "main_tree_view_column_bitrate",
-    "main_tree_view_column_codec",
-    "main_tree_view_column_dimensions",
-    "main_tree_view_column_genre",
-    "main_check_box_broken_files_audio",
-    "main_check_box_broken_files_image",
-    "about_repository_button",
-    "music_bitrate_checkbox",
-    "progress_stop_button",
-    "music_artist_checkbox",
-    "main_tree_view_column_artist",
-    "about_donation_button",
-    "about_other_apps_open_button",
-    "popover_custom_regex_name_label",
-    "settings_notebook_general",
     # czkawka_core
     "core_similarity_original",
     "core_similarity_minimal",
@@ -396,10 +375,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 misc/ai_translate/translate.py czkawka_gui/i18n
+  python3 misc/ai_translate/translate.py krokiet/i18n
   python3 misc/ai_translate/translate.py krokiet/i18n --model qwen2.5:7b
-  python3 misc/ai_translate/translate.py czkawka_gui/i18n --dry-run
-  python3 misc/ai_translate/translate.py czkawka_gui/i18n --languages pl de fr
+  python3 misc/ai_translate/translate.py krokiet/i18n --dry-run
+  python3 misc/ai_translate/translate.py krokiet/i18n --languages pl de fr
         """,
     )
 

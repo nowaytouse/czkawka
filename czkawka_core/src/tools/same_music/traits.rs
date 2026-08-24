@@ -6,10 +6,10 @@ use std::time::Instant;
 use crossbeam_channel::Sender;
 use fun_time::fun_time;
 
-use crate::common::consts::AUDIO_FILES_EXTENSIONS;
+use crate::common::consts::{AUDIO_FILES_CONTENT_EXTENSIONS, AUDIO_FILES_TAGS_EXTENSIONS};
 use crate::common::model::{CheckingMethod, WorkContinueStatus};
 use crate::common::progress_data::ProgressData;
-use crate::common::tool_data::{CommonData, CommonToolData, DeleteMethod};
+use crate::common::tool_data::{CommonData, CommonToolData, DeleteItemType, DeleteMethod};
 use crate::common::traits::{AllTraits, DebugPrint, DeletingItems, PrintResults, Search};
 use crate::flc;
 use crate::tools::same_music::core::format_audio_duration;
@@ -23,7 +23,12 @@ impl Search for SameMusic {
         let start_time = Instant::now();
 
         let () = (|| {
-            if self.prepare_items(Some(AUDIO_FILES_EXTENSIONS)).is_err() {
+            let audio_extensions = match self.params.check_type {
+                CheckingMethod::AudioTags => AUDIO_FILES_TAGS_EXTENSIONS,
+                CheckingMethod::AudioContent => AUDIO_FILES_CONTENT_EXTENSIONS,
+                _ => unreachable!(),
+            };
+            if self.prepare_items(Some(audio_extensions)).is_err() {
                 return;
             }
             self.common_data.use_reference_folders = !self.common_data.directories.reference_directories.is_empty() || !self.common_data.directories.reference_files.is_empty();
@@ -173,6 +178,10 @@ impl DeletingItems for SameMusic {
     fn delete_files(&mut self, stop_flag: &Arc<AtomicBool>, progress_sender: Option<&Sender<ProgressData>>) -> WorkContinueStatus {
         if self.get_cd().delete_method == DeleteMethod::None {
             return WorkContinueStatus::Continue;
+        }
+        if self.get_use_reference_folders() {
+            let files_to_delete: Vec<_> = self.duplicated_music_entries_referenced.iter().flat_map(|(_, files)| files.iter().cloned()).collect();
+            return self.delete_simple_elements_and_add_to_messages(stop_flag, progress_sender, DeleteItemType::DeletingFiles(files_to_delete));
         }
         let files_to_delete = self.duplicated_music_entries.clone();
         self.delete_advanced_elements_and_add_to_messages(stop_flag, progress_sender, files_to_delete)

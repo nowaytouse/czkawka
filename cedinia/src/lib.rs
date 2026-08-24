@@ -5,6 +5,7 @@ mod app;
 mod callbacks;
 pub mod common;
 mod compare;
+mod file_actions;
 #[cfg(target_os = "android")]
 mod file_picker_android;
 pub mod localizer_cedinia;
@@ -32,45 +33,31 @@ pub fn android_cache_path() -> Option<&'static str> {
 
 #[cfg(target_os = "android")]
 fn setup_android_paths(android_app: &slint::android::AndroidApp) {
-    use jni::objects::{JObject, JString};
-    use jni::{jni_sig, jni_str};
-
-    let vm = unsafe { jni::JavaVM::from_raw(android_app.vm_as_ptr() as *mut _) };
-    let _ = vm.attach_current_thread(|env| -> jni::errors::Result<()> {
-        let activity_raw = unsafe { JObject::from_raw(env, android_app.activity_as_ptr() as *mut _) };
-
-        let files_dir: JObject = env.call_method(&activity_raw, jni_str!("getFilesDir"), jni_sig!(() -> java.io.File), &[])?.l()?;
-        let files_path_obj = env.call_method(&files_dir, jni_str!("getAbsolutePath"), jni_sig!(() -> java.lang.String), &[])?.l()?;
-        let files_path: JString = env.cast_local::<JString>(files_path_obj)?;
-        let files_str: String = files_path.try_to_string(env)?;
-
-        let cache_dir: JObject = env.call_method(&activity_raw, jni_str!("getCacheDir"), jni_sig!(() -> java.io.File), &[])?.l()?;
-        let cache_path_obj = env.call_method(&cache_dir, jni_str!("getAbsolutePath"), jni_sig!(() -> java.lang.String), &[])?.l()?;
-        let cache_path: JString = env.cast_local::<JString>(cache_path_obj)?;
-        let cache_str: String = cache_path.try_to_string(env)?;
-
-        let _ = ANDROID_FILES_PATH.set(files_str.clone());
-        let _ = ANDROID_CACHE_PATH.set(cache_str.clone());
-
-        unsafe { std::env::set_var("DATA_DIR", &files_str) };
-
-        eprintln!("setup_android_paths: config='{}' cache='{}'", files_str, cache_str);
-        Ok(())
-    });
+    match jni_high::android::activity::app_dirs(android_app) {
+        Ok(dirs) => {
+            let _ = ANDROID_FILES_PATH.set(dirs.files_dir.clone());
+            let _ = ANDROID_CACHE_PATH.set(dirs.cache_dir);
+            unsafe { std::env::set_var("DATA_DIR", &dirs.files_dir) };
+            eprintln!("setup_android_paths: config='{}'", dirs.files_dir);
+        }
+        Err(e) => eprintln!("setup_android_paths: {e:?}"),
+    }
 }
 
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
 fn android_main(android_app: slint::android::AndroidApp) {
-    android_logger::init_once(android_logger::Config::default().with_max_level(log::LevelFilter::Debug).with_tag("cedinia"));
+    // DATA_DIR must be set before setup_logger_cache, which resolves the cache folder from it.
     setup_android_paths(&android_app);
     crate::app::setup_logger_cache();
     log::info!("android_main: started");
+    asan_smoketest_if_requested();
     let scale = android_app.config().density().unwrap_or(160) as f32 / 160.0;
     log::info!("android_main: display scale={:.2}", scale);
-    log::info!("android_main: initialising file picker (JNI + DEX)");
-    file_picker_android::init(&android_app);
-    log::info!("android_main: file picker initialised");
+    log::info!("android_main: initialising jni_high context");
+    jni_high::AndroidContext::init(android_app.clone());
+    file_picker_android::init();
+    log::info!("android_main: jni_high context ready");
     slint::android::init(android_app.clone()).expect("Failed to initialise Slint Android backend");
     log::info!("android_main: Slint backend initialised");
     file_picker_android::setup_nav_bar();
@@ -81,4 +68,20 @@ fn android_main(android_app: slint::android::AndroidApp) {
     log::info!("android_main: launching app UI");
     app::run_app_with_insets(inset_bottom_px, scale, android_app);
     log::info!("android_main: app UI returned (exiting)");
+}
+
+// Triggers a deliberate heap-buffer-overflow so ASan's abort proves it's active in the build.
+// Only fires when CEDINIA_ASAN_SMOKETEST is set (asan_wrap.sh sets it for `just android_asan smoke`).
+#[cfg(target_os = "android")]
+fn asan_smoketest_if_requested() {
+    if std::env::var_os("CEDINIA_ASAN_SMOKETEST").is_none() {
+        return;
+    }
+    log::error!("ASAN SMOKETEST: triggering a deliberate heap-buffer-overflow now");
+    let v: Vec<u8> = vec![0xAB; 4];
+    let ptr = v.as_ptr();
+    let offset = std::hint::black_box(64usize);
+    let byte = unsafe { std::ptr::read_volatile(ptr.add(offset)) };
+    std::hint::black_box(byte);
+    log::error!("ASAN SMOKETEST: still alive at byte={byte:#x} - ASan is NOT active in this build");
 }

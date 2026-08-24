@@ -1,0 +1,74 @@
+import { Button } from "std-widgets.slint";
+import { ColorPalette } from "../globals/color_palette.slint";
+import { Translations } from "../globals/translations.slint";
+import { FontSizes } from "../globals/fonts.slint";
+
+export component PopupBase inherits PopupWindow {
+    in-out property <string> title_text: "TODO - needs to be changed";
+    in-out property <string> ok_text <=> Translations.ok_button_text;
+    in-out property <string> cancel_text <=> Translations.cancel_button_text;
+    in-out property <bool> enabled_ok_button: true;
+    in-out property <bool> show_cancel_button: true;
+
+    callback ok_clicked();
+    callback cancel_clicked();
+
+    close-policy: PopupClosePolicy.no-auto-close;
+    rect := Rectangle {
+        width: parent.width;
+        height: parent.height;
+        border-radius: 14px;
+        border-color: ColorPalette.popup_border_color;
+        border-width: 1px;
+        background: ColorPalette.popup_background;
+        drop-shadow-blur: 20px;
+        drop-shadow-color: ColorPalette.popup_border_color.with-alpha(0.45);
+        clip: true;
+        VerticalLayout {
+            Rectangle {
+                background: ColorPalette.popup_background_title_line;
+
+                Text {
+                    vertical-stretch: 0.0;
+                    min-height: 36px;
+                    text <=> title_text;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                    font-size: FontSizes.normal;
+                    font-weight: FontSizes.bold_weight;
+                }
+                Rectangle {
+                    y: parent.height - 1px;
+                    width: parent.width;
+                    height: 1px;
+                    background: ColorPalette.popup_background_border;
+                }
+            }
+
+            @children
+
+            HorizontalLayout {
+                padding: 12px;
+                spacing: 8px;
+                Button {
+                    enabled <=> enabled_ok_button;
+                    text <=> ok_text;
+                    primary: true;
+                    clicked => {
+                        root.close();
+                        ok_clicked();
+                    }
+                }
+
+                Rectangle { }
+
+                if show_cancel_button: Button {
+                    text <=> cancel_text;
+                    clicked => {
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}

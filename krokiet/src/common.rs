@@ -102,6 +102,7 @@ pub const MAX_INT_DATA_TEMPORARY_FILES: usize = IntDataTemporaryFiles::SizePart2
 #[repr(u8)]
 #[derive(Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum StrDataTemporaryFiles {
+    Size,
     Name,
     Path,
     ModificationDate,
@@ -363,7 +364,8 @@ impl ActiveTab {
                 StrDataEmptyFiles::Size => SortIdx::IntIdxPair(IntDataEmptyFiles::SizePart1 as i32, IntDataEmptyFiles::SizePart2 as i32),
             },
             Self::SimilarImages => match StrDataSimilarImages::try_from(str_idx as u8).unwrap_or_else(|_| panic!("Invalid str idx {str_idx} for SimilarImages")) {
-                StrDataSimilarImages::Similarity | StrDataSimilarImages::Name | StrDataSimilarImages::Path => SortIdx::StrIdx(str_idx),
+                StrDataSimilarImages::Name | StrDataSimilarImages::Path => SortIdx::StrIdx(str_idx),
+                StrDataSimilarImages::Similarity => SortIdx::IntIdx(IntDataSimilarImages::SimilarityValue as i32),
                 StrDataSimilarImages::ModificationDate => {
                     SortIdx::IntIdxPair(IntDataSimilarImages::ModificationDatePart1 as i32, IntDataSimilarImages::ModificationDatePart2 as i32)
                 }
@@ -387,6 +389,7 @@ impl ActiveTab {
                 StrDataTemporaryFiles::ModificationDate => {
                     SortIdx::IntIdxPair(IntDataTemporaryFiles::ModificationDatePart1 as i32, IntDataTemporaryFiles::ModificationDatePart2 as i32)
                 }
+                StrDataTemporaryFiles::Size => SortIdx::IntIdxPair(IntDataTemporaryFiles::SizePart1 as i32, IntDataTemporaryFiles::SizePart2 as i32),
             },
             Self::SimilarVideos => match StrDataSimilarVideos::try_from(str_idx as u8).unwrap_or_else(|_| panic!("Invalid str idx {str_idx} for SimilarVideos")) {
                 StrDataSimilarVideos::Name | StrDataSimilarVideos::Path | StrDataSimilarVideos::Codec | StrDataSimilarVideos::PreviewPath => SortIdx::StrIdx(str_idx),

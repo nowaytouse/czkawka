@@ -122,7 +122,7 @@ mod test {
 
     use super::*;
 
-    // (ComboBoxText and Dialog tests removed — those GTK widgets are deprecated since 4.10)
+    // (ComboBoxText and Dialog tests removed - those GTK widgets are deprecated since 4.10)
 
     #[gtk4::test]
     fn test_get_all_direct_children() {

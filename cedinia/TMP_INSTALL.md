@@ -53,6 +53,11 @@ just android_install        # install debug APK to connected device
 just android_install_release
 just android_run            # launch on connected device
 
+#  Android - AddressSanitizer build (JNI testing) 
+just setup_sanitizer_android   # one-time: nightly + aarch64 target + llvm-tools
+just android_asan              # build (nightly+ASan) -> install -> launch + auto-logcat
+just android_asan smoke        # same, but deliberately heap-overflows at startup
+
 #  Logs & diagnostics 
 just android_log            # logcat: Rust stdout/stderr only
 just android_logc           # logcat: everything from Cedinia

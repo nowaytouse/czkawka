@@ -5,7 +5,7 @@ window_progress_title = Scanning
 window_compare_images = Compare Images
 
 # General
-general_ok_button = Ok
+general_ok_button = OK
 general_close_button = Close
 
 # Krokiet info dialog
@@ -353,6 +353,16 @@ about_repository_button = Repository
 about_donation_button = Donation
 about_instruction_button = Instruction
 about_translation_button = Translation
+about_other_apps_button = Other Apps
+about_other_apps_dialog_title = Other applications by qarmin
+about_other_apps_open_source_note = All listed applications are free and open source.
+about_other_apps_open_button = Open
+about_other_apps_szyszka_desc = Fast and powerful file renamer.
+about_other_apps_mykrut_desc = Simple fast and opinionated Linux file manager.
+about_other_apps_dcmki_viewer_desc = Simple DICOM viewer.
+about_other_apps_video_thumbnailer_desc = Wrapper around the video thumbnail generator used in Czkawka.
+about_other_apps_space_finder_desc = Simple finder of the biggest files on your system.
+about_other_apps_system_info_collector_desc = Collects RAM/CPU usage from the OS and shows it as graphs.
 
 # Header
 header_setting_button_tooltip = Opens settings dialog.
@@ -515,38 +525,6 @@ compute_found_broken_files = Found { $number_files } broken files in { $time }
 compute_found_bad_extensions = Found { $number_files } files with invalid extensions in { $time }
 
 # Progress window
-progress_scanning_general_file = {$file_number -> 
-        [one] Scanned {$file_number} file
-       *[other] Scanned {$file_number} files
-}
-
-progress_scanning_extension_of_files = Checked extension of {$file_checked}/{$all_files} file
-progress_scanning_broken_files = Checked {$file_checked}/{$all_files} file ({$data_checked}/{$all_data})
-progress_scanning_video = Hashed of {$file_checked}/{$all_files} video
-progress_creating_video_thumbnails = Created thumbnails of {$file_checked}/{$all_files} video
-progress_scanning_image = Hashed of {$file_checked}/{$all_files} image ({$data_checked}/{$all_data})
-progress_comparing_image_hashes = Compared {$file_checked}/{$all_files} image hash
-progress_scanning_music_tags_end = Compared tags of {$file_checked}/{$all_files} music file
-progress_scanning_music_tags = Read tags of {$file_checked}/{$all_files} music file
-progress_scanning_music_content_end = Compared fingerprint of {$file_checked}/{$all_files} music file
-progress_scanning_music_content = Calculated fingerprint of {$file_checked}/{$all_files} music file ({$data_checked}/{$all_data})
-progress_scanning_empty_folders = {$folder_number -> 
-        [one] Scanned {$folder_number} folder
-       *[other] Scanned {$folder_number} folders
-}
-progress_scanning_size = Scanned size of {$file_number} file
-progress_scanning_size_name = Scanned name and size of {$file_number} file
-progress_scanning_name = Scanned name of {$file_number} file
-progress_analyzed_partial_hash = Analyzed partial hash of {$file_checked}/{$all_files} files ({$data_checked}/{$all_data})
-progress_analyzed_full_hash = Analyzed full hash of {$file_checked}/{$all_files} files ({$data_checked}/{$all_data})
-progress_prehash_cache_loading = Loading prehash cache
-progress_prehash_cache_saving = Saving prehash cache
-progress_hash_cache_loading = Loading hash cache
-progress_hash_cache_saving = Saving hash cache
-progress_cache_loading = Loading cache
-progress_cache_saving = Saving cache
-progress_hiding_hard_link = Hiding hard links of {$file_checked}/{$all_files} file
-
 progress_current_stage = Current Stage:{"  "}
 progress_all_stages = All Stages:{"  "}
 
@@ -555,6 +533,7 @@ saving_loading_saving_success = Saved configuration to file { $name }.
 saving_loading_saving_failure = Failed to save configuration data to file { $name }, reason { $reason }.
 saving_loading_reset_configuration = Current configuration was cleared.
 saving_loading_loading_success = Properly loaded app configuration.
+saving_loading_no_config_file = No configuration file found, using default settings.
 
 saving_loading_failed_to_create_config_file = Failed to create config file "{ $path }", reason "{ $reason }".
 saving_loading_failed_to_read_config_file = Cannot load configuration from "{ $path }" because it does not exist or is not a file.
@@ -568,7 +547,7 @@ text_view_messages = MESSAGES
 text_view_warnings = WARNINGS
 text_view_errors = ERRORS
 about_window_motto = This program is free to use and will always be.
-krokiet_new_app = Czkawka is in maintenance mode, which means that only critical bugs will be fixed and no new features will be added. For new features, please check out new Krokiet app, which is more stable and performant and is still under active development.
+krokiet_new_app = This GTK version of Czkawka is no longer developed as of version 12. For new features and active development, please use Krokiet, which is more stable and performant.
 
 # Various dialog
 dialogs_ask_next_time = Ask next time

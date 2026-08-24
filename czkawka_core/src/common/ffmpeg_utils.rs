@@ -28,7 +28,7 @@ pub fn check_if_ffprobe_ffmpeg_exists() -> bool {
 
 /// Returns the subset of hardware encoders that actually work on this machine.
 /// Each candidate is tested by attempting a 1-frame encode; encoders that fail
-/// (missing driver, missing library like libcuda.so, unsupported GPU, …) are excluded.
+/// (missing driver, missing library like libcuda.so, unsupported GPU, ...) are excluded.
 pub fn get_working_hardware_encoders() -> Vec<HardwareEncoder> {
     HardwareEncoder::all_non_none().iter().copied().filter(|&enc| test_hardware_encoder(enc)).collect()
 }
@@ -52,7 +52,8 @@ fn test_encoder_simple(encoder_name: &str) -> bool {
             "-f",
             "lavfi",
             "-i",
-            "color=size=64x64:rate=1",
+            // AMF rejects very small frames (Init() error 5 at 64x64); 128x128 matches the VAAPI probe and works for all encoders
+            "color=size=128x128:rate=1",
             "-frames:v",
             "1",
             "-c:v",

@@ -6,7 +6,6 @@ use crate::{BigFilesSettings, DuplicateSettings, GeneralSettings, MainWindow, Sa
 pub(crate) fn translate_items(app: &MainWindow) {
     let t = app.global::<Translations>();
 
-    t.set_app_name_text(flc!("app_name").into());
     t.set_tool_duplicate_files_text(flc!("tool_duplicate_files").into());
     t.set_tool_empty_folders_text(flc!("tool_empty_folders").into());
     t.set_tool_similar_images_text(flc!("tool_similar_images").into());
@@ -167,6 +166,11 @@ pub(crate) fn translate_items(app: &MainWindow) {
     t.set_diagnostics_open_thumbnails_folder_text(flc!("diagnostics_open_thumbnails_folder").into());
     t.set_diagnostics_clear_cache_text(flc!("diagnostics_clear_cache").into());
     t.set_diagnostics_open_cache_folder_text(flc!("diagnostics_open_cache_folder").into());
+    t.set_diagnostics_export_logs_text(flc!("diagnostics_export_logs").into());
+    t.set_logs_label_text(flc!("logs_label").into());
+    t.set_logs_export_title_text(flc!("logs_export_title").into());
+    t.set_logs_export_saved_text(flc!("logs_export_saved").into());
+    t.set_logs_export_failed_text(flc!("logs_export_failed").into());
     t.set_diagnostics_collect_test_text(flc!("diagnostics_collect_test").into());
     t.set_diagnostics_collect_test_desc_text(flc!("diagnostics_collect_test_desc").into());
     t.set_diagnostics_collect_test_run_text(flc!("diagnostics_collect_test_run").into());
@@ -195,7 +199,6 @@ pub(crate) fn translate_items(app: &MainWindow) {
     t.set_gallery_confirm_delete_text(flc!("gallery_confirm_delete").into());
     t.set_deleting_files_text(flc!("deleting_files").into());
     t.set_stop_text(flc!("stop").into());
-    t.set_files_suffix_text(flc!("files_suffix").into());
     t.set_scanning_fallback_text(flc!("scanning_fallback").into());
     t.set_app_subtitle_text(flc!("app_subtitle").into());
     t.set_app_license_text(flc!("app_license").into());

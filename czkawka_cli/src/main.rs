@@ -40,6 +40,7 @@ use crate::commands::{
 use crate::progress::connect_progress;
 
 mod commands;
+mod parsers;
 mod progress;
 
 #[derive(Debug)]
@@ -110,9 +111,8 @@ fn main() {
 
     if cli_output.found_any_files && !cli_output.ignored_error_code_on_found {
         std::process::exit(11);
-    } else {
-        std::process::exit(0);
     }
+    std::process::exit(0);
 }
 
 fn duplicates(duplicates: DuplicatesArgs, stop_flag: &Arc<AtomicBool>, progress_sender: &Sender<ProgressData>) -> CliOutput {
@@ -363,6 +363,10 @@ fn similar_videos(similar_videos: SimilarVideosArgs, stop_flag: &Arc<AtomicBool>
         ignore_same_resolution,
         skip_forward_amount,
         crop_detect,
+        window_count,
+        duration_tolerance_pct,
+        min_matching_windows,
+        subclip_min_match,
         scan_duration,
         generate_thumbnails,
         thumbnail_video_percentage_from_start,
@@ -384,6 +388,10 @@ fn similar_videos(similar_videos: SimilarVideosArgs, stop_flag: &Arc<AtomicBool>
         skip_forward_amount,
         scan_duration,
         crop_detect,
+        window_count,
+        duration_tolerance_pct,
+        min_matching_windows,
+        subclip_min_match,
         generate_thumbnails,
         thumbnail_video_percentage_from_start,
         generate_thumbnail_grid,

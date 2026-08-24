@@ -1,18 +1,20 @@
 use std::fmt::Debug;
-use std::fs::File;
 use std::panic;
 use std::path::Path;
 
 use fast_image_resize::{FilterType as FirFilterType, ResizeAlg, ResizeOptions as FirResizeOptions, Resizer};
 use image::{DynamicImage, ImageReader};
+use little_exif::exif_tag::ExifTag;
+use little_exif::ifd::ExifTagGroup;
+use little_exif::metadata::Metadata;
 use log::{error, trace};
-use nom_exif::{ExifIter, ExifTag, MediaParser, MediaSource};
 
 use crate::common::consts::{HEIC_EXTENSIONS, IMAGE_RS_EXTENSIONS, RAW_IMAGE_EXTENSIONS};
 use crate::common::create_crash_message;
 use crate::flc;
 
 const MAXIMUM_IMAGE_PIXELS: u32 = 2_000_000_000;
+const MAXIMUM_IMAGE_FILE_SIZE: u64 = 500 * 1024 * 1024;
 
 pub fn register_image_decoding_hooks() {
     #[cfg(feature = "heif")]
@@ -20,17 +22,25 @@ pub fn register_image_decoding_hooks() {
     jxl_oxide::integration::register_image_decoding_hook();
 }
 
-// Using this instead of image::open because image::open only reads content of files if extension matches content
-// This is not really helpful when trying to show preview of files with wrong extensions
-pub(crate) fn decode_normal_image(path: &str) -> Result<DynamicImage, String> {
-    let file = File::open(path).map_err(|e| e.to_string())?;
-    let mut reader = ImageReader::new(std::io::BufReader::new(file)).with_guessed_format().map_err(|e| e.to_string())?;
-    let mut limits = image::Limits::default();
-    limits.max_alloc = Some(14 * 1024 * 1024 * 1024); // 14 GB
-    reader.limits(limits);
-    let img = reader.decode().map_err(|e| e.to_string())?;
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum ImageType {
+    Normal,
+    Raw,
+}
 
-    Ok(img)
+/// Decodes an image from raw bytes using the same pipeline as `get_dynamic_image_from_path`.
+/// No EXIF rotation is applied (no path available); call-sites that need rotation handle it separately.
+pub(crate) fn get_dynamic_image_from_bytes(bytes: &[u8], image_type: ImageType) -> Result<DynamicImage, String> {
+    match image_type {
+        ImageType::Normal => {
+            let mut reader = ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|e| e.to_string())?;
+            let mut limits = image::Limits::default();
+            limits.max_alloc = Some(14 * 1024 * 1024 * 1024);
+            reader.limits(limits);
+            reader.decode().map_err(|e| e.to_string())
+        }
+        ImageType::Raw => get_raw_image_from_bytes(bytes),
+    }
 }
 
 pub struct LoadedImage {
@@ -58,15 +68,33 @@ impl Debug for LoadedImage {
 
 pub fn get_dynamic_image_from_path(path: &str, opts: Option<ImgResizeOptions>) -> Result<LoadedImage, String> {
     let path_lower = Path::new(path).extension().unwrap_or_default().to_string_lossy().to_lowercase();
+    let image_type = if RAW_IMAGE_EXTENSIONS.iter().any(|ext| path_lower.ends_with(ext)) {
+        ImageType::Raw
+    } else {
+        ImageType::Normal
+    };
 
     trace!("decoding file \"{path}\"");
+
+    if let Ok(meta) = std::fs::metadata(path)
+        && meta.len() > MAXIMUM_IMAGE_FILE_SIZE
+    {
+        let limit_mb = MAXIMUM_IMAGE_FILE_SIZE / 1024 / 1024;
+        return Err(flc!("core_image_file_too_large", size = meta.len(), limit = limit_mb));
+    }
+
     let res = panic::catch_unwind(|| {
-        let img = if RAW_IMAGE_EXTENSIONS.iter().any(|ext| path_lower.ends_with(ext)) {
-            get_raw_image(path).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))
-        } else {
-            // Heic files must be registered in image-rs
-            decode_normal_image(path).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))
-        }?;
+        let img = match image_type {
+            ImageType::Normal => {
+                let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
+                get_dynamic_image_from_bytes(&bytes, ImageType::Normal).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))?
+            }
+            ImageType::Raw => {
+                // rawler (not(feature = "libraw")) needs a path; libraw reads bytes internally.
+                // Both cases are handled inside get_raw_image.
+                get_raw_image(path).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))?
+            }
+        };
 
         if img.width() == 0 || img.height() == 0 {
             return Err(flc!("core_image_zero_dimensions", path = path));
@@ -88,7 +116,12 @@ pub fn get_dynamic_image_from_path(path: &str, opts: Option<ImgResizeOptions>) -
     if let Ok(res) = res {
         match res {
             Ok((img, w, h)) => {
-                let rotation = get_rotation_from_exif(path).unwrap_or(None);
+                let rotation = get_rotation_from_exif(path).unwrap_or({
+                    // TODO - library doesn't properly read some files
+                    // Also, even light problems, causes completely failing to read tags from file(e.g. invalid tag type)
+                    //warn!("Failed to read EXIF rotation from {path}: {e}");
+                    None
+                });
                 let img_rotated = match rotation {
                     Some(ExifOrientation::Normal) | None => img,
                     Some(ExifOrientation::MirrorHorizontal) => img.fliph(),
@@ -156,11 +189,9 @@ fn resize_image(img: DynamicImage, opts: ImgResizeOptions) -> DynamicImage {
 }
 
 #[cfg(feature = "libraw")]
-pub(crate) fn get_raw_image<P: AsRef<Path>>(path: P) -> Result<DynamicImage, String> {
-    let buf = std::fs::read(path.as_ref()).map_err(|e| format!("Error reading image: {e}"))?;
-
+pub(crate) fn get_raw_image_from_bytes(buf: &[u8]) -> Result<DynamicImage, String> {
     let processor = libraw::Processor::new();
-    let processed = processor.process_8bit(&buf).map_err(|e| format!("Error processing RAW image: {e}"))?;
+    let processed = processor.process_8bit(buf).map_err(|e| format!("Error processing RAW image: {e}"))?;
 
     let width = processed.width();
     let height = processed.height();
@@ -173,6 +204,17 @@ pub(crate) fn get_raw_image<P: AsRef<Path>>(path: P) -> Result<DynamicImage, Str
     ))?;
 
     Ok(DynamicImage::ImageRgb8(buffer))
+}
+
+#[cfg(not(feature = "libraw"))]
+pub(crate) fn get_raw_image_from_bytes(_bytes: &[u8]) -> Result<DynamicImage, String> {
+    Err("RAW decoding from bytes requires the libraw feature".to_string())
+}
+
+#[cfg(feature = "libraw")]
+pub(crate) fn get_raw_image<P: AsRef<Path>>(path: P) -> Result<DynamicImage, String> {
+    let buf = std::fs::read(path.as_ref()).map_err(|e| format!("Error reading image: {e}"))?;
+    get_raw_image_from_bytes(&buf)
 }
 
 #[cfg(not(feature = "libraw"))]
@@ -245,7 +287,7 @@ pub enum ExifOrientation {
     Rotate270CW,
 }
 
-pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientation>, nom_exif::Error> {
+pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientation>, std::io::Error> {
     if let Some(extension) = Path::new(path).extension()
         && HEIC_EXTENSIONS.contains(&extension.to_string_lossy().to_lowercase().as_str())
     {
@@ -253,37 +295,36 @@ pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientatio
     }
 
     let res = panic::catch_unwind(|| {
-        let mut parser = MediaParser::new();
-        let ms = MediaSource::open(path)?;
-        let exif_iter: ExifIter = match parser.parse_exif(ms) {
-            Ok(iter) => iter,
-            Err(nom_exif::Error::ExifNotFound) => return Ok(None),
+        let metadata = match Metadata::new_from_path(Path::new(path)) {
+            Ok(m) => m,
+            Err(e) if e.kind() == std::io::ErrorKind::Unsupported => return Ok(None),
+            Err(e) if e.to_string().contains("No EXIF data") => return Ok(None),
+            Err(e) if e.to_string().contains("No metadata found") => return Ok(None),
             Err(e) => return Err(e),
         };
-        for exif_entry in exif_iter {
-            if exif_entry.tag() == nom_exif::TagOrCode::Tag(ExifTag::Orientation)
-                && let Some(value) = exif_entry.value()
-            {
-                return match value.to_string().as_str() {
-                    "1" => Ok(Some(ExifOrientation::Normal)),
-                    "2" => Ok(Some(ExifOrientation::MirrorHorizontal)),
-                    "3" => Ok(Some(ExifOrientation::Rotate180)),
-                    "4" => Ok(Some(ExifOrientation::MirrorVertical)),
-                    "5" => Ok(Some(ExifOrientation::MirrorHorizontalAndRotate270CW)),
-                    "6" => Ok(Some(ExifOrientation::Rotate90CW)),
-                    "7" => Ok(Some(ExifOrientation::MirrorHorizontalAndRotate90CW)),
-                    "8" => Ok(Some(ExifOrientation::Rotate270CW)),
-                    _ => Ok(None),
-                };
-            }
+
+        if let Some(ExifTag::Orientation(values)) = metadata.get_tag_by_hex(0x0112, Some(ExifTagGroup::GENERIC)).next()
+            && let Some(&value) = values.first()
+        {
+            return Ok(match value {
+                1 => Some(ExifOrientation::Normal),
+                2 => Some(ExifOrientation::MirrorHorizontal),
+                3 => Some(ExifOrientation::Rotate180),
+                4 => Some(ExifOrientation::MirrorVertical),
+                5 => Some(ExifOrientation::MirrorHorizontalAndRotate270CW),
+                6 => Some(ExifOrientation::Rotate90CW),
+                7 => Some(ExifOrientation::MirrorHorizontalAndRotate90CW),
+                8 => Some(ExifOrientation::Rotate270CW),
+                _ => None,
+            });
         }
         Ok(None)
     });
 
     res.unwrap_or_else(|_| {
-        let message = create_crash_message("nom-exif", path, "https://github.com/mindeng/nom-exif");
+        let message = create_crash_message("little-exif", path, "https://github.com/TechnikTobi/little_exif");
         error!("{message}");
-        Err(nom_exif::Error::Io(std::io::Error::other("Panic in get_rotation_from_exif")))
+        Err(std::io::Error::other("Panic in get_rotation_from_exif"))
     })
 }
 
@@ -312,7 +353,8 @@ mod tests {
         if let Some(rotated_orientation) = rotated_exif
             && rotated_orientation.is_some()
         {
-            let raw_rotated = decode_normal_image(TEST_ROTATED_IMAGE).unwrap();
+            let raw_bytes = std::fs::read(TEST_ROTATED_IMAGE).unwrap();
+            let raw_rotated = get_dynamic_image_from_bytes(&raw_bytes, ImageType::Normal).unwrap();
             if rotated_orientation == Some(ExifOrientation::Rotate90CW) || rotated_orientation == Some(ExifOrientation::Rotate270CW) {
                 assert_eq!(rotated_img.width(), raw_rotated.height());
                 assert_eq!(rotated_img.height(), raw_rotated.width());
@@ -337,7 +379,7 @@ mod tests {
     #[test]
     fn test_error_handling() {
         get_dynamic_image_from_path("nonexistent.jpg", None).unwrap_err();
-        decode_normal_image("nonexistent.jpg").unwrap_err();
+        get_dynamic_image_from_bytes(b"not an image", ImageType::Normal).unwrap_err();
         get_rotation_from_exif("nonexistent.jpg").unwrap_err();
     }
 }

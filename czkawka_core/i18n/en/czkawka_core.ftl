@@ -24,6 +24,7 @@ core_path_must_exists = Provided path must exist, ignoring { $path }
 core_must_be_directory_or_file = Provided path must point to a vaild directory or file, ignoring { $path }
 core_excluded_paths_pointless_slash = Excluding / is pointless, because it means no files will be scanned
 core_paths_unable_to_get_device_id = Unable to get device id from folder { $path }
+core_excluded_items_wildcard_required = Excluded Items Warning: Wildcard * is required in expression, ignoring { $expression }
 
 core_needs_allowed_extensions_limited_by_tool = Cannot start scan, when all extensions available in this tool ({ $extensions }) were excluded from scan
 core_needs_allowed_extensions = Cannot start scan, when all extensions were excluded from scan
@@ -41,6 +42,7 @@ core_messages_limit_reached_lines = Number of messages exceeded the set limit ({
 
 core_error_moving_to_trash = Error while moving "{ $file }" to the trash: { $error }
 core_error_removing = Error while removing "{ $file }": { $error }
+core_hardlink_unsupported_filesystem = The filesystem at "{ $path }" does not support hard links ({ $reason })
 
 core_no_similarity_method_selected = Cannot find similar music files without a selected similarity method
 
@@ -83,6 +85,7 @@ core_failed_to_generate_thumbnail = Failed to generate thumbnail for "{ $file }"
 core_failed_to_extract_frame_at_seek_time = Failed to extract frame at { $time } seconds from "{ $file }": { $reason }
 core_video_file_does_not_exist = Video file does not exist (could be removed between scan/later steps): "{ $path }"
 core_image_too_large = Image is too large ({ $width }x{ $height }) - more than supported { $max } pixels
+core_image_file_too_large = Image file is too large ({ $size } bytes) - exceeds the { $limit } MB limit
 core_failed_to_get_video_metadata = Failed to get video metadata for file "{ $file }": { $reason }
 core_failed_to_get_video_codec = Failed to get video codec for file "{ $file }"
 core_failed_to_get_video_duration = Failed to get video duration for file "{ $file }"
@@ -93,6 +96,7 @@ core_failed_to_load_data_from_json_cache = Failed to load data from json cache f
 core_failed_to_replace_with_optimized = Failed to replace file "{ $file }" with optimized version: { $reason }
 core_failed_to_write_data_to_cache = Cannot write data to cache file "{ $file }", reason { $reason }
 core_properly_saved_cache_entries = Properly saved to file { $count } cache entries.
+core_properly_loaded_cache_entries = Properly loaded { $count } cache entries.
 core_video_processing_stopped_by_user = Video processing was stopped by user
 core_thumbnail_generation_stopped_by_user = Thumbnail generation was stopped by user
 core_failed_to_optimize_video = Failed to optimize video "{ $file }": { $reason }
@@ -108,3 +112,54 @@ core_ffmpeg_unknown_encoder = Cannot encode { $file } using the { $encoder } enc
 core_ffmpeg_error = FFmpeg error while processing { $file }, status code { $code }, reason { $reason }
 core_custom_command_missing_path_placeholder = Custom FFmpeg command must contain {"{PATH}"} as input file placeholder
 core_custom_command_empty = Custom FFmpeg command cannot be empty
+# Scan stage labels
+# Collecting / scanning files (the { $entries_checked } counter grows while the disk is walked)
+stage_collecting_files = Scanning { $entries_checked } file
+stage_collecting_folders = Scanning { $entries_checked } folder
+stage_scanning_name = Scanning name of { $entries_checked } file
+stage_scanning_size_name = Scanning size and name of { $entries_checked } file
+stage_scanning_size = Scanning size of { $entries_checked } file
+# Cache load/save (indeterminate, no counters)
+stage_filtering_outdated_cache = Filtering outdated cache entries
+stage_loading_prehash_cache = Loading prehash cache
+stage_saving_prehash_cache = Saving prehash cache
+stage_loading_hash_cache = Loading hash cache
+stage_saving_hash_cache = Saving hash cache
+stage_loading_tags_cache = Loading tags cache
+stage_saving_tags_cache = Saving tags cache
+stage_loading_fingerprints_cache = Loading fingerprints cache
+stage_saving_fingerprints_cache = Saving fingerprints cache
+stage_loading_exif_cache = Loading EXIF cache
+stage_saving_exif_cache = Saving EXIF cache
+# Per-tool work stages - items_stats holds "checked/total", size_stats holds the byte sizes
+stage_hiding_links = Hiding hard links { $items_stats }
+stage_analyzed_partial_hash = Analyzed partial hash of { $items_stats } files ({ $size_stats })
+stage_analyzed_full_hash = Analyzed full hash of { $items_stats } files ({ $size_stats })
+stage_checked_tags = Checked tags of { $items_stats }
+stage_compared_tags = Compared tags of { $items_stats }
+stage_checked_content = Checked content of { $items_stats } ({ $size_stats })
+stage_compared_content = Compared content of { $items_stats }
+stage_hashed_images = Hashed { $items_stats } images ({ $size_stats })
+stage_compared_image_hashes = Compared image hashes of { $items_stats }
+stage_hashed_videos = Hashed { $items_stats } videos
+stage_created_thumbnails = Created thumbnails for { $items_stats } videos
+stage_checked_videos = Checked { $items_stats } videos ({ $size_stats })
+stage_extracted_exif_tags = Extracted EXIF tags from { $items_stats } files ({ $size_stats })
+stage_checked_files = Checked { $items_stats } file ({ $size_stats })
+stage_checked_files_bad_extensions = Checked { $items_stats } file
+stage_checked_files_bad_names = Checked { $items_stats } file
+stage_checking_empty_files_content = Checking content of { $items_stats } files ({ $size_stats })
+# File operations (delete/rename/move/...); the "no_size" variant is used when no byte total is known
+stage_deleting_files = Deleting { $items_stats } file ({ $size_stats })
+stage_deleting_no_size_files = Deleting { $items_stats } file
+stage_renaming_files = Renaming { $items_stats } file
+stage_moving_files = Moving { $items_stats } file ({ $size_stats })
+stage_moving_no_size_files = Moving { $items_stats } file
+stage_hardlinking_files = Hardlinking { $items_stats } file ({ $size_stats })
+stage_hardlinking_no_size_files = Hardlinking { $items_stats } file
+stage_symlinking_files = Symlinking { $items_stats } file ({ $size_stats })
+stage_symlinking_no_size_files = Symlinking { $items_stats } file
+stage_optimizing_videos = Optimized { $items_stats } video ({ $size_stats })
+stage_optimizing_no_size_videos = Optimized { $items_stats } video
+stage_cleaning_exif = Cleaning EXIF from { $items_stats } file ({ $size_stats })
+stage_cleaning_no_size_exif = Cleaning EXIF from { $items_stats } file

@@ -5,6 +5,7 @@ use std::sync::atomic::AtomicBool;
 
 use log::error;
 use rusty_chromaprint::{Configuration, Fingerprinter};
+use symphonia::core::codecs::CodecParameters;
 use symphonia::core::codecs::audio::{AudioDecoderOptions, CODEC_ID_NULL_AUDIO};
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::formats::probe::Hint;
@@ -37,53 +38,47 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
             hint.with_extension(ext);
         }
 
-        let meta_opts: MetadataOptions = Default::default();
-        let fmt_opts: FormatOptions = Default::default();
-
         let mut format = symphonia::default::get_probe()
-            .probe(&hint, mss, fmt_opts, meta_opts)
+            .probe(&hint, mss, FormatOptions::default(), MetadataOptions::default())
             .map_err(|_| "unsupported format".to_string())?;
-
-        // Select the first non-null track that has a sample rate – this covers both pure audio
-        // files and video containers where `channels` may not be populated in the header but
-        // becomes available after decoding the first packet.
         let track = format
             .tracks()
             .iter()
-            .find(|t| {
-                t.codec_params
-                    .as_ref()
-                    .and_then(|p| p.audio())
-                    .is_some_and(|p| p.codec != CODEC_ID_NULL_AUDIO && p.sample_rate.is_some())
-            })
+            .find(|t| matches!(t.codec_params.as_ref(), Some(CodecParameters::Audio(p)) if p.codec != CODEC_ID_NULL_AUDIO && p.sample_rate.is_some()))
             .ok_or_else(|| "no supported audio track".to_string())?;
 
-        let audio_params = track.codec_params.as_ref().and_then(|p| p.audio()).ok_or_else(|| "no supported audio track".to_string())?;
-
-        let dec_opts: AudioDecoderOptions = Default::default();
-        let mut decoder = symphonia::default::get_codecs()
-            .make_audio_decoder(audio_params, &dec_opts)
-            .map_err(|_| "unsupported codec".to_string())?;
-
+        let audio_params = match track.codec_params.as_ref() {
+            Some(CodecParameters::Audio(p)) => p.clone(),
+            _ => unreachable!(),
+        };
         let track_id = track.id;
 
+        let dec_opts = AudioDecoderOptions::default();
+        let mut decoder = symphonia::default::get_codecs()
+            .make_audio_decoder(&audio_params, &dec_opts)
+            .map_err(|_| "unsupported codec".to_string())?;
+
         let mut printer = Fingerprinter::new(config);
-        // `printer` is started lazily on the first decoded packet so we can read the real
-        // channel count from the audio buffer spec even when the container header omits it.
         let mut printer_started = false;
 
-        // total interleaved samples (all channels combined), used to derive duration
+        let mut samples_i16: Vec<i16> = Vec::new();
         let mut total_interleaved_samples: u64 = 0;
         let mut audio_channels: u32 = 0;
         let mut audio_sample_rate: u32 = 0;
         let mut sum_sq: f64 = 0.0;
         let mut max_amp: f64 = 0.0;
 
-        while let Ok(Some(packet)) = format.next_packet() {
+        loop {
             if check_if_stop_received(stop_flag) {
                 return Ok(None);
             }
 
+            let packet = match format.next_packet() {
+                Ok(Some(packet)) => packet,
+                Ok(None) => break,
+                Err(symphonia::core::errors::Error::IoError(ref e)) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
+                Err(e) => return Err(format!("error while reading audio packet: {e}")),
+            };
             if packet.track_id != track_id {
                 continue;
             }
@@ -91,8 +86,8 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
             match decoder.decode(&packet) {
                 Ok(audio_buf) => {
                     let spec = audio_buf.spec();
-                    let mut samples: Vec<i16> = Vec::new();
-                    audio_buf.copy_to_vec_interleaved::<i16>(&mut samples);
+                    samples_i16.clear();
+                    audio_buf.copy_to_vec_interleaved(&mut samples_i16);
 
                     if !printer_started {
                         audio_sample_rate = spec.rate();
@@ -101,8 +96,8 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
                         printer_started = true;
                     }
 
-                    total_interleaved_samples += samples.len() as u64;
-                    for &s in &samples {
+                    total_interleaved_samples += samples_i16.len() as u64;
+                    for &s in &samples_i16 {
                         let v = f64::from(s) / f64::from(i16::MAX);
                         sum_sq += v * v;
                         let a = v.abs();
@@ -110,10 +105,10 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
                             max_amp = a;
                         }
                     }
-                    printer.consume(&samples);
+                    printer.consume(&samples_i16);
                 }
                 Err(symphonia::core::errors::Error::DecodeError(_)) => (),
-                Err(_) => break,
+                Err(e) => return Err(format!("fatal error while decoding audio: {e}")),
             }
         }
 
@@ -124,7 +119,6 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
         printer.finish();
         let fingerprint = printer.fingerprint().to_vec();
 
-        // Derive duration from the count of decoded samples
         let duration_seconds = if audio_channels > 0 && audio_sample_rate > 0 {
             (total_interleaved_samples / u64::from(audio_channels) / u64::from(audio_sample_rate)) as u32
         } else {
@@ -139,7 +133,7 @@ pub(crate) fn calc_fingerprint_and_duration<P: AsRef<Path>>(path: P, config: &Co
         if rms < 0.001 && max_amp < 0.01 {
             // Cache with an empty fingerprint so this file is not re-decoded on the next run
             // but is still excluded from comparisons via the `!fingerprint.is_empty()` filter.
-            return Ok(Some((vec![], duration_seconds)));
+            return Ok(Some((Vec::new(), duration_seconds)));
         }
 
         Ok(Some((fingerprint, duration_seconds)))

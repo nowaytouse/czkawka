@@ -183,7 +183,7 @@ pub(crate) fn scan_empty_folders<H: ScanResultHandler>(dirs: Vec<PathBuf>, filte
 pub(crate) fn scan_similar_images<H: ScanResultHandler>(
     dirs: Vec<PathBuf>,
     similarity_preset: czkawka_core::tools::similar_images::SimilarityPreset,
-    hash_size: u8,
+    hash_size: u16,
     hash_alg: czkawka_core::re_exported::HashAlg,
     image_filter: czkawka_core::re_exported::FilterType,
     geometric_invariance: czkawka_core::tools::similar_images::GeometricInvariance,
@@ -195,7 +195,6 @@ pub(crate) fn scan_similar_images<H: ScanResultHandler>(
     scan_id: u32,
 ) -> Vec<FileItem> {
     use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters, return_similarity_from_similarity_preset};
-    let hash_size = u16::from(hash_size);
     let max_diff = return_similarity_from_similarity_preset(similarity_preset, hash_size);
     let (ptx, fwd) = spawn_progress_forwarder(Arc::clone(handler), scan_id);
     let params = SimilarImagesParameters::new(
@@ -607,7 +606,10 @@ pub(crate) fn scan_similar_videos<H: ScanResultHandler>(
     handler: &Arc<H>,
     scan_id: u32,
 ) -> Vec<FileItem> {
-    use czkawka_core::tools::similar_videos::{DEFAULT_CROP_DETECT, DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, SimilarVideos, SimilarVideosParameters, VideosEntry};
+    use czkawka_core::tools::similar_videos::{
+        DEFAULT_CROP_DETECT, DEFAULT_DURATION_TOLERANCE_PCT, DEFAULT_MIN_MATCHING_WINDOWS, DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_SUBCLIP_MIN_MATCH, DEFAULT_VID_HASH_DURATION,
+        DEFAULT_WINDOW_COUNT, SimilarVideos, SimilarVideosParameters, VideosEntry,
+    };
     let (ptx, fwd) = spawn_progress_forwarder(Arc::clone(handler), scan_id);
     let params = SimilarVideosParameters::new(
         10,    // tolerance (not used in audio mode)
@@ -616,11 +618,15 @@ pub(crate) fn scan_similar_videos<H: ScanResultHandler>(
         DEFAULT_SKIP_FORWARD_AMOUNT,
         DEFAULT_VID_HASH_DURATION,
         DEFAULT_CROP_DETECT,
+        DEFAULT_WINDOW_COUNT,
+        DEFAULT_DURATION_TOLERANCE_PCT,
+        DEFAULT_MIN_MATCHING_WINDOWS,
+        DEFAULT_SUBCLIP_MIN_MATCH,
         false, // generate_thumbnails
         10,    // thumbnail_video_percentage_from_start
         false, // generate_thumbnail_grid_instead_of_single
         2,     // thumbnail_grid_tiles_per_side
-        true,  // check_audio_content – audio-only mode, no FFmpeg needed
+        true,  // check_audio_content - audio-only mode, no FFmpeg needed
         audio_similarity_percent,
         audio_maximum_difference,
         audio_length_ratio,

@@ -11,8 +11,9 @@ use czkawka_core::tools::duplicate::core::get_duplicate_cache_file;
 use czkawka_core::tools::similar_images::GeometricInvariance;
 use czkawka_core::tools::similar_images::core::get_similar_images_cache_file;
 use czkawka_core::tools::similar_videos::core::get_similar_videos_cache_file;
-use czkawka_core::tools::similar_videos::{DEFAULT_CROP_DETECT, DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION};
+use czkawka_core::tools::similar_videos::{DEFAULT_CROP_DETECT, DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, DEFAULT_WINDOW_COUNT};
 use gtk4::prelude::*;
+use gtk4::{Label, ResponseType, Window};
 use image::imageops::FilterType;
 use log::error;
 
@@ -128,7 +129,7 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                         for use_prehash in [true, false] {
                             for type_of_hash in [HashType::Xxh3, HashType::Blake3, HashType::Crc32] {
                                 let file_name = get_duplicate_cache_file(type_of_hash, use_prehash);
-                                let (mut messages, loaded_items) = load_cache_from_file_generalized_by_size::<DuplicateEntry>(&file_name, true, &Default::default());
+                                let (mut cache_messages, loaded_items) = load_cache_from_file_generalized_by_size::<DuplicateEntry>(&file_name, true, &Default::default());
 
                                 if let Some(cache_entries) = loaded_items {
                                     let mut hashmap_to_save: BTreeMap<String, DuplicateEntry> = Default::default();
@@ -141,13 +142,14 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                                     let minimal_cache_size = entry_settings_cache_file_minimal_size.text().as_str().parse::<u64>().unwrap_or(2 * 1024 * 1024);
 
                                     let save_messages = save_cache_to_file_generalized(&file_name, &hashmap_to_save, false, minimal_cache_size);
-                                    messages.extend_with_another_messages(save_messages);
+                                    cache_messages.extend_with_another_messages(save_messages);
                                 }
+                                messages.extend_with_another_messages(cache_messages);
                             }
-
-                            messages.messages.push(flg!("cache_properly_cleared"));
-                            text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                         }
+
+                        messages.messages.push(flg!("cache_properly_cleared"));
+                        text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                     }
                 });
             });
@@ -210,13 +212,14 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
 
             button_settings_similar_videos_clear_cache.connect_clicked(move |_| {
                 let title = flg!("cache_clear_similar_videos_title");
-                let detail = cache_clear_detail();
                 let settings_window = settings_window.clone();
                 let text_view_errors = text_view_errors.clone();
 
-                glib::MainContext::default().spawn_local(async move {
-                    if alert_confirm(&settings_window, &title, &detail).await {
-                        let file_name = get_similar_videos_cache_file(DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, DEFAULT_CROP_DETECT);
+                let dialog = create_clear_cache_dialog(&title, &settings_window);
+                dialog.set_visible(true);
+                dialog.connect_response(move |dialog, response_type| {
+                    if response_type == ResponseType::Ok {
+                        let file_name = get_similar_videos_cache_file(DEFAULT_SKIP_FORWARD_AMOUNT, DEFAULT_VID_HASH_DURATION, DEFAULT_CROP_DETECT, DEFAULT_WINDOW_COUNT);
                         let (mut messages, loaded_items) =
                             load_cache_from_file_generalized_by_path::<czkawka_core::tools::similar_videos::VideosEntry>(&file_name, true, &Default::default());
 
@@ -228,6 +231,7 @@ pub(crate) fn connect_settings(gui_data: &GuiData) {
                         messages.messages.push(flg!("cache_properly_cleared"));
                         text_view_errors.buffer().set_text(messages.create_messages_text(MessageLimit::NoLimit).as_str());
                     }
+                    dialog.close();
                 });
             });
         }
@@ -242,4 +246,22 @@ fn cache_clear_detail() -> String {
         flg!("cache_clear_message_label_3"),
         flg!("cache_clear_message_label_4")
     )
+}
+
+fn create_clear_cache_dialog(title_str: &str, window_settings: &Window) -> gtk4::Dialog {
+    let dialog = gtk4::Dialog::builder().title(title_str).modal(true).transient_for(window_settings).build();
+    dialog.add_button(&flg!("general_ok_button"), ResponseType::Ok);
+    dialog.add_button(&flg!("general_close_button"), ResponseType::Cancel);
+
+    let label = Label::builder().label(flg!("cache_clear_message_label_1")).build();
+    let label2 = Label::builder().label(flg!("cache_clear_message_label_2")).build();
+    let label3 = Label::builder().label(flg!("cache_clear_message_label_3")).build();
+    let label4 = Label::builder().label(flg!("cache_clear_message_label_4")).build();
+
+    let internal_box = dialog.content_area();
+    internal_box.append(&label);
+    internal_box.append(&label2);
+    internal_box.append(&label3);
+    internal_box.append(&label4);
+    dialog
 }

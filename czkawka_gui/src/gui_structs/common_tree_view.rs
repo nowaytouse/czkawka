@@ -509,7 +509,7 @@ impl SubView {
     fn _setup_gesture_click(&self) {
         self.gesture_click.set_button(0);
         self.gesture_click.connect_pressed(opening_double_click_function);
-        self.gesture_click.connect_released(opening_middle_mouse_function); // NOTE: GTK 4 middle-click workaround — see https://github.com/gtk-rs/gtk4-rs/issues/1043
+        self.gesture_click.connect_released(opening_middle_mouse_function); // NOTE: GTK 4 middle-click workaround - see https://github.com/gtk-rs/gtk4-rs/issues/1043
     }
 
     fn _setup_evk(&self, gui_data: &GuiData) {
@@ -525,7 +525,7 @@ impl SubView {
     }
 
     fn _connect_show_mouse_preview(&self, gui_data: &GuiData, preview_path: &Rc<RefCell<String>>) {
-        // NOTE: GTK 4 connect_pressed shows previously selected item — https://gitlab.gnome.org/GNOME/gtk/-/issues/4939
+        // NOTE: GTK 4 connect_pressed shows previously selected item - https://gitlab.gnome.org/GNOME/gtk/-/issues/4939
         // ColumnView tabs now use selection-changed signal instead; TreeView tabs still use connect_row_activated workaround.
         let use_rust_preview = gui_data.settings.check_button_settings_use_rust_preview.clone();
         let text_view_errors = gui_data.text_view_errors.clone();

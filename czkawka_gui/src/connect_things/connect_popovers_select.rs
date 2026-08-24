@@ -14,7 +14,7 @@ use crate::gui_structs::simple_row::SimpleRow;
 use crate::help_functions::{change_dimension_to_krotka, get_full_name_from_path_name};
 use crate::helpers::model_iter::iter_list;
 
-// ── Duplicate model helpers ──────────────────────────────────────────────────
+// -- Duplicate model helpers --------------------------------------------------
 
 fn dup_select_all(store: &GioListStore) {
     for i in 0..store.n_items() {
@@ -245,7 +245,7 @@ fn dup_custom_select_unselect(
     });
 }
 
-// ── SimpleRow (flat list, no groups) helpers ────────────────────────────────
+// -- SimpleRow (flat list, no groups) helpers --------------------------------
 
 fn simple_select_all(store: &GioListStore) {
     for i in 0..store.n_items() {
@@ -523,12 +523,12 @@ fn popover_all_except_oldest_newest(
                 let modification = model.get::<u64>(&iter, column_modification_as_secs);
                 let current_file_length = model.get::<String>(&iter, column_file_name).len();
                 if except_oldest {
-                    if modification < modification_time_min_max || (modification == modification_time_min_max && current_file_length < file_length) {
+                    if modification < modification_time_min_max || (modification == modification_time_min_max && current_file_length > file_length) {
                         file_length = current_file_length;
                         modification_time_min_max = modification;
                         used_index = Some(current_index);
                     }
-                } else if modification > modification_time_min_max || (modification == modification_time_min_max && current_file_length < file_length) {
+                } else if modification > modification_time_min_max || (modification == modification_time_min_max && current_file_length > file_length) {
                     file_length = current_file_length;
                     modification_time_min_max = modification;
                     used_index = Some(current_index);
@@ -984,7 +984,7 @@ fn popover_custom_select_unselect(
 /// For Duplicate tab (no dimensions): falls back to biggest-file logic.
 fn popover_all_except_highest_quality(popover: &gtk4::Popover, sv: &SubView) {
     if let Some(store) = sv.get_duplicate_model() {
-        // Duplicates don't have dimensions – keep the biggest file.
+        // Duplicates don't have dimensions - keep the biggest file.
         dup_all_except_biggest_smallest(store, true);
         popover.popdown();
         return;

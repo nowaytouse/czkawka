@@ -17,7 +17,12 @@ resolver = "3"
 
 # Temporary solution for spamming mouse events in Slint
 # Even with workaround, performance is quite low in specific cases in Cedinia
+#o
 #[patch.crates-io]
+#slint = { path = "/home/rafal/test/slint/api/rs/slint" }
+#slint-build = { path = "/home/rafal/test/slint/api/rs/build" }
+#fontique = { path = "/home/rafal/test/slint/parley/fontique" }
+#parley = { path = "/home/rafal/test/slint/parley/parley" }
 #slint = { git = "https://github.com/slint-ui/slint.git" }
 #slint-build = { git = "https://github.com/slint-ui/slint.git" }
 
@@ -118,7 +123,6 @@ clippy.fallible_impl_from = "warn"
 clippy.filter_map_next = "warn"
 clippy.flat_map_option = "warn"
 clippy.float_cmp = "warn"
-clippy.from_iter_instead_of_collect = "warn"
 clippy.ignored_unit_patterns = "warn"
 clippy.implicit_clone = "warn"
 clippy.index_refutable_slice = "warn"
@@ -193,5 +197,4 @@ clippy.useless_let_if_seq = "warn"
 clippy.use_self = "warn"
 clippy.verbose_file_reads = "warn"
 clippy.wildcard_imports = "warn"
-
 

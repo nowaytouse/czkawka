@@ -10,5 +10,5 @@ dependencies = [
     "fluent.syntax",
     "ollama",
     "opencc-python-reimplemented>=0.1.7",
+    "fonttools>=4.55.0",
 ]
-

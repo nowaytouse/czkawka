@@ -315,7 +315,7 @@ mod tests {
 
         let checked_count = mark(&mut items, 0, 1, &protected);
 
-        // No row is removed — protection is a marker, not a deletion.
+        // No row is removed - protection is a marker, not a deletion.
         assert_eq!(items.len(), 3);
         // The protected row is flagged and unchecked; the others stay checked.
         let secret = items.iter().find(|i| i.val_str.iter().nth(1).unwrap() == "secret.jpg").unwrap();
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn marking_preserves_group_structure_including_headers() {
-        // A group that loses members to protection is NOT dropped — every row stays put.
+        // A group that loses members to protection is NOT dropped - every row stays put.
         let mut items = vec![row("", "", false, true), row("/g1", "a.jpg", true, false), row("/g1", "b.jpg", true, false)];
         let protected: HashSet<PathBuf> = [PathBuf::from(full("/g1", "a.jpg"))].into_iter().collect();
 

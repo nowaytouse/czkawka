@@ -1,8 +1,7 @@
 // Remove console window in Windows OS
 #![windows_subsystem = "windows"]
-#![allow(clippy::unwrap_used)] // Cannot use due unwrap used in a lot of places in generated code
-#![allow(clippy::indexing_slicing)] // Cannot use due unwrap used in a lot of places in generated code
-#![allow(clippy::todo)] // Cannot use due unwrap used in a lot of places in generated code
+#![allow(clippy::allow_attributes)]
+#![allow(clippy::indexing_slicing)]
 
 use std::rc::Rc;
 use std::sync::Arc;
@@ -27,6 +26,7 @@ use log::{error, info};
 use slint::VecModel;
 
 use crate::clear_outdated_video_thumbnails::clear_outdated_video_thumbnails;
+use crate::connect_build_info::{apply_build_info, connect_build_info, start_build_info_background_probes};
 use crate::connect_clean_cache::connect_clean_cache;
 use crate::connect_compare::connect_compare;
 use crate::connect_directories_changes::connect_add_remove_directories;
@@ -54,6 +54,7 @@ use crate::shared_models::SharedModels;
 mod audio_player;
 mod clear_outdated_video_thumbnails;
 mod common;
+mod connect_build_info;
 mod connect_clean_cache;
 mod connect_compare;
 mod connect_directories_changes;
@@ -84,7 +85,13 @@ mod simpler_model;
 #[cfg(test)]
 mod test_common;
 
-slint::include_modules!();
+// Slint's generated code triggers many clippy lints (unwrap_used, indexing_slicing, ...)
+// that we enforce ourselves but cannot influence in third-party generated code.
+#[allow(clippy::all, clippy::pedantic, clippy::nursery, clippy::restriction, clippy::cargo, unused_qualifications)]
+mod ui {
+    slint::include_modules!();
+}
+pub use ui::*;
 
 fn main() {
     register_image_decoding_hooks();
@@ -131,7 +138,6 @@ fn main() {
     // Create audio player for scan completion notifications
     let audio_player = Arc::new(crate::audio_player::AudioPlayer::new());
 
-    // Disabled for now, due invalid settings model at start
     set_initial_gui_infos(&app);
 
     set_initial_scroll_list_data_indexes(&app);
@@ -139,6 +145,9 @@ fn main() {
     let original_preset_idx = base_settings.default_preset;
     set_initial_settings_to_gui(&app, &base_settings, &custom_settings, cli_args, preset_to_load);
     update_available_hardware_encoders(&app);
+    apply_build_info(&app);
+    connect_build_info(&app);
+    start_build_info_background_probes(&app);
 
     connect_delete_button(&app, progress_sender.clone(), stop_flag.clone());
     connect_trash_button(&app, progress_sender.clone(), stop_flag.clone());

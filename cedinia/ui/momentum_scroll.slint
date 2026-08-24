@@ -1,6 +1,6 @@
 import { CediniaColors } from "colors.slint";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MomentumScrollView
 //
 // A vertically-scrolling container with natural fling / inertia driven by Rust.
@@ -27,14 +27,14 @@ import { CediniaColors } from "colors.slint";
 //   }
 //
 // Optional property:
-//   lock_vertical  – when true the vertical SGR will not claim new gestures
+//   lock_vertical  - when true the vertical SGR will not claim new gestures
 //                    (used by the gallery when a horizontal per-row SGR owns
 //                     the pointer).
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 export component MomentumScrollView {
 
-    // ── Public interface ──────────────────────────────────────────────────
+    // -- Public interface --------------------------------------------------
 
     // Scroll offset (negative = scrolled down).  Driven by Rust during fling.
     in-out property <length> scroll_y: 0px;
@@ -56,11 +56,11 @@ export component MomentumScrollView {
     // Stop any ongoing fling animation (call when user touches again).
     callback stop_momentum();
 
-    // ── Internal scroll geometry ──────────────────────────────────────────
+    // -- Internal scroll geometry ------------------------------------------
 
     property <length> max_scroll: max(0px, content_vl.preferred-height - root.height);
 
-    // ── Scrollbar indicator ───────────────────────────────────────────────
+    // -- Scrollbar indicator -----------------------------------------------
 
     property <float> content_f:   max(1.0, content_vl.preferred-height / 1px);
     property <float> viewport_f:  root.height / 1px;
@@ -70,7 +70,7 @@ export component MomentumScrollView {
         ? max(0.0, min(1.0, -root.scroll_y / max_scroll))
         : 0.0;
 
-    // ── EMA velocity tracking ─────────────────────────────────────────────
+    // -- EMA velocity tracking ---------------------------------------------
     // Uses only sgr built-in properties (swiping, current/pressed-position).
     // These have NO layout dependencies → ChangeTracker is safe and will
     // never trigger "Recursion detected".
@@ -92,7 +92,7 @@ export component MomentumScrollView {
             vel_ema        = inc * 0.4 + vel_ema * 0.6;
             vel_prev_delta = live_delta_y;
         } else {
-            // Gesture ended – reset anchor; retain vel_ema for the swiped callback.
+            // Gesture ended - reset anchor; retain vel_ema for the swiped callback.
             vel_prev_delta = 0.0;
         }
     }
@@ -108,7 +108,7 @@ export component MomentumScrollView {
         }
     }
 
-    // ── Layout ────────────────────────────────────────────────────────────
+    // -- Layout ------------------------------------------------------------
 
     sgr := SwipeGestureHandler {
         handle-swipe-up:   !root.lock_vertical;
@@ -141,7 +141,7 @@ export component MomentumScrollView {
         }
     }
 
-    // Scrollbar pill — only visible when content overflows the viewport.
+    // Scrollbar pill - only visible when content overflows the viewport.
     if max_scroll > 0px : Rectangle {
         x: root.width - 8px;
         y: scroll_ratio * (root.height - ind_h);

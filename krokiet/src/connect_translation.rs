@@ -1,126 +1,12 @@
 use czkawka_core::TOOLS_NUMBER;
+use czkawka_core::localizer_core::LANGUAGE_LIST;
 use i18n_embed::DesktopLanguageRequester;
 use i18n_embed::unic_langid::LanguageIdentifier;
 use log::{error, info};
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 
+use crate::settings::combo_box::{SimilarVideosAudioPreset, SimilarVideosVisualPreset, StringComboBoxItems};
 use crate::{ActiveTab, Callabler, GuiState, MainWindow, SelectMode, Settings, SortMode, SortModel, Translations, flk, localizer_krokiet};
-
-pub struct Language {
-    pub long_name: &'static str,
-    pub short_name: &'static str,
-}
-
-pub const LANGUAGE_LIST: &[Language] = &[
-    Language {
-        long_name: "English",
-        short_name: "en",
-    },
-    Language {
-        long_name: "Polski (Polish)",
-        short_name: "pl",
-    },
-    Language {
-        long_name: "Français (French)",
-        short_name: "fr",
-    },
-    Language {
-        long_name: "Italiano (Italian)",
-        short_name: "it",
-    },
-    Language {
-        long_name: "Русский (Russian)",
-        short_name: "ru",
-    },
-    Language {
-        long_name: "український (Ukrainian)",
-        short_name: "uk",
-    },
-    Language {
-        long_name: "한국어 (Korean)",
-        short_name: "ko",
-    },
-    Language {
-        long_name: "Česky (Czech)",
-        short_name: "cs",
-    },
-    Language {
-        long_name: "Deutsch (German)",
-        short_name: "de",
-    },
-    Language {
-        long_name: "日本語 (Japanese)",
-        short_name: "ja",
-    },
-    Language {
-        long_name: "Português (Portuguese)",
-        short_name: "pt-PT",
-    },
-    Language {
-        long_name: "Português Brasileiro (Brazilian Portuguese)",
-        short_name: "pt-BR",
-    },
-    Language {
-        long_name: "简体中文 (Simplified Chinese)",
-        short_name: "zh-CN",
-    },
-    Language {
-        long_name: "繁體中文 (Traditional Chinese)",
-        short_name: "zh-TW",
-    },
-    Language {
-        long_name: "Español (Spanish)",
-        short_name: "es-ES",
-    },
-    Language {
-        long_name: "Norsk (Norwegian)",
-        short_name: "no",
-    },
-    Language {
-        long_name: "Svenska (Swedish)",
-        short_name: "sv-SE",
-    },
-    Language {
-        long_name: "العربية (Arabic)",
-        short_name: "ar",
-    },
-    Language {
-        long_name: "Български (Bulgarian)",
-        short_name: "bg",
-    },
-    Language {
-        long_name: "Ελληνικά (Greek)",
-        short_name: "el",
-    },
-    Language {
-        long_name: "Nederlands (Dutch)",
-        short_name: "nl",
-    },
-    Language {
-        long_name: "Română (Romanian)",
-        short_name: "ro",
-    },
-    Language {
-        long_name: "Türkçe (Turkish)",
-        short_name: "tr",
-    },
-    Language {
-        long_name: "فارسی (Persian)",
-        short_name: "fa",
-    },
-    Language {
-        long_name: "हिंदी (Hindi)",
-        short_name: "hi",
-    },
-    Language {
-        long_name: "Bahasa Indonesia (Indonesian)",
-        short_name: "id",
-    },
-    Language {
-        long_name: "Tiếng Việt (Vietnamese)",
-        short_name: "vi",
-    },
-];
 
 pub(crate) fn connect_translations(app: &MainWindow) {
     change_language(app);
@@ -135,6 +21,12 @@ pub(crate) fn connect_translations(app: &MainWindow) {
     app.global::<Callabler>().on_similar_videos_audio_preset_changed(move || {
         let app = a.upgrade().expect("MainWindow dropped");
         apply_similar_videos_audio_preset(&app);
+    });
+
+    let a = app.as_weak();
+    app.global::<Callabler>().on_similar_videos_visual_preset_changed(move || {
+        let app = a.upgrade().expect("MainWindow dropped");
+        apply_similar_videos_visual_preset(&app);
     });
 }
 
@@ -163,7 +55,6 @@ fn language_idx_for_system_locale(system_tag: &str) -> Option<usize> {
 
 pub fn find_the_closest_language_idx_to_system() -> usize {
     let requested_languages = DesktopLanguageRequester::requested_languages();
-
     if let Some(language) = requested_languages.first() {
         let system_tag = language.to_string();
         info!("System language: {system_tag}");
@@ -190,6 +81,8 @@ pub(crate) fn change_language(app: &MainWindow) {
         }
     }
 
+    StringComboBoxItems::regenerate_and_set();
+
     translate_items(app);
 }
 
@@ -201,6 +94,8 @@ fn translate_items(app: &MainWindow) {
 
     translation.set_ok_button_text(flk!("ok_button").into());
     translation.set_cancel_button_text(flk!("cancel_button").into());
+    translation.set_yes_text(flk!("yes_text").into());
+    translation.set_no_text(flk!("no_text").into());
     translation.set_do_you_want_to_continue_text(flk!("do_you_want_to_continue").into());
     translation.set_main_window_title_text(flk!("main_window_title").into());
     translation.set_file_dialog_open_text(flk!("file_dialog_open").into());
@@ -219,6 +114,25 @@ fn translate_items(app: &MainWindow) {
     translation.set_instruction_text(flk!("instruction").into());
     translation.set_donation_text(flk!("donation").into());
     translation.set_translation_text(flk!("translation").into());
+    translation.set_other_apps_text(flk!("other_apps").into());
+    translation.set_build_info_build_text(flk!("build_info_build").into());
+    translation.set_build_info_runtime_text(flk!("build_info_runtime").into());
+    translation.set_build_info_refresh_text(flk!("build_info_refresh").into());
+    translation.set_build_info_diagnostic_button_text(flk!("build_info_diagnostic_button").into());
+    translation.set_build_info_diagnostic_title_text(flk!("build_info_diagnostic_title").into());
+    translation.set_build_info_library_restart_hint_text(flk!("build_info_library_restart_hint").into());
+    translation.set_build_info_test_file_text(flk!("build_info_test_file").into());
+    translation.set_other_apps_title_text(flk!("other_apps_title").into());
+    translation.set_other_apps_open_source_note_text(flk!("other_apps_open_source_note").into());
+    translation.set_other_apps_open_button_text(flk!("other_apps_open_button").into());
+    translation.set_other_apps_descriptions(ModelRc::new(VecModel::from(vec![
+        SharedString::from(flk!("other_apps_szyszka_desc")),
+        SharedString::from(flk!("other_apps_mykrut_desc")),
+        SharedString::from(flk!("other_apps_dcmki_viewer_desc")),
+        SharedString::from(flk!("other_apps_video_thumbnailer_desc")),
+        SharedString::from(flk!("other_apps_space_finder_desc")),
+        SharedString::from(flk!("other_apps_system_info_collector_desc")),
+    ])));
     translation.set_included_paths_text(flk!("included_paths").into());
     translation.set_excluded_paths_text(flk!("excluded_paths").into());
     translation.set_ref_text(flk!("ref").into());
@@ -282,6 +196,26 @@ fn translate_items(app: &MainWindow) {
     let idx = settings.get_similar_videos_audio_preset_index().clamp(0, 3) as usize;
     settings.set_similar_videos_audio_preset_value(preset_names[idx].clone());
     settings.set_similar_videos_audio_preset_names(ModelRc::new(VecModel::from(preset_names.to_vec())));
+
+    translation.set_subsettings_videos_visual_preset_text(flk!("subsettings_videos_visual_preset").into());
+    translation.set_subsettings_videos_visual_preset_custom(flk!("subsettings_videos_visual_preset_custom").into());
+    translation.set_subsettings_videos_visual_preset_near_identical(flk!("subsettings_videos_visual_preset_near_identical").into());
+    translation.set_subsettings_videos_visual_preset_similar(flk!("subsettings_videos_visual_preset_similar").into());
+    translation.set_subsettings_videos_visual_preset_movies(flk!("subsettings_videos_visual_preset_movies").into());
+    translation.set_subsettings_videos_duration_tolerance_pct_text(flk!("subsettings_videos_duration_tolerance_pct").into());
+    translation.set_subsettings_videos_min_matching_windows_text(flk!("subsettings_videos_min_matching_windows").into());
+    translation.set_subsettings_videos_subclip_min_match_text(flk!("subsettings_videos_subclip_min_match").into());
+
+    let visual_preset_names: [SharedString; 4] = [
+        flk!("subsettings_videos_visual_preset_custom").into(),
+        flk!("subsettings_videos_visual_preset_near_identical").into(),
+        flk!("subsettings_videos_visual_preset_similar").into(),
+        flk!("subsettings_videos_visual_preset_movies").into(),
+    ];
+    let v_idx = settings.get_similar_videos_visual_preset_index().clamp(0, 3) as usize;
+    settings.set_similar_videos_visual_preset_value(visual_preset_names[v_idx].clone());
+    settings.set_similar_videos_visual_preset_names(ModelRc::new(VecModel::from(visual_preset_names.to_vec())));
+    apply_similar_videos_visual_preset(app);
     translation.set_subsettings_videos_audio_similarity_percent_text(flk!("subsettings_videos_audio_similarity_percent").into());
     translation.set_subsettings_videos_audio_length_ratio_text(flk!("subsettings_videos_audio_length_ratio").into());
     translation.set_subsettings_videos_audio_min_duration_seconds_text(flk!("subsettings_videos_audio_min_duration_seconds").into());
@@ -428,10 +362,15 @@ fn translate_items(app: &MainWindow) {
     translation.set_popup_save_title_text(flk!("popup_save_title").into());
     translation.set_popup_save_message_text(flk!("popup_save_message").into());
     translation.set_popup_rename_title_text(flk!("popup_rename_title").into());
+    translation.set_popup_rename_single_title_text(flk!("popup_rename_single_title").into());
+    translation.set_popup_rename_single_same_name_text(flk!("popup_rename_single_same_name").into());
+    translation.set_popup_rename_single_target_exists_text(flk!("popup_rename_single_target_exists").into());
+    translation.set_popup_error_title_text(flk!("popup_error_title").into());
     translation.set_popup_new_directories_title_text(flk!("popup_new_paths_title").into());
     translation.set_popup_move_title_text(flk!("popup_move_title").into());
     translation.set_popup_move_copy_checkbox_text(flk!("popup_move_copy_checkbox").into());
     translation.set_popup_move_preserve_folder_checkbox_text(flk!("popup_move_preserve_folder_checkbox").into());
+    translation.set_popup_move_rename_on_conflict_checkbox_text(flk!("popup_move_rename_on_conflict_checkbox").into());
     translation.set_delete_text(flk!("delete").into());
     translation.set_delete_confirmation_text(flk!("rust_delete_confirmation").into());
     translation.set_trash_text(flk!("trash").into());
@@ -441,6 +380,7 @@ fn translate_items(app: &MainWindow) {
     translation.set_subsettings_videos_crop_detect_text(flk!("subsettings_videos_crop_detect").into());
     translation.set_subsettings_videos_skip_forward_amount_text(flk!("subsettings_videos_skip_forward_amount").into());
     translation.set_subsettings_videos_vid_hash_duration_text(flk!("subsettings_videos_vid_hash_duration").into());
+    translation.set_subsettings_videos_window_count_text(flk!("subsettings_videos_window_count").into());
     translation.set_settings_load_tabs_sizes_at_startup_text(flk!("settings_load_tabs_sizes_at_startup").into());
     translation.set_settings_load_windows_size_at_startup_text(flk!("settings_load_windows_size_at_startup").into());
     translation.set_settings_limit_lines_of_messages_text(flk!("settings_limit_lines_of_messages").into());
@@ -453,10 +393,7 @@ fn translate_items(app: &MainWindow) {
     translation.set_settings_cache_number_size_text("".into());
     translation.set_settings_video_thumbnails_number_size_text("".into());
     translation.set_settings_log_number_size_text("".into());
-    translation.set_settings_video_thumbnails_clear_unused_thumbnails_text(flk!("settings_video_thumbnails_clear_unused_thumbnails").into());
     translation.set_clean_exif_overwrite_files_text(flk!("clean_exif_overwrite_files_text").into());
-    translation.set_subsettings_broken_files_video_ffprobe_info_text(flk!("subsettings_broken_files_video_ffprobe_info").into());
-    translation.set_subsettings_broken_files_video_ffmpeg_info_text(flk!("subsettings_broken_files_video_ffmpeg_info").into());
     translation.set_stop_text(flk!("stop_text").into());
     translation.set_settings_cache_header_text(flk!("settings_cache_header_text").into());
     translation.set_settings_select_header_text(flk!("settings_select_header_text").into());
@@ -534,6 +471,7 @@ fn translate_items(app: &MainWindow) {
     translation.set_context_menu_copy_file_name_text(flk!("context_menu_copy_file_name_text").into());
     translation.set_context_menu_copy_parent_folder_path_text(flk!("context_menu_copy_parent_folder_path_text").into());
     translation.set_context_menu_copy_full_path_text(flk!("context_menu_copy_full_path_text").into());
+    translation.set_context_menu_rename_text(flk!("context_menu_rename_text").into());
 
     let tools_model: [(SharedString, ActiveTab); TOOLS_NUMBER] = [
         (flk!("tool_duplicate_files").into(), ActiveTab::DuplicateFiles),
@@ -605,7 +543,7 @@ fn translate_items(app: &MainWindow) {
     settings.set_duplicates_column_name(fnm(&[&selection, &size, &file_name, &path, &mod_date]));
     settings.set_empty_folders_column_name(fnm(&[&selection, &file_name, &path, &mod_date]));
     settings.set_empty_files_column_name(fnm(&[&selection, &size, &file_name, &path, &mod_date]));
-    settings.set_temporary_files_column_name(fnm(&[&selection, &file_name, &path, &mod_date]));
+    settings.set_temporary_files_column_name(fnm(&[&selection, &size, &file_name, &path, &mod_date]));
     settings.set_big_files_column_name(fnm(&[&selection, &size, &file_name, &path, &mod_date]));
     settings.set_similar_images_column_name(fnm(&[&selection, &similarity, &size, &dimensions, &file_name, &path, &mod_date]));
     settings.set_similar_videos_column_name(fnm(&[&selection, &size, &file_name, &path, &dimensions, &duration, &bitrate, &fps, &codec, &mod_date]));
@@ -616,6 +554,8 @@ fn translate_items(app: &MainWindow) {
     settings.set_exif_remover_column_name(fnm(&[&selection, &size, &file_name, &path, &exif_tags, &mod_date]));
     settings.set_video_optimizer_column_name(fnm(&[&selection, &size, &file_name, &path, &codec, &dimensions, &new_dimensions, &mod_date]));
     settings.set_bad_names_column_name(fnm(&[&selection, &file_name, &new_name, &path]));
+
+    crate::set_initial_gui_info::apply_combo_box_translations(app);
 }
 
 pub(crate) fn translate_select_mode(select_mode: SelectMode) -> SharedString {
@@ -655,26 +595,76 @@ pub(crate) fn translate_sort_mode(sort_mode: SortMode) -> SharedString {
 
 fn apply_similar_videos_audio_preset(app: &MainWindow) {
     let settings = app.global::<Settings>();
-    match settings.get_similar_videos_audio_preset_index() {
-        1 => {
+    let idx = settings.get_similar_videos_audio_preset_index();
+    let items = StringComboBoxItems::get_items();
+    let preset = items.similar_videos_audio_preset.get(idx as usize).map(|i| i.value);
+    drop(items);
+    let Some(preset) = preset else { return };
+    match preset {
+        SimilarVideosAudioPreset::Custom => {}
+        SimilarVideosAudioPreset::Identical => {
             settings.set_similar_videos_audio_similarity_percent(90.0);
             settings.set_similar_videos_audio_length_ratio(0.85);
             settings.set_similar_videos_audio_min_duration_seconds(5.0);
             settings.set_similar_videos_audio_maximum_difference(2.0);
         }
-        2 => {
+        SimilarVideosAudioPreset::Clip => {
             settings.set_similar_videos_audio_similarity_percent(80.0);
             settings.set_similar_videos_audio_length_ratio(0.05);
             settings.set_similar_videos_audio_min_duration_seconds(10.0);
             settings.set_similar_videos_audio_maximum_difference(3.0);
         }
-        3 => {
+        SimilarVideosAudioPreset::Similar => {
             settings.set_similar_videos_audio_similarity_percent(25.0);
             settings.set_similar_videos_audio_length_ratio(0.4);
             settings.set_similar_videos_audio_min_duration_seconds(10.0);
             settings.set_similar_videos_audio_maximum_difference(6.0);
         }
-        _ => {}
+    }
+}
+
+fn apply_similar_videos_visual_preset(app: &MainWindow) {
+    let settings = app.global::<Settings>();
+    let idx = settings.get_similar_videos_visual_preset_index();
+    let items = StringComboBoxItems::get_items();
+    let preset = items.similar_videos_visual_preset.get(idx as usize).map(|i| i.value);
+    drop(items);
+    let Some(preset) = preset else { return };
+    match preset {
+        SimilarVideosVisualPreset::Custom => {}
+        // Near-identical: strict tolerance, dense sampling, default skip.
+        SimilarVideosVisualPreset::NearIdentical => {
+            settings.set_similar_videos_sub_current_similarity(3.0);
+            settings.set_similar_videos_window_count(8.0);
+            settings.set_similar_videos_skip_forward_amount(15.0);
+            settings.set_similar_videos_vid_hash_duration(10.0);
+            settings.set_similar_videos_crop_detect(true);
+            settings.set_similar_videos_duration_tolerance_pct(10.0);
+            settings.set_similar_videos_min_matching_windows(0.8);
+            settings.set_similar_videos_subclip_min_match(0.7);
+        }
+        // Similar: loose tolerance, moderate sampling.
+        SimilarVideosVisualPreset::Similar => {
+            settings.set_similar_videos_sub_current_similarity(14.0);
+            settings.set_similar_videos_window_count(5.0);
+            settings.set_similar_videos_skip_forward_amount(15.0);
+            settings.set_similar_videos_vid_hash_duration(10.0);
+            settings.set_similar_videos_crop_detect(true);
+            settings.set_similar_videos_duration_tolerance_pct(25.0);
+            settings.set_similar_videos_min_matching_windows(0.5);
+            settings.set_similar_videos_subclip_min_match(0.4);
+        }
+        // Movies: large skip (past intros), many windows, longer hash duration.
+        SimilarVideosVisualPreset::Movies => {
+            settings.set_similar_videos_sub_current_similarity(8.0);
+            settings.set_similar_videos_window_count(8.0);
+            settings.set_similar_videos_skip_forward_amount(90.0);
+            settings.set_similar_videos_vid_hash_duration(12.0);
+            settings.set_similar_videos_crop_detect(true);
+            settings.set_similar_videos_duration_tolerance_pct(15.0);
+            settings.set_similar_videos_min_matching_windows(0.6);
+            settings.set_similar_videos_subclip_min_match(0.5);
+        }
     }
 }
 

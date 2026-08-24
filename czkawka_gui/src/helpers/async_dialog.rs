@@ -7,7 +7,7 @@ use gtk4::{Align, CheckButton, Orientation};
 
 use crate::flg;
 
-// ── Confirmation window with checkbox ─────────────────────────────────────────
+// -- Confirmation window with checkbox -----------------------------------------
 
 /// Show a modal confirmation window with a "don't ask again" checkbox.
 /// Returns `(confirmed, checkbox_active)`.
@@ -74,7 +74,7 @@ pub async fn confirm_window_with_checkbox(parent: &gtk4::Window, title: &str, me
     rx.await.unwrap_or((false, true))
 }
 
-// ── Simple AlertDialog-style confirmation (no custom widget) ─────────────────
+// -- Simple AlertDialog-style confirmation (no custom widget) -----------------
 
 /// Show a text-only modal confirmation using gtk4::AlertDialog (GTK 4.10+).
 /// Returns whether the first button (typically OK) was clicked.

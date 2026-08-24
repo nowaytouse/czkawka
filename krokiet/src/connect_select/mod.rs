@@ -13,12 +13,15 @@ use crate::connect_translation::translate_select_mode;
 use crate::settings::model::{SavedCustomSelectColumnState, SavedCustomSelectTabState};
 use crate::settings::{get_custom_select_state_file, load_data_from_file, save_data_to_file};
 use crate::shared_models::SharedModels;
-use crate::{ActiveTab, Callabler, CustomSelectColumnModel, GuiState, MainWindow, SelectMode, SelectModel, Settings, SingleMainListModel};
+use crate::{
+    ActiveTab, Callabler, CustomSelectColumnModel, GuiState, MainWindow, SelectItemsCustomColumnsRequest, SelectMode, SelectModel, Settings, SingleMainListModel,
+    UpdateCustomSelectColumnRequest,
+};
 
 type SelectionResult = (u64, u64, ModelRc<SingleMainListModel>);
 
 // TODO optimize this: Slint Model API requires copying the entire model to mutate checked state.
-// See https://github.com/slint-ui/slint/discussions/4595 — no in-place mutation API available yet.
+// See https://github.com/slint-ui/slint/discussions/4595 - no in-place mutation API available yet.
 pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedModels>>) {
     set_select_buttons(app);
 
@@ -42,8 +45,8 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
             SelectMode::InvertSelectionInGroup => invert_selection_in_group(&current_model),
             SelectMode::SelectTheBiggestSize => select_by_property(&current_model, active_tab, Property::Size, true),
             SelectMode::SelectTheSmallestSize => select_by_property(&current_model, active_tab, Property::Size, false),
-            SelectMode::SelectTheBiggestResolution => select_by_property(&current_model, active_tab, Property::Resolution, false),
-            SelectMode::SelectTheSmallestResolution => select_by_property(&current_model, active_tab, Property::Resolution, true),
+            SelectMode::SelectTheBiggestResolution => select_by_property(&current_model, active_tab, Property::Resolution, true),
+            SelectMode::SelectTheSmallestResolution => select_by_property(&current_model, active_tab, Property::Resolution, false),
             SelectMode::SelectNewest => select_by_property(&current_model, active_tab, Property::Date, true),
             SelectMode::SelectOldest => select_by_property(&current_model, active_tab, Property::Date, false),
             SelectMode::SelectShortestPath => select_by_property(&current_model, active_tab, Property::PathLength, false),
@@ -99,55 +102,62 @@ pub(crate) fn connect_select(app: &MainWindow, shared_models: &Arc<Mutex<SharedM
     });
 
     let a = app.as_weak();
-    app.global::<Callabler>().on_update_custom_select_column(move |idx, enabled, filter_value| {
+    app.global::<Callabler>().on_update_custom_select_column(move |request| {
+        let UpdateCustomSelectColumnRequest { col_idx, enabled, filter_value } = request;
         let app = a.upgrade().expect("Failed to upgrade app :(");
         let model = app.global::<GuiState>().get_custom_select_columns();
-        let idx = idx as usize;
-        if let Some(mut col) = model.row_data(idx) {
-            col.enabled = enabled;
-            col.filter_value = filter_value;
-            model.set_row_data(idx, col);
-        }
+        let idx = col_idx as usize;
+        let mut col = model
+            .row_data(idx)
+            .unwrap_or_else(|| panic!("Custom select column idx={idx} out of bounds (row_count={})", model.row_count()));
+        col.enabled = enabled;
+        col.filter_value = filter_value;
+        model.set_row_data(idx, col);
     });
 
     let a = app.as_weak();
-    app.global::<Callabler>()
-        .on_select_items_custom_columns(move |select_mode, case_sensitive, leave_one_in_group, save_restore| {
-            let app = a.upgrade().expect("Failed to upgrade app :(");
-            let active_tab = app.global::<GuiState>().get_active_tab();
-            let current_model = active_tab.get_tool_model(&app);
-            let columns: Vec<CustomSelectColumnModel> = app.global::<GuiState>().get_custom_select_columns().iter().collect();
+    app.global::<Callabler>().on_select_items_custom_columns(move |request| {
+        let SelectItemsCustomColumnsRequest {
+            select_mode,
+            case_sensitive,
+            leave_one_in_group,
+            save_restore,
+        } = request;
+        let app = a.upgrade().expect("Failed to upgrade app :(");
+        let active_tab = app.global::<GuiState>().get_active_tab();
+        let current_model = active_tab.get_tool_model(&app);
+        let columns: Vec<CustomSelectColumnModel> = app.global::<GuiState>().get_custom_select_columns().iter().collect();
 
-            let leave_one_in_group = leave_one_in_group && (active_tab.get_is_header_mode() && !shared_models.lock().expect("Lock poisoned").get_use_reference_folders(active_tab));
+        let leave_one_in_group = leave_one_in_group && (active_tab.get_is_header_mode() && !shared_models.lock().expect("Lock poisoned").get_use_reference_folders(active_tab));
 
-            if save_restore {
-                let tab_key = format!("{active_tab:?}");
-                let mut saved_states: BTreeMap<String, SavedCustomSelectTabState> = load_data_from_file(get_custom_select_state_file()).unwrap_or_default();
-                let saved_columns = columns
-                    .iter()
-                    .map(|c| SavedCustomSelectColumnState {
-                        enabled: c.enabled,
-                        filter_value: c.filter_value.to_string(),
-                    })
-                    .collect();
-                saved_states.insert(
-                    tab_key,
-                    SavedCustomSelectTabState {
-                        case_sensitive,
-                        leave_one_in_group,
-                        columns: saved_columns,
-                    },
-                );
-                if let Err(e) = save_data_to_file(get_custom_select_state_file(), &saved_states) {
-                    error!("Failed to save custom select state: {e}");
-                }
+        if save_restore {
+            let tab_key = format!("{active_tab:?}");
+            let mut saved_states: BTreeMap<String, SavedCustomSelectTabState> = load_data_from_file(get_custom_select_state_file()).unwrap_or_default();
+            let saved_columns = columns
+                .iter()
+                .map(|c| SavedCustomSelectColumnState {
+                    enabled: c.enabled,
+                    filter_value: c.filter_value.to_string(),
+                })
+                .collect();
+            saved_states.insert(
+                tab_key,
+                SavedCustomSelectTabState {
+                    case_sensitive,
+                    leave_one_in_group,
+                    columns: saved_columns,
+                },
+            );
+            if let Err(e) = save_data_to_file(get_custom_select_state_file(), &saved_states) {
+                error!("Failed to save custom select state: {e}");
             }
+        }
 
-            let (checked_items, unchecked_items, new_model) =
-                custom_select::select_custom_columns(&current_model, active_tab, select_mode, &columns, case_sensitive, leave_one_in_group);
-            active_tab.set_tool_model(&app, new_model);
-            change_number_of_enabled_items(&app, active_tab, checked_items as i64 - unchecked_items as i64);
-        });
+        let (checked_items, unchecked_items, new_model) =
+            custom_select::select_custom_columns(&current_model, active_tab, select_mode, &columns, case_sensitive, leave_one_in_group);
+        active_tab.set_tool_model(&app, new_model);
+        change_number_of_enabled_items(&app, active_tab, checked_items as i64 - unchecked_items as i64);
+    });
 }
 
 #[derive(Clone, Copy)]
@@ -264,7 +274,7 @@ fn extract_comparable_field(model: &SingleMainListModel, property: Property, act
     }
 }
 
-fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTab, property: Property, increasing_order: bool) -> SelectionResult {
+fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTab, property: Property, select_max: bool) -> SelectionResult {
     let mut checked_items = 0;
 
     let is_header_mode = active_tab.get_is_header_mode();
@@ -272,7 +282,7 @@ fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTa
 
     let mut old_data = model.iter().collect::<Vec<_>>();
     let headers_idx = find_header_idx_and_deselect_all(&mut old_data);
-    if increasing_order {
+    if select_max {
         for i in 0..(headers_idx.len() - 1) {
             let mut max_item = 0;
             let mut max_item_idx = 1;
@@ -312,9 +322,9 @@ fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTa
 }
 
 // Selects all items in each group EXCEPT the one with the extreme property value.
-// `increasing_order: true`  → spares the biggest/newest/longest item (selects all others).
-// `increasing_order: false` → spares the smallest/oldest/shortest item (selects all others).
-fn select_all_except_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTab, property: Property, increasing_order: bool) -> SelectionResult {
+// `spare_max: true`  → spares the biggest/newest/longest item (selects all others).
+// `spare_max: false` → spares the smallest/oldest/shortest item (selects all others).
+fn select_all_except_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTab, property: Property, spare_max: bool) -> SelectionResult {
     let mut checked_items = 0;
     let mut unchecked_items = 0;
 
@@ -332,11 +342,11 @@ fn select_all_except_by_property(model: &ModelRc<SingleMainListModel>, active_ta
         let group_end = headers_idx[i + 1];
 
         // Find the extreme item to spare.
-        let mut extreme_val = if increasing_order { 0u64 } else { u64::MAX };
+        let mut extreme_val = if spare_max { 0u64 } else { u64::MAX };
         let mut extreme_idx = group_start;
         for j in group_start..group_end {
             let val = extract_comparable_field(&old_data[j], property, active_tab);
-            if increasing_order && val > extreme_val || !increasing_order && val < extreme_val {
+            if spare_max && val > extreme_val || !spare_max && val < extreme_val {
                 extreme_val = val;
                 extreme_idx = j;
             }
@@ -641,9 +651,9 @@ mod tests {
 
         assert_eq!(checked_items, 2);
         assert_eq!(unchecked_items, 0);
-        assert!(new_model.row_data(1).unwrap().checked); // 100 – selected
-        assert!(new_model.row_data(2).unwrap().checked); // 200 – selected
-        assert!(!new_model.row_data(3).unwrap().checked); // 300 – spared (biggest)
+        assert!(new_model.row_data(1).unwrap().checked); // 100 - selected
+        assert!(new_model.row_data(2).unwrap().checked); // 200 - selected
+        assert!(!new_model.row_data(3).unwrap().checked); // 300 - spared (biggest)
     }
 
     #[test]
@@ -658,15 +668,15 @@ mod tests {
 
         assert_eq!(checked_items, 2);
         assert_eq!(unchecked_items, 0);
-        assert!(!new_model.row_data(1).unwrap().checked); // 100 – spared (smallest)
-        assert!(new_model.row_data(2).unwrap().checked); // 200 – selected
-        assert!(new_model.row_data(3).unwrap().checked); // 300 – selected
+        assert!(!new_model.row_data(1).unwrap().checked); // 100 - spared (smallest)
+        assert!(new_model.row_data(2).unwrap().checked); // 200 - selected
+        assert!(new_model.row_data(3).unwrap().checked); // 300 - selected
     }
 
     #[test]
     fn select_all_except_operates_independently_per_group() {
-        // Group 1: [header, 100, 300]  – spare 300 (biggest) / spare 100 (smallest)
-        // Group 2: [header, 50, 150]   – spare 150 (biggest) / spare 50  (smallest)
+        // Group 1: [header, 100, 300]  - spare 300 (biggest) / spare 100 (smallest)
+        // Group 2: [header, 50, 150]   - spare 150 (biggest) / spare 50  (smallest)
         let mut h1 = crate::test_common::get_main_list_model();
         h1.header_row = true;
         let mut h2 = crate::test_common::get_main_list_model();
@@ -683,10 +693,10 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::DuplicateFiles, Property::Size, true);
 
-        assert!(new_model.row_data(1).unwrap().checked); // 100 – selected
-        assert!(!new_model.row_data(2).unwrap().checked); // 300 – spared (biggest in group 1)
-        assert!(new_model.row_data(4).unwrap().checked); // 50 – selected
-        assert!(!new_model.row_data(5).unwrap().checked); // 150 – spared (biggest in group 2)
+        assert!(new_model.row_data(1).unwrap().checked); // 100 - selected
+        assert!(!new_model.row_data(2).unwrap().checked); // 300 - spared (biggest in group 1)
+        assert!(new_model.row_data(4).unwrap().checked); // 50 - selected
+        assert!(!new_model.row_data(5).unwrap().checked); // 150 - spared (biggest in group 2)
     }
 
     #[test]
@@ -756,9 +766,9 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::DuplicateFiles, Property::PathLength, true);
 
-        assert!(new_model.row_data(1).unwrap().checked); // short – selected
-        assert!(new_model.row_data(2).unwrap().checked); // medium – selected
-        assert!(!new_model.row_data(3).unwrap().checked); // long – spared (longest)
+        assert!(new_model.row_data(1).unwrap().checked); // short - selected
+        assert!(new_model.row_data(2).unwrap().checked); // medium - selected
+        assert!(!new_model.row_data(3).unwrap().checked); // long - spared (longest)
     }
 
     #[test]
@@ -776,9 +786,9 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::DuplicateFiles, Property::PathLength, false);
 
-        assert!(!new_model.row_data(1).unwrap().checked); // short – spared (shortest)
-        assert!(new_model.row_data(2).unwrap().checked); // medium – selected
-        assert!(new_model.row_data(3).unwrap().checked); // long – selected
+        assert!(!new_model.row_data(1).unwrap().checked); // short - spared (shortest)
+        assert!(new_model.row_data(2).unwrap().checked); // medium - selected
+        assert!(new_model.row_data(3).unwrap().checked); // long - selected
     }
 
     #[test]
@@ -797,7 +807,7 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::DuplicateFiles, Property::PathLength, false);
 
-        assert!(!new_model.row_data(1).unwrap().checked); // IMG_0001.JPG – spared (shortest)
+        assert!(!new_model.row_data(1).unwrap().checked); // IMG_0001.JPG - spared (shortest)
         assert!(new_model.row_data(2).unwrap().checked);
         assert!(new_model.row_data(3).unwrap().checked);
     }
@@ -820,8 +830,8 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::DuplicateFiles, Property::PathLength, false);
 
-        assert!(!new_model.row_data(1).unwrap().checked); // shorter dir – spared
-        assert!(new_model.row_data(2).unwrap().checked); // longer dir – selected
+        assert!(!new_model.row_data(1).unwrap().checked); // shorter dir - spared
+        assert!(new_model.row_data(2).unwrap().checked); // longer dir - selected
     }
 
     // select_all_except by Quality (highest pixel count, file size as tiebreaker)
@@ -841,9 +851,9 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::SimilarImages, Property::Quality, true);
 
-        assert!(new_model.row_data(1).unwrap().checked); // low res – selected
-        assert!(new_model.row_data(2).unwrap().checked); // mid res – selected
-        assert!(!new_model.row_data(3).unwrap().checked); // highest res – spared even though it is the smallest file
+        assert!(new_model.row_data(1).unwrap().checked); // low res - selected
+        assert!(new_model.row_data(2).unwrap().checked); // mid res - selected
+        assert!(!new_model.row_data(3).unwrap().checked); // highest res - spared even though it is the smallest file
     }
 
     #[test]
@@ -860,7 +870,7 @@ mod tests {
 
         let (_checked, _unchecked, new_model) = select_all_except_by_property(&model, ActiveTab::SimilarImages, Property::Quality, true);
 
-        assert!(new_model.row_data(1).unwrap().checked); // smaller file – selected
-        assert!(!new_model.row_data(2).unwrap().checked); // larger file at same resolution – spared
+        assert!(new_model.row_data(1).unwrap().checked); // smaller file - selected
+        assert!(!new_model.row_data(2).unwrap().checked); // larger file at same resolution - spared
     }
 }

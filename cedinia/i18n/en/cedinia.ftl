@@ -1,7 +1,6 @@
 # Cedinia - English (fallback)
 
 # App / top bar titles
-app_name = Cedinia
 tool_duplicate_files = Duplicates
 tool_empty_folders = Empty Folders
 tool_similar_images = Similar Images
@@ -29,7 +28,7 @@ home_bad_extensions_description = Files with invalid extension
 home_same_music_description = Similar audio files by tags
 home_bad_names_description = Files with problematic characters in name
 home_exif_description = Images with EXIF metadata
-home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
+home_similar_videos_description = Find videos with similar audio
 
 # Results list
 scanning = Scanning in progress...
@@ -39,7 +38,7 @@ press_start = Press START to scan
 select_label = Sel.
 deselect_label = Desel.
 list_label = List
-gallery_label = Gal.
+gallery_label = Gal
 
 # Selection popup
 selection_popup_title = Select
@@ -117,12 +116,12 @@ settings_check_method_label = COMPARISON METHOD
 settings_check_method = Method
 settings_hash_type_label = HASH TYPE
 settings_hash_type = Hash type
-settings_hash_type_desc = Blake3 - is recommended option, CRC32 have small chance of false positives
+settings_hash_type_desc = Blake3 is the recommended option; CRC32 has a small chance of false positives
 settings_similar_images_header = SIMILAR IMAGES
 settings_similarity_preset = Similarity threshold
 settings_similarity_desc = Very High = only near-identical
 settings_hash_size = Hash size
-settings_hash_size_desc = Larger sizes, have less false positives, but also finds less similar images
+settings_hash_size_desc = Larger size means fewer false positives but also fewer results
 settings_hash_alg = Hash algorithm
 settings_image_filter = Resize filter
 settings_geometric_invariance = Geometric invariance
@@ -181,6 +180,11 @@ diagnostics_clear_thumbnails = Clear thumbnails
 diagnostics_open_thumbnails_folder = Open folder
 diagnostics_clear_cache = Clear cache
 diagnostics_open_cache_folder = Open folder
+diagnostics_export_logs = Export logs
+logs_label = LOGS
+logs_export_title = Export logs
+logs_export_saved = Logs copied to:
+logs_export_failed = Could not export logs
 diagnostics_collect_test = File access test
 diagnostics_collect_test_desc = Check how many files are accessible
 diagnostics_collect_test_run = Run
@@ -190,7 +194,7 @@ diag_confirm_clear_thumbnails = Clear all thumbnail cache?
 diag_confirm_clear_cache = Clear all app cache?
 about_repo = Repository
 about_translate = Translations
-about_donate = Support
+about_donate = Donate
 
 # Collect-test result popup
 collect_test_title = Test results
@@ -238,6 +242,8 @@ renamed_errors_suffix = errors
 cleaned_exif_prefix = Cleaned EXIF from
 cleaned_exif_suffix = files
 cleaned_exif_errors_suffix = errors
+rename_error_read_file_name = Cannot read file name
+rename_error_read_directory = Cannot read directory
 and_more_prefix = ...and
 and_more_suffix = more
 
@@ -247,7 +253,6 @@ gallery_back = Back
 gallery_confirm_delete = Yes, delete
 deleting_files = Deleting files...
 stop = Stop
-files_suffix = files
 scanning_fallback = Scanning...
 app_subtitle = In honour of the Battle of Cedynia (972 CE)
 app_license = Frontend for Czkawka Core - GPL-3.0
@@ -267,37 +272,6 @@ gallery_confirm_delete_warning = All items are selected in { $unsafe_groups } gr
 same_music_fingerprint_warning = Calculating and comparing audio fingerprints is very resource-intensive and may take a long time. It is recommended to use Krokiet on a desktop system for this task.
 
 # Scan stage labels (shown during scan progress)
-stage_collecting_files = Collecting files
-stage_scanning_name = Scanning by name
-stage_scanning_size_name = Scanning by name and size
-stage_scanning_size = Scanning by size
-stage_pre_hash = Pre-hashing
-stage_full_hash = Hashing
-stage_loading_cache = Loading cache
-stage_saving_cache = Saving cache
-stage_calculating_image_hashes = Calculating image hashes
-stage_comparing_images = Comparing images
-stage_calculating_video_hashes = Calculating video hashes
-stage_checking_files = Checking files
-stage_checking_extensions = Checking extensions
-stage_checking_names = Checking names
-stage_reading_music_tags = Reading music tags
-stage_comparing_tags = Comparing tags
-stage_calculating_music_fingerprints = Calculating music fingerprints
-stage_comparing_fingerprints = Comparing fingerprints
-stage_extracting_exif = Reading EXIF tags
-stage_creating_video_thumbnails = Creating video thumbnails
-stage_processing_videos = Processing videos
-stage_deleting = Deleting files
-stage_renaming = Renaming files
-stage_moving = Moving files
-stage_hardlinking = Creating hard links
-stage_symlinking = Creating symlinks
-stage_optimizing_videos = Optimizing videos
-stage_cleaning_exif = Cleaning EXIF
-stage_all_hiding_links = Hiding hard links
-stage_empty_files_checking_content = Checking file content
-
 # Group headers in scan results
 duplicates_group_header = { $count } files  x  { $per_file } / file  =  { $total } total
 similar_images_group_header = { $count } similar images
@@ -315,7 +289,7 @@ option_similarity_high = High
 option_similarity_medium = Medium
 option_similarity_low = Low
 option_similarity_very_low = V.Low
-option_similarity_minimal = Min.
+option_similarity_minimal = Min
 option_check_method_hash = Hash
 option_check_method_name = Name
 option_check_method_size_and_name = Size+Name
@@ -353,7 +327,7 @@ path_edit_placeholder = Enter path...
 path_edit_not_exists = Path does not exist
 path_edit_is_dir = Directory
 path_edit_is_file = File
-path_edit_no_newlines = Paths cannot contain newlines — Enter key is not allowed
+path_edit_no_newlines = Paths cannot contain newlines - Enter key is not allowed
 
 ctx_menu_title = Open
 ctx_open_file = Open item
@@ -362,12 +336,12 @@ dir_open_folder = Open folder
 
 # Compare view
 compare_label = Compare
-compare_loading = Loading images…
-compare_cancelling = Cancelling…
-compare_computing = Computing diff…
+compare_loading = Loading images...
+compare_cancelling = Cancelling...
+compare_computing = Computing diff...
 compare_mode_normal = Side
 compare_mode_split = Split
 compare_mode_overlay = Overlay
 compare_mode_diff = Diff
-compare_res_mismatch = Different resolutions – diff may be inaccurate
+compare_res_mismatch = Different resolutions - diff may be inaccurate
 

@@ -262,3 +262,90 @@ fn test_similar_images_hide_hard_links() {
         assert_eq!(info.number_of_groups, 1);
     }
 }
+
+#[test]
+fn test_similar_images_reference_mode_deletes_only_non_reference() {
+    use std::fs;
+    use std::path::Path;
+
+    use tempfile::TempDir;
+
+    use crate::common::tool_data::DeleteMethod;
+    use crate::common::traits::DeletingItems;
+    use crate::tools::similar_images::ImagesEntry;
+
+    let temp_dir = TempDir::new().unwrap();
+    let reference = temp_dir.path().join("reference.jpg");
+    let duplicate = temp_dir.path().join("duplicate.jpg");
+    fs::write(&reference, "ref").unwrap();
+    fs::write(&duplicate, "dup").unwrap();
+
+    let mk = |path: &Path| ImagesEntry {
+        path: path.to_path_buf(),
+        size: 3,
+        width: 1,
+        height: 1,
+        modified_date: 0,
+        hashes: Vec::new(),
+        difference: 0,
+    };
+
+    let params = SimilarImagesParameters::new(10, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let mut finder = SimilarImages::new(params);
+    finder.set_delete_method(DeleteMethod::Delete);
+    finder.set_move_to_trash(false);
+    finder.set_use_reference_folders(true);
+    finder.similar_referenced_vectors = vec![(mk(&reference), vec![mk(&duplicate)])];
+
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let _ = finder.delete_files(&stop_flag, None);
+
+    assert!(reference.exists(), "Reference image must be kept");
+    assert!(!duplicate.exists(), "Non-reference duplicate must be deleted (#1643)");
+}
+
+#[cfg(feature = "libavif")]
+fn get_heif_images_path() -> PathBuf {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test_resources").join("heif_images");
+    assert!(path.exists(), "HEIF test resources not found at \"{}\"", path.to_string_lossy());
+    path
+}
+
+#[cfg(feature = "libavif")]
+#[test]
+fn test_similar_images_avif_files_are_found() {
+    let test_path = get_heif_images_path();
+
+    let params = SimilarImagesParameters::new(30, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let mut finder = SimilarImages::new(params);
+    finder.set_included_paths(vec![test_path]);
+    finder.set_recursive_search(false);
+    finder.set_use_cache(false);
+
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    finder.search(&stop_flag, None);
+
+    let info = finder.get_information();
+    assert_eq!(info.initial_found_files, 3, "Should find all 3 AVIF test files");
+}
+
+#[cfg(feature = "libavif")]
+#[test]
+fn test_similar_images_avif_degenerate_gradient_hashes_are_ignored() {
+    // Solid colors produce all-zero gradient hashes, which are intentionally ignored to avoid false positives.
+    let test_path = get_heif_images_path();
+
+    let params = SimilarImagesParameters::new(0, 8, HashAlg::Gradient, FilterType::Lanczos3, false, false, false, 0.0, false, GeometricInvariance::Off);
+    let mut finder = SimilarImages::new(params);
+    finder.set_included_paths(vec![test_path]);
+    finder.set_recursive_search(false);
+    finder.set_use_cache(false);
+
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    finder.search(&stop_flag, None);
+
+    let info = finder.get_information();
+    assert_eq!(info.initial_found_files, 3);
+    assert_eq!(info.number_of_groups, 0);
+    assert_eq!(info.number_of_duplicates, 0);
+}

@@ -35,6 +35,8 @@ charts*
 result
 .direnv
 cedinia/android/keystore/*.keystore
+cedinia/ui/fonts/.cache/
+cedinia/ui/fonts/*.ttf
 cedinia/android/app/build/
 cedinia/android/app/src/main/jniLibs/
 cedinia/android/.gradle/
@@ -46,3 +48,7 @@ uv.lock
 i18n
 keystore_pass
 DIFFS.DS_Store
+DIFFS
+___*
+.claude
+cedinia/ui/fonts

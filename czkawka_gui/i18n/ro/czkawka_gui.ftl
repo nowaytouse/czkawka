@@ -1,22 +1,22 @@
+# Window titles
 window_settings_title = Setări
-window_main_title = Czkawka (Sufletăciune)
+window_main_title = Czkawka (Sughiț)
 window_progress_title = Scanare
 window_compare_images = Compară imaginile
+# General
 general_ok_button = Ok
 general_close_button = Inchide
-krokiet_info_title = Introducerea lui Krokiet - Noua versiune a Czkawka
+# Krokiet info dialog
+krokiet_info_title = Aviz de dezaprobare
 krokiet_info_message =
-    Krokiet este noua, îmbunătățită, mai rapidă și mai fiabilă versiune a Czkawka GTK GUI!
-
-    Este mai ușor de rulat și mai rezistent la modificările sistemului, deoarece depinde doar de bibliotecile de bază disponibile pe majoritatea sistemelor implicit.
-
-    Krokiet aduce, de asemenea, funcții pe care Czkawka nu le are, inclusiv miniaturile în modul de comparare video, un curățător EXIF, progresul mutării/copierii/ștergerii fișierelor sau opțiuni extinse de sortare.
-
-    Îl testează și vezi diferența!
-
-    Czkawka va continua să primească corecții de erori și actualizări minore de la mine, dar toate noile funcții vor fi dezvoltate exclusiv pentru Krokiet, iar oricine este liber să contribuie cu noi funcții, să adauge moduri lipsă sau să extindă Czkawka în continuare.
-
-    PS: Acest mesaj ar trebui să apară doar o dată. Dacă apare din nou, setați variabila de mediu CZKAWKA_DONT_ANNOY_ME la orice valoare non-goalomptă.
+    Czkawka GTK 12.0 este versiunea finală. Nu sunt planificate alte actualizări, caracteristici sau remedieri ale erorilor.
+    
+    Cele mai multe caracteristici de la Czkawka GTK sunt disponibile în Krokiet, de obicei într-o formă mai simplă, mai rapidă și mai stabilă. De asemenea, Krokiet adaugă noi caracteristici și îmbunătățiri care nu au fost posibile în versiunea GTK.
+    
+    Dacă încă utilizaţi Czkawka GTK, trecerea la Krokiet ar trebui să fie uşoară, deoarece are o interfață similară, mai puține dependențe și un sprijin mai bun între platforme.
+    
+    PS: Acest mesaj ar trebui să apară o singură dată. Dacă apare din nou, setează mediu CZKAWKA_DONT_ANNOY_ME la orice valoare necompletată.
+# Main window
 music_title_checkbox = Titlu
 music_artist_checkbox = Artist
 music_year_checkbox = An
@@ -31,28 +31,28 @@ same_music_similarity_label = Diferența maximă
 music_compare_only_in_title_group = Compară în cadrul grupurilor de titluri similare
 music_compare_only_in_title_group_tooltip =
     Când este activat, fișierele sunt grupate după titlu și apoi comparate între ele.
-
+    
     Cu 10000 de fişiere, în schimb aproape 100 de milioane de comparaţii vor fi de obicei aproximativ 20000 de comparaţii.
 same_music_tooltip =
     Căutarea fişierelor muzicale similare după conţinutul său poate fi configurată prin setarea:
-
+    
     - Timpul minim de fragment după care fişierele muzicale pot fi identificate ca fiind similare
     - Diferenţa maximă între două fragmente testate
-
+    
     Cheia pentru rezultate bune este de a găsi combinaţii rezonabile ale acestor parametri, pentru furnizare.
-
+    
     Setarea timpului minim la 5 s și diferența maximă la 1.0, va căuta fragmente aproape identice în fișiere.
     O perioadă de 20 de ani și o diferență maximă de 6,0, pe de altă parte, funcționează bine pentru a găsi remixuri/versiuni live etc.
-
+    
     În mod implicit, fiecare fișier muzical este comparat unul cu altul și acest lucru poate dura mult timp când testezi mai multe fișiere, astfel încât este de obicei mai bine să se utilizeze dosare de referință și să se precizeze care fișiere trebuie comparate între ele (cu același volum de fișiere; compararea amprentelor digitale va fi mai rapidă de cel puțin 4x decât fără dosare de referință).
 music_comparison_checkbox_tooltip =
     Caută fișiere muzicale similare folosind AI, care folosește învățarea mașinăriei pentru a elimina paranteze dintr-o frază. De exemplu, cu această opțiune activată, fișierele în cauză vor fi considerate duplicate:
-
+    
     Remix Lato 2021)
 duplicate_case_sensitive_name = Sensibil la caz
 duplicate_case_sensitive_name_tooltip =
     Când este activată, grupul înregistrează doar atunci când are exact același nume, de ex. Trunchiul <-> Z<unk> ołd
-
+    
     Dezactivarea acestei opțiuni va grupa numele fără a verifica dacă fiecare literă are aceeași mărime, de ex. z<unk> oŁD <-> Z<unk> ołd
 duplicate_mode_size_name_combo_box = Dimensiune și nume
 duplicate_mode_name_combo_box = Nume
@@ -60,42 +60,43 @@ duplicate_mode_size_combo_box = Dimensiune
 duplicate_mode_hash_combo_box = Hash
 duplicate_hash_type_tooltip =
     Czkawka oferă 3 tipuri de hash-uri:
-
+    
     Blake3 - funcţie criptografică hash. Acesta este implicit pentru că este foarte rapid.
-
+    
     CRC32 - funcţia simplă de hash. Acest lucru ar trebui să fie mai rapid decât Blake3, dar foarte rar poate avea unele coliziuni.
-
+    
     XXH3 - foarte asemănător din punct de vedere al performanței și al calității hash-ului cu Blake3 (dar non-criptografic). Astfel de moduri pot fi ușor interschimbate.
 duplicate_check_method_tooltip =
     Deocamdată, Czkawka oferă trei tipuri de metode pentru a găsi duplicate după:
-
+    
     Nume - Găseşte fişiere care au acelaşi nume.
-
+    
     Dimensiune - Găseşte fişiere cu aceeaşi dimensiune.
-
+    
     Hash - Găseşte fişiere care au acelaşi conţinut. Acest mod hashează fişierul şi mai târziu compară acest hash pentru a găsi duplicate. Acest mod este cel mai sigur mod de a găsi duplicate. Aplicaţiile folosesc foarte mult cache, astfel încât scanările de la secundă şi mai departe ale aceloraşi date ar trebui să fie mult mai rapide decât primul.
 image_hash_size_tooltip =
     Fiecare imagine verificată produce un hash special, care poate fi comparat între ele, si o diferenta mica intre ele inseamna ca aceste imagini sunt similare.
-
+    
     dimensiunea de 8 hash este destul de bună pentru a găsi imagini care sunt doar puţin similare cu originalul. Cu un set mai mare de imagini (>1000), acesta va produce o cantitate mare de fals pozitiv, Aşa că vă recomand să utilizaţi o mărime mai mare de hash în acest caz.
-
+    
     16 este dimensiunea implicită a hash-ului care este un compromis destul de bun între a găsi chiar și imagini similare și a avea doar o mică coliziune a hash-ului.
-
+    
     32 și 64 de hash-uri găsesc doar imagini foarte similare, dar nu ar trebui să aibă aproape nicio poziție falsă (poate cu excepția unor imagini cu un canal alfa).
 image_resize_filter_tooltip =
     Pentru a calcula hash of imagine, biblioteca trebuie mai întâi să o redimensioneze.
-
+    
     În funcție de algoritmul ales, imaginea rezultată folosită pentru a calcula hash va arăta puțin diferit.
-
+    
     Cel mai rapid algoritm de utilizat, dar şi cel care dă cele mai slabe rezultate, este Nearest. Acesta este activat în mod implicit, deoarece cu dimensiunea de 16x16 a hash-ului este de calitate mai mică decât cea vizibilă.
-
+    
     Cu dimensiunea hash de 8x8 este recomandat să se folosească un algoritm diferit de Nearest, pentru a avea grupuri mai bune de imagini.
 image_hash_alg_tooltip =
     Utilizatorii pot alege unul dintre multele algoritmi de calculare a hash-ului.
-
+    
     Fiecare are atât puncte puternice, cât şi puncte mai slabe şi va da uneori rezultate mai bune şi uneori mai proaste pentru imagini diferite.
-
+    
     Deci, pentru a determina cel mai bun dintre voi, este necesară testarea manuală.
+image_geometric_invariance_tooltip = Compară, de asemenea, variantele oglindă/flipuită și cele cu rotație opțională ale fiecărei imagini. Acest lucru îmbunătățește potrivirea dar crește timpul de hashing.
 big_files_mode_combobox_tooltip = Permite căutarea celor mai mici/mai mari fişiere
 big_files_mode_label = Fișiere verificate
 big_files_mode_smallest_combo_box = Cel mai mic
@@ -135,6 +136,7 @@ main_tree_view_column_codec = Codecul
 main_label_check_method = Metoda de verificare
 main_label_hash_type = Tip hash
 main_label_hash_size = Dimensiune hash
+main_label_geometric_invariance = Inventariere geometrică
 main_label_size_bytes = Dimensiune (octeți)
 main_label_min_size = Minim
 main_label_max_size = Maxim
@@ -149,9 +151,8 @@ main_check_box_broken_files_video = Video
 main_check_box_broken_files_video_tooltip = Folosește ffmpeg/ffprobe pentru a valida fișiere video. Foarte lent și poate detecta erori pedantice chiar dacă fișierul rulează bine.
 check_button_general_same_size = Ignoră aceeași dimensiune
 check_button_general_same_size_tooltip = Ignoră fișierele cu rezultate de dimensiune identică - de obicei, acestea sunt de 1:1 duplicate
-check_button_general_only_same_size = Only same size
-check_button_general_only_same_size_tooltip = Only show images with identical size in results
 main_label_size_bytes_tooltip = Dimensiunea fişierelor care vor fi utilizate în scanare
+# Upper window
 upper_tree_view_included_folder_column_title = Dosare de căutat
 upper_tree_view_included_reference_column_title = Dosare de referință
 upper_recursive_button = Recursiv
@@ -164,17 +165,17 @@ upper_add_excluded_button = Adăugare
 upper_remove_excluded_button = Elimină
 upper_manual_add_included_button_tooltip =
     Adăugați numele directorului pentru a căuta manual.
-
+    
     Pentru a adăuga căi multiple simultan, separați-le de ;
-
+    
     /home/roman;/home/rozkaz va adăuga două directoare /home/roman și /home/rozkaz
 upper_add_included_button_tooltip = Adăugați un nou director pentru căutare.
 upper_remove_included_button_tooltip = Ștergeți directorul de căutare.
 upper_manual_add_excluded_button_tooltip =
     Adaugă numele folderului exclus manual.
-
+    
     Pentru a adăuga căi multiple simultan, separați-le de ;
-
+    
     /home/roman;/home/krokiet va adăuga două directoare /home/roman și /home/keokiet
 upper_add_excluded_button_tooltip = Adauga directorul pentru a fi exclus in cautare.
 upper_remove_excluded_button_tooltip = Ştergeţi directorul din excludere.
@@ -183,13 +184,13 @@ upper_notebook_excluded_directories = Puteți exclude căile
 upper_notebook_included_directories = Include Puteți
 upper_allowed_extensions_tooltip =
     Extensiile permise trebuie separate prin virgulă (implicit toate sunt disponibile).
-
+    
     Următoarele macro care adaugă simultan extensii multiple sunt de asemenea disponibile: IMAGE, VIDEO, MUSIC, TEXT.
-
+    
     Foloseste exemplul ".exe, IMAGE, VIDEO, .rar, 7z" - asta inseamna ca imaginile (e. . fișiere jpg, png), videoclipuri (de ex. avi, mp4), exe, rar și 7z vor fi scanate.
 upper_excluded_extensions_tooltip =
     Lista fişierelor dezactivate care vor fi ignorate în scanare.
-
+    
     La utilizarea extensiilor permise și dezactivate, aceasta are prioritate mai mare, deci fișierul nu va fi verificat.
 upper_excluded_items_tooltip =
     Elemente excluse trebuie să conțină * wildcard și să fie separate prin virgulă.
@@ -197,6 +198,7 @@ upper_excluded_items_tooltip =
 upper_excluded_items = Elemente excluse:
 upper_allowed_extensions = Extensii permise:
 upper_excluded_extensions = Extensii dezactivate:
+# Popovers
 popover_select_all = Selectează tot
 popover_unselect_all = Deselectează tot
 popover_reverse = Selectare inversă
@@ -212,32 +214,32 @@ popover_select_all_images_except_biggest = Selectează toate cu excepția celui 
 popover_select_all_images_except_smallest = Selectează toate cu excepția celor mici
 popover_custom_path_check_button_entry_tooltip =
     Selectaţi înregistrările după cale.
-
+    
     Exemplu de utilizare:
     /home/pimpek/rzecz.txt poate fi găsit cu /home/pim*
 popover_custom_name_check_button_entry_tooltip =
     Selectaţi înregistrările cu numele fişierelor.
-
+    
     Exemplu de utilizare:
     /usr/ping/pong.txt poate fi găsit cu *ong*
 popover_custom_regex_check_button_entry_tooltip =
     Selectaţi înregistrările specificate de Regex.
-
+    
     Cu acest mod, textul căutat este calea cu numele.
-
+    
     Exemplu de utilizare:
     /usr/bin/ziemniak. xt poate fi găsit cu /ziem[a-z]+
-
+    
     Acest lucru folosește implementările implicite Rust regex. Puteți citi mai multe despre ele aici: https://docs.rs/regex.
 popover_custom_case_sensitive_check_button_tooltip =
     Activează detectarea cazurilor sensibile.
-
+    
     Când este dezactivat /home/* găsește atât /HoMe/roman cât și /home/roman.
 popover_custom_not_all_check_button_tooltip =
     Previne selectarea tuturor înregistrărilor din grup.
-
+    
     Aceasta este activată în mod implicit, deoarece în majoritatea situațiilor, nu doriţi să ştergeţi atât fişierele originale, cât şi duplicate, dar doriţi să lăsaţi cel puţin un fişier.
-
+    
     ATENŢIE: Această setare nu funcţionează dacă aţi selectat deja manual toate rezultatele într-un grup.
 popover_custom_regex_path_label = Cale
 popover_custom_regex_name_label = Nume
@@ -253,6 +255,7 @@ popover_sort_size = Dimensiune
 popover_sort_selection = Selecţie
 popover_invalid_regex = Regex nu este valid
 popover_valid_regex = Regex este valid
+# Bottom buttons
 bottom_search_button = Caută
 bottom_select_button = Selectare
 bottom_delete_button = Ștergere
@@ -287,8 +290,10 @@ bottom_sort_button_tooltip = Sortează fișierele/dosarele în funcție de metod
 bottom_compare_button_tooltip = Compară imaginile din grup.
 bottom_show_errors_tooltip = Arată/ascunde panoul de text de jos.
 bottom_show_upper_notebook_tooltip = Arată/Ascunde panoul de notebook-uri de sus.
+# Progress Window
 progress_stop_button = Oprește
 progress_stop_additional_message = Oprire solicitată
+# About Window
 about_repository_button_tooltip = Link către pagina de depozit cu codul sursă.
 about_donation_button_tooltip = Link la pagina de donare.
 about_instruction_button_tooltip = Link către pagina de instrucțiuni.
@@ -297,41 +302,59 @@ about_repository_button = Depozit
 about_donation_button = Donație
 about_instruction_button = Instrucțiuni
 about_translation_button = Traducere
+about_other_apps_button = Alte aplicații
+about_other_apps_dialog_title = Alte aplicații ale qarmin
+about_other_apps_open_source_note = Toate aplicațiile listate sunt gratuite și cu sursă deschisă.
+about_other_apps_open_button = Deschideți
+about_other_apps_szyszka_desc = Redenumire de fișiere rapidă și puternică.
+about_other_apps_mykrut_desc = Manager de fişiere Linux simplu şi rapid.
+about_other_apps_dcmki_viewer_desc = Vizualizator DICOM simplu.
+about_other_apps_video_thumbnailer_desc = Wrapper în jurul generatorului de miniaturi video utilizat în Czkawka.
+about_other_apps_space_finder_desc = Găsire simplă a celor mai mari fișiere din sistemul dvs.
+about_other_apps_system_info_collector_desc = Colectează utilizarea RAM/CPU de pe OS și o afișează ca grafice.
+# Header
 header_setting_button_tooltip = Deschide dialogul de setări.
 header_about_button_tooltip = Deschide dialogul cu informații despre aplicație.
-header_krokiet_button_tooltip = Try Krokiet - the new and improved version!
-krokiet_promo_title = Meet Krokiet!
+header_krokiet_button_tooltip = Încercați Krokiet - versiunea nouă și îmbunătățită!
+# Krokiet promo dialog
+krokiet_promo_title = Întâlnește-te cu Krokiet!
 krokiet_promo_message =
-    Hello there, brave Czkawka user!
+    Bună ziua aici, utilizator curajos!
+    
+    Forţa este clar cu tine, dar Krokiet nu este - un mai nou, mai rapid, mai uşor, şi semnificativ mai uşor (presupunând că aplicaţiile pot fi de fapt superficiale) duplică mai curat.
+    
+    Krokiet include tot ceea ce le place oamenilor de Czkawka. este complet gratuit, open source, are o interfață unică și simplă (atât lăudată, cât și urată de mulți), introduce multe caracteristici noi, utilizează mai puține dependențe și funcționează mult mai fiabil pe diferite platforme.
+    
+    Și dacă ți-ai pierdut cumva ceva, există deja o aplicație și mai nouă decât Krokiet - Cedinia, proiectat în principal pentru dispozitive Android și utilizarea touchscreen-ului.
+    
+    Czkawka GTK ne-a servit bine, dar ceasul său s-a încheiat.
+krokiet_promo_link_download = Descarcă Krokiet/Cedinia
+krokiet_promo_link_project = Pagina proiectului
 
-    The Force is clearly with you, but Krokiet is not - a newer, faster, lighter, and significantly more handsome (assuming apps can actually be handsome) duplicate cleaner.
+# Settings
 
-    Krokiet includes everything people liked about Czkawka. It is completely free, open source, has a unique and simple UI (both praised and hated by many), introduces a lot of new features, uses fewer dependencies, and works far more reliably across different platforms.
 
-    And if you somehow missed it, there is already an even newer app than Krokiet - Cedinia, designed primarily for Android devices and touchscreen usage.
+## General
 
-    Czkawka GTK served us well, but its watch has ended.
-krokiet_promo_link_download = Download Krokiet/Cedinia
-krokiet_promo_link_project = Project page
 settings_number_of_threads = Numar discutii folosite
 settings_number_of_threads_tooltip = Numărul de teme folosite, 0 înseamnă că vor fi folosite toate temele disponibile.
 settings_use_rust_preview = Folosește în schimb gtk librării externe pentru a încărca previzualizările
 settings_use_rust_preview_tooltip =
     Utilizarea de previzualizări gtk va fi uneori mai rapidă și va suporta mai multe formate, dar uneori aceasta ar putea fi exact opusul.
-
+    
     Dacă aveţi probleme cu încărcarea previzualizărilor, puteţi încerca să schimbaţi această setare.
-
+    
     Pe sistemele non-linux, se recomandă folosirea acestei optiuni, pentru că gtk-pixbuf nu sunt întotdeauna disponibile, astfel încât dezactivarea acestei opțiuni nu va încărca previzualizarea unor imagini.
 settings_label_restart = Trebuie să reporniți aplicația pentru a aplica setările!
 settings_ignore_other_filesystems = Ignorați alte sisteme de fișiere (doar Linux)
 settings_ignore_other_filesystems_tooltip =
     ignoră fişierele care nu se află în acelaşi sistem de fişiere ca şi directoarele căutate.
-
+    
     Funcţionează la fel ca opţiunea -xdev în găsirea comenzii în Linux
 settings_save_at_exit_button_tooltip = Salvați configurația în fișier la închiderea aplicației.
 settings_load_at_start_button_tooltip =
     Încarcă configurația din fișier la deschiderea aplicației.
-
+    
     Dacă nu este activată, se vor folosi setările implicite.
 settings_confirm_deletion_button_tooltip = Afișați caseta de confirmare când faceți clic pe butonul de ștergere.
 settings_confirm_link_button_tooltip = Afișați caseta de confirmare când faceți clic pe butonul hard/symlink.
@@ -354,61 +377,74 @@ settings_language_label = Limba
 settings_multiple_delete_outdated_cache_checkbutton = Şterge automat intrările învechite
 settings_multiple_delete_outdated_cache_checkbutton_tooltip =
     Ştergeţi rezultatele învechite ale geocutiei care indică fişierele inexistente.
-
+    
     Atunci când este activată, aplicația se asigură la încărcarea înregistrărilor, că toate înregistrările indică către fișiere valide (cele decongelate sunt ignorate).
-
+    
     Dezactivarea acestui lucru va ajuta la scanarea fişierelor pe unităţi externe, astfel încât intrările de cache despre acestea nu vor fi şterse în următoarea scanare.
-
+    
     În cazul în care există sute de mii de înregistrări în cache; se sugerează să activezi acest lucru, care va încărca/salva cache-ul la start/end al scanării.
 settings_notebook_general = Generalități
 settings_notebook_duplicates = Duplicate
 settings_notebook_images = Imagini similare
 settings_notebook_videos = Video similar
+
+## Multiple - settings used in multiple tabs
+
 settings_multiple_image_preview_checkbutton_tooltip = Afișează previzualizarea în partea dreaptă (când se selectează un fișier imagine).
 settings_multiple_image_preview_checkbutton = Arată previzualizarea imaginii
 settings_multiple_clear_cache_button_tooltip =
     Curăță manual cache-ul intrărilor învechite.
     Acest lucru ar trebui folosit doar dacă curățarea automată a fost dezactivată.
 settings_multiple_clear_cache_button = Elimină rezultatele învechite din geocutie.
+
+## Duplicates
+
 settings_duplicates_hide_hard_link_button_tooltip =
     Ascunde toate fişierele, cu excepţia unuia, dacă toate arată spre aceleaşi date (sunt conectate).
-
+    
     Exemplu: În cazul în care sunt (pe disc) şapte fişiere care sunt greu legate de date specifice şi un fişier diferit cu aceleaşi date, dar un alt inventar, apoi în duplicat va fi afișat un singur fișier unic și un fișier de la cele hardlink-ului.
 settings_duplicates_minimal_size_entry_tooltip =
     Setaţi dimensiunea minimă a fişierului care va fi memorată în cache.
-
+    
     Alegerea unei valori mai mici va genera mai multe înregistrări. (Automatic Translation) Aceasta va accelera căutarea, dar va încetini încărcarea/salvarea cache-ului.
 settings_duplicates_prehash_checkbutton_tooltip =
     Permite stocarea în cache a prehash (un hash calculat dintr-o mică parte a fișierului) care permite concedierea mai timpurie a rezultatelor nereplicate.
-
+    
     este dezactivat implicit deoarece poate cauza încetiniri în unele situații.
-
+    
     Este foarte recomandat sa il utilizezi cand scanezi sute de mii sau milioane de fisiere, pentru ca poate accelera cautarea de mai multe ori.
 settings_duplicates_prehash_minimal_entry_tooltip = Dimensiunea minimă a intrării în cache.
 settings_duplicates_hide_hard_link_button = Ascunde link-urile fizice
 settings_duplicates_prehash_checkbutton = Foloseste cache-ul prehash
 settings_duplicates_minimal_size_cache_label = Dimensiunea minimă a fişierelor (în octeţi) salvate în cache
 settings_duplicates_minimal_size_cache_prehash_label = Dimensiunea minimă a fişierelor (în octeţi) salvate în cache de prehash
+
+## Saving/Loading settings
+
 settings_saving_button_tooltip = Salvați setările curente în fișier.
 settings_loading_button_tooltip = Încarcă setările din fișier și înlocuiește configurația curentă cu ele.
 settings_reset_button_tooltip = Resetați configurația curentă la cea implicită.
 settings_saving_button = Salvează configurația
 settings_loading_button = Încarcă configurația
 settings_reset_button = Resetare configurație
+
+## Opening cache/config folders
+
 settings_folder_cache_open_tooltip =
     Deschide folderul unde sunt stocate fișierele txt cache-ul.
-
+    
     Modificarea fișierelor de cache poate duce la afișarea unor rezultate invalide. Cu toate acestea, modificarea traiectoriei poate salva timpul atunci când mutați un număr mare de fișiere într-o locație diferită.
-
+    
     Puteţi copia aceste fişiere între computere pentru a salva timp la scanarea din nou pentru fişiere (desigur, dacă au o structură de directoare similară).
-
+    
     În caz de probleme cu geocutia, aceste fişiere pot fi şterse. Aplicaţia le va regenera automat.
 settings_folder_settings_open_tooltip =
     Deschide folderul unde este stocată configurația Czkawka.
-
+    
     AVERTISMENT: Modificarea manuală a configurației poate rupe fluxul de lucru.
 settings_folder_cache_open = Deschide dosarul cache
 settings_folder_settings_open = Deschide folderul de setări
+# Compute results
 compute_stopped_by_user = Căutarea a fost oprită de utilizator
 compute_found_duplicates_hash_size = Am găsit { $number_files } duplicate în { $number_groups } grupuri care au luat { $size } în { $time }
 compute_found_duplicates_name = Am găsit { $number_files } duplicate în grupurile { $number_groups } în { $time }
@@ -422,47 +458,19 @@ compute_found_music = Am găsit { $number_files } fişiere muzicale similare în
 compute_found_invalid_symlinks = { $number_files } link-uri simboluri invalide găsite în { $time }
 compute_found_broken_files = Fișiere defecte { $number_files } găsite în { $time }
 compute_found_bad_extensions = Fișiere { $number_files } cu extensii invalide în { $time }
-progress_scanning_general_file =
-    { $file_number ->
-    [one] a scanat { $file_number } fişierul
-    *[other] Scanat { $file_number } fişiere
-    }
-progress_scanning_extension_of_files = S-a verificat extensia fișierului { $file_checked }/{ $all_files }
-progress_scanning_broken_files = Fişier verificat { $file_checked }/{ $all_files } ({ $data_checked }/{ $all_data })
-progress_scanning_video = Hashed of { $file_checked }/{ $all_files } video
-progress_creating_video_thumbnails = Pictograme video create de { $file_checked }/{ $all_files }
-progress_scanning_image = Hashed of { $file_checked }/{ $all_files } image ({ $data_checked }/{ $all_data })
-progress_comparing_image_hashes = Imaginea a fost comparată { $file_checked }/{ $all_files }
-progress_scanning_music_tags_end = Tag-uri comparate ale fișierului de muzică { $file_checked }/{ $all_files }
-progress_scanning_music_tags = Citește etichetele fișierului de muzică { $file_checked }/{ $all_files }
-progress_scanning_music_content_end = Față de amprenta fișierului de muzică { $file_checked }/{ $all_files }
-progress_scanning_music_content = Amprenta calculată a fișierului de muzică { $file_checked }/{ $all_files } ({ $data_checked }/{ $all_data })
-progress_scanning_empty_folders =
-    { $folder_number ->
-    [one] Dosar Scanat { $folder_number }
-    *[other] Scanat { $folder_number } dosare
-    }
-progress_scanning_size = Dimensiune scanată pentru fişierul { $file_number }
-progress_scanning_size_name = Numele scanat şi dimensiunea fişierului { $file_number }
-progress_scanning_name = Numele scanat al fişierului { $file_number }
-progress_analyzed_partial_hash = S-a analizat hash parțial al fișierelor { $file_checked }/{ $all_files } ({ $data_checked }/{ $all_data })
-progress_analyzed_full_hash = S-a analizat hash complet al fişierelor { $file_checked }/{ $all_files } ({ $data_checked }/{ $all_data })
-progress_prehash_cache_loading = Se încarcă cache-ul prehash
-progress_prehash_cache_saving = Salvare cache prehash
-progress_hash_cache_loading = Încărcare cache hash
-progress_hash_cache_saving = Salvare cache hash
-progress_cache_loading = Se încarcă geocutia
-progress_cache_saving = Salvare geocutie
-progress_hiding_hard_link = Hiding hard links of {$file_checked}/{$all_files} file
+# Progress window
 progress_current_stage = Current Stage:{ "  " }
 progress_all_stages = All Stages:{ "  " }
+# Saving loading 
 saving_loading_saving_success = Configurație salvată în fișierul { $name }.
 saving_loading_saving_failure = Salvarea datelor de configurare a eșuat în fișierul { $name }, motivul { $reason }.
 saving_loading_reset_configuration = Configurația curentă a fost ștearsă.
 saving_loading_loading_success = Configurare aplicație încărcată corespunzător.
+saving_loading_no_config_file = Nu a fost găsit niciun fișier de configurare, folosind setările implicite.
 saving_loading_failed_to_create_config_file = Nu s-a putut crea fișierul de configurare "{ $path }", motivul "{ $reason }".
 saving_loading_failed_to_read_config_file = Nu se poate încărca configurația din "{ $path }" deoarece nu există sau nu este un fișier.
 saving_loading_failed_to_read_data_from_file = Datele din fişierul "{ $path }", motivul "{ $reason }".
+# Other
 selected_all_reference_folders = Nu se poate începe căutarea, atunci când toate directoarele sunt setate ca dosare de referință
 searching_for_data = Se caută date, poate dura ceva timp, vă rugăm așteptați...
 text_view_messages = MESAJE
@@ -470,6 +478,7 @@ text_view_warnings = ATENȚIONĂRI
 text_view_errors = EROARE
 about_window_motto = Acest program este liber de utilizat și va fi întotdeauna.
 krokiet_new_app = Czkawka este în modul de întreţinere, ceea ce înseamnă că vor fi rezolvate doar erorile critice şi că nu vor fi adăugate noi caracteristici. Pentru funcții noi, vă rugăm să consultați noua aplicație Krokiet, care este mai stabilă și mai performantă și este încă în curs de dezvoltare activă.
+# Various dialog
 dialogs_ask_next_time = Întreabă data viitoare
 symlink_failed = Esuare simlink { $name } la { $target }, motivul { $reason }
 delete_title_dialog = Ștergeți confirmarea
@@ -489,6 +498,7 @@ hard_sym_link_label = Sunteţi sigur că doriţi să conectaţi aceste fişiere?
 move_folder_failed = Nu s-a reușit mutarea dosarului { $name }, motivul { $reason }
 move_file_failed = Nu s-a reușit mutarea fișierului { $name }, motivul { $reason }
 move_files_title_dialog = Alegeți directorul în care doriți să mutați fișierele duplicate
+move_files_choose_more_than_1_path = Poate fi selectată doar o singură cale pentru a putea copia fişierele duplicate, selectate { $path_number }.
 move_stats = Elemente corect mutate { $num_files }/{ $all_files }
 save_results_to_file = Rezultate salvate atât pentru fişierele txt cât şi pentru fişierele json în folderul "{ $name }".
 search_not_choosing_any_music = EROARE: Trebuie să selectaţi cel puţin o casetă cu tipuri de căutare de muzică.
@@ -504,17 +514,10 @@ cache_clear_message_label_1 = Vrei să ştergi memoria cache a intrărilor înve
 cache_clear_message_label_2 = Această operaţie va elimina toate intrările din cache-ul care indică fişiere invalide.
 cache_clear_message_label_3 = Aceasta poate încărca/salva uşor accelerat în cache.
 cache_clear_message_label_4 = AVERTISMENT: Operația va elimina toate datele stocate în cache din unplugged external drive. Deci fiecare hash va trebui să fie regenerat.
+# Show preview
 preview_image_resize_failure = Redimensionarea imaginii { $name } a eșuat.
 preview_image_opening_failure = Nu s-a reușit deschiderea imaginii { $name }, motivul { $reason }
+# Compare images (L is short Left, R is short Right - they can't take too much space)
 compare_groups_number = Grup { $current_group }/{ $all_groups } ({ $images_in_group } imagini)
 compare_move_left_button = l
 compare_move_right_button = R
-bottom_protect_button = Protect
-bottom_unprotect_button = Unprotect
-bottom_protect_button_tooltip = Protect selected files from deletion/moving
-bottom_unprotect_button_tooltip = Remove protection from selected files
-settings_clear_protected_files_button = Clear Protected Files ({$count})
-check_button_image_size_ratio = Size Ratio Filter
-entry_image_size_ratio_tooltip = Max file size ratio within a group (1.0 = exact same size, 1.05 = within 5% difference, 1.5 = within 50%)
-popover_select_all_except_highest_quality = Select all except highest quality
-move_files_choose_more_than_1_path = Poate fi selectată doar o singură cale pentru a putea copia fişierele duplicate, selectate { $path_number }.

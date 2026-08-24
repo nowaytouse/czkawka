@@ -28,8 +28,9 @@ use crate::helpers::messages::Messages;
 
 pub(crate) const CACHE_VERSION: u8 = 100;
 pub(crate) const CACHE_DUPLICATE_VERSION: u8 = 120;
-pub(crate) const CACHE_IMAGE_VERSION: u8 = 101;
-pub(crate) const CACHE_VIDEO_VERSION: u8 = 110;
+pub(crate) const CACHE_DUPLICATE_PREHASH_VERSION: u8 = 120;
+pub(crate) const CACHE_IMAGE_VERSION: u8 = 120;
+pub(crate) const CACHE_VIDEO_VERSION: u8 = 120;
 pub(crate) const CACHE_BROKEN_FILES_VERSION: u8 = 120;
 pub(crate) const CACHE_VIDEO_OPTIMIZE_VERSION: u8 = 110;
 
@@ -282,7 +283,7 @@ where
             deleting_start_time.elapsed()
         );
 
-        text_messages.messages.push(format!("Properly loaded {} cache entries.", vec_loaded_entries.len()));
+        text_messages.messages.push(flc!("core_properly_loaded_cache_entries", count = vec_loaded_entries.len()));
 
         debug!(
             "Loaded cache from file {cache_file_name} (or json alternative) - {} results - size {}",

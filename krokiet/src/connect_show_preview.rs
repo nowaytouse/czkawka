@@ -1,5 +1,5 @@
 use std::fs::metadata;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
@@ -11,7 +11,7 @@ use log::{debug, error};
 use slint::ComponentHandle;
 
 use crate::shared_models::SharedModels;
-use crate::{ActiveTab, Callabler, GuiState, MainWindow, Settings};
+use crate::{ActiveTab, Callabler, GuiState, LoadImagePreviewRequest, MainWindow, Settings};
 
 pub type ImageBufferRgba = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
@@ -26,73 +26,77 @@ struct PreviewLoadResult {
 pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<SharedModels>>) {
     let preview_generation = Arc::new(AtomicU64::new(0));
     let a = app.as_weak();
-    app.global::<Callabler>()
-        .on_load_image_preview(move |image_path, crop_left, crop_top, crop_right, crop_bottom, orig_width, orig_height| {
-            let app = a.upgrade().expect("Failed to upgrade app :(");
+    app.global::<Callabler>().on_load_image_preview(move |request| {
+        let LoadImagePreviewRequest {
+            path: image_path,
+            crop_left,
+            crop_top,
+            crop_right,
+            crop_bottom,
+            original_width: orig_width,
+            original_height: orig_height,
+        } = request;
+        let app = a.upgrade().expect("Failed to upgrade app :(");
 
-            let settings = app.global::<Settings>();
-            let gui_state = app.global::<GuiState>();
+        let settings = app.global::<Settings>();
+        let gui_state = app.global::<GuiState>();
 
-            let active_tab = gui_state.get_active_tab();
+        let active_tab = gui_state.get_active_tab();
 
-            if !((active_tab == ActiveTab::SimilarImages && settings.get_similar_images_show_image_preview())
-                || (active_tab == ActiveTab::DuplicateFiles && settings.get_duplicate_image_preview())
-                || ((active_tab == ActiveTab::SimilarVideos || active_tab == ActiveTab::VideoOptimizer) && settings.get_video_thumbnails_preview()))
-            {
-                set_preview_visible(&gui_state, None);
-                return;
-            }
+        if !((active_tab == ActiveTab::SimilarImages && settings.get_similar_images_show_image_preview())
+            || (active_tab == ActiveTab::DuplicateFiles && settings.get_duplicate_image_preview())
+            || ((active_tab == ActiveTab::SimilarVideos || active_tab == ActiveTab::VideoOptimizer) && settings.get_video_thumbnails_preview()))
+        {
+            set_preview_visible(&gui_state, None);
+            return;
+        }
 
-            if !check_if_can_display_image(&image_path) {
-                set_preview_visible(&gui_state, None);
-                return;
-            }
+        if !check_if_can_display_image(&image_path) {
+            set_preview_visible(&gui_state, None);
+            return;
+        }
 
-            // Video Thumbnails files can be empty if generation failed or thumbnails are disabled
-            if metadata(&image_path).is_ok_and(|m| m.len() == 0) {
-                set_preview_visible(&gui_state, None);
-                return;
-            }
+        // Video Thumbnails files can be empty if generation failed or thumbnails are disabled
+        if metadata(&image_path).is_ok_and(|m| m.len() == 0) {
+            set_preview_visible(&gui_state, None);
+            return;
+        }
 
-            // Do not load the same image again
-            if image_path == gui_state.get_preview_image_path() {
-                return;
-            }
+        // Do not load the same image again
+        if image_path == gui_state.get_preview_image_path() {
+            return;
+        }
 
-            let path = PathBuf::from(image_path.as_str());
+        let images_in_thumbnails_line = if active_tab == ActiveTab::VideoOptimizer {
+            shared_models
+                .lock()
+                .expect("Failed to lock model mutex")
+                .shared_video_optimizer_state
+                .as_ref()
+                .map_or(1, |state| state.get_params().get_generate_number_of_items_in_thumbnail_grid())
+        } else {
+            1
+        };
 
-            let images_in_thumbnails_line = if active_tab == ActiveTab::VideoOptimizer {
-                shared_models
-                    .lock()
-                    .expect("Failed to lock model mutex")
-                    .shared_video_optimizer_state
-                    .as_ref()
-                    .map_or(1, |state| state.get_params().get_generate_number_of_items_in_thumbnail_grid())
-            } else {
-                1
-            };
+        let path = image_path.to_string();
 
-            let generation = preview_generation.fetch_add(1, Ordering::Relaxed) + 1;
-            let preview_generation_done = preview_generation.clone();
-            let app_weak = a.clone();
+        let generation = preview_generation.fetch_add(1, Ordering::Relaxed) + 1;
+        let preview_generation_done = preview_generation.clone();
+        let app_weak = a.clone();
 
-            let images_in_thumbnails_line = images_in_thumbnails_line as u32;
+        let images_in_thumbnails_line = images_in_thumbnails_line as u32;
 
-            std::thread::spawn(move || {
-                let Some(loaded) = load_preview_in_background(&path, crop_left, crop_top, crop_right, crop_bottom, orig_width, orig_height, images_in_thumbnails_line) else {
-                    let _ = slint::invoke_from_event_loop(move || {
-                        if preview_generation_done.load(Ordering::Relaxed) != generation {
-                            return;
-                        }
-                        let Some(app) = app_weak.upgrade() else {
-                            return;
-                        };
-                        let gui_state = app.global::<GuiState>();
-                        set_preview_visible(&gui_state, None);
-                    });
-                    return;
-                };
-
+        std::thread::spawn(move || {
+            let Some(loaded) = load_preview_in_background(
+                Path::new(&path),
+                crop_left,
+                crop_top,
+                crop_right,
+                crop_bottom,
+                orig_width,
+                orig_height,
+                images_in_thumbnails_line,
+            ) else {
                 let _ = slint::invoke_from_event_loop(move || {
                     if preview_generation_done.load(Ordering::Relaxed) != generation {
                         return;
@@ -101,15 +105,28 @@ pub(crate) fn connect_show_preview(app: &MainWindow, shared_models: Arc<Mutex<Sh
                         return;
                     };
                     let gui_state = app.global::<GuiState>();
-                    if gui_state.get_preview_image_path() == loaded.image_path.as_str() {
-                        return;
-                    }
-                    gui_state.set_preview_image(convert_into_slint_image_from_rgba(&loaded.rgba_pixels, loaded.width, loaded.height));
-                    debug!("{}", loaded.timer_report);
-                    set_preview_visible(&gui_state, Some(loaded.image_path.as_str()));
+                    set_preview_visible(&gui_state, None);
                 });
+                return;
+            };
+
+            let _ = slint::invoke_from_event_loop(move || {
+                if preview_generation_done.load(Ordering::Relaxed) != generation {
+                    return;
+                }
+                let Some(app) = app_weak.upgrade() else {
+                    return;
+                };
+                let gui_state = app.global::<GuiState>();
+                if gui_state.get_preview_image_path() == loaded.image_path.as_str() {
+                    return;
+                }
+                gui_state.set_preview_image(convert_into_slint_image_from_rgba(&loaded.rgba_pixels, loaded.width, loaded.height));
+                debug!("{}", loaded.timer_report);
+                set_preview_visible(&gui_state, Some(loaded.image_path.as_str()));
             });
         });
+    });
 }
 
 fn load_preview_in_background(

@@ -27,13 +27,13 @@ use connect_things::connect_show_hide_ui::connect_show_hide_ui;
 use connect_things::connect_similar_image_mutual_exclusion::connect_similar_image_mutual_exclusion;
 use connect_things::connect_similar_image_size_change::connect_similar_image_size_change;
 use crossbeam_channel::{Receiver, Sender, unbounded};
+use czkawka_core::TOOLS_NUMBER;
 use czkawka_core::common::basic_gui_cli::{CliResult, process_cli_args};
 use czkawka_core::common::config_cache_path::{get_config_cache_path, print_infos_and_warnings, set_config_cache_path};
 use czkawka_core::common::image::register_image_decoding_hooks;
 use czkawka_core::common::logger::{filtering_messages, print_version_mode, setup_logger};
 use czkawka_core::common::progress_data::ProgressData;
 use czkawka_core::common::{get_number_of_threads, set_number_of_threads};
-use czkawka_core::{TOOLS_NUMBER, localizer_core};
 use glib::ExitCode;
 use gtk4::Application;
 use gtk4::gio::ApplicationFlags;
@@ -88,6 +88,7 @@ fn main() {
     });
 
     register_image_decoding_hooks();
+    czkawka_core::common::build_runtime_info::BuildRuntimeInfo::get();
     let config_cache_path_set_result = set_config_cache_path("Czkawka", "Czkawka");
 
     // To remove info dialog about deprecated czkawka, remove exists_krokiet_info_file and set needs_to_open_dialog_about_krokiet to false
@@ -122,6 +123,7 @@ fn main() {
         setup_logger(false, "czkawka_gui", filtering_messages);
         print_version_mode("Czkawka gtk");
         print_infos_and_warnings(config_cache_path_set_result.infos.clone(), config_cache_path_set_result.warnings.clone());
+        czkawka_core::common::build_runtime_info::BuildRuntimeInfo::get().log_runtime_summary();
         build_ui(app, cli_args.as_ref(), needs_to_open_dialog_about_krokiet);
         ExitCode::new(0)
     });

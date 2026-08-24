@@ -9,7 +9,10 @@ use czkawka_core::TOOLS_NUMBER;
 use czkawka_core::common::basic_gui_cli::CliResult;
 use czkawka_core::common::config_cache_path::get_config_cache_path;
 use czkawka_core::common::{get_all_available_threads, set_number_of_threads};
-use czkawka_core::tools::similar_videos::{ALLOWED_AUDIO_LENGTH_RATIO, ALLOWED_AUDIO_SIMILARITY_PERCENT, ALLOWED_SKIP_FORWARD_AMOUNT, ALLOWED_VID_HASH_DURATION};
+use czkawka_core::tools::similar_videos::{
+    ALLOWED_AUDIO_LENGTH_RATIO, ALLOWED_AUDIO_SIMILARITY_PERCENT, ALLOWED_DURATION_TOLERANCE_PCT, ALLOWED_MATCH_FRACTION, ALLOWED_SKIP_FORWARD_AMOUNT, ALLOWED_VID_HASH_DURATION,
+    ALLOWED_WINDOW_COUNT,
+};
 use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 use slint::{ComponentHandle, Model, ModelRc, PhysicalSize, VecModel, WindowSize};
@@ -20,7 +23,8 @@ use crate::settings::combo_box::StringComboBoxItems;
 use crate::settings::model::{
     BasicSettings, ComboBoxItems, DEFAULT_BIGGEST_FILES, DEFAULT_MAX_VIDEO_THUMBNAIL_POSITION_PERCENT, DEFAULT_MAXIMUM_SIZE_KB, DEFAULT_MIN_VIDEO_THUMBNAIL_POSITION_PERCENT,
     DEFAULT_MINIMUM_CACHE_SIZE, DEFAULT_MINIMUM_PREHASH_CACHE_SIZE, DEFAULT_MINIMUM_SIZE_KB, MAX_HASH_SIZE, PRESET_NAME_RESERVED, PRESET_NUMBER, RESERVER_PRESET_IDX,
-    SettingsCustom, default_video_optimizer_black_pixel_threshold, default_video_optimizer_max_samples, default_video_optimizer_min_crop_size,
+    SettingsCustom, default_video_optimizer_black_bar_min_percentage, default_video_optimizer_black_pixel_threshold, default_video_optimizer_max_samples,
+    default_video_optimizer_min_crop_size,
 };
 use crate::{Callabler, GuiState, MainWindow, Settings, flk};
 
@@ -361,12 +365,6 @@ pub(crate) fn set_combobox_custom_settings_items(settings: &Settings, custom_set
     settings.set_similar_music_sub_audio_check_type_index(idx as i32);
     settings.set_similar_music_sub_audio_check_type_value(display_names[idx].clone());
 
-    // Crop detect
-    let (idx, display_names) = StringComboBoxItems::get_item_and_idx_from_config_name(&custom_settings.similar_videos_crop_detect, &collected_items.videos_crop_detect);
-    // settings.set_similar_videos_crop_detect_model(display_names);
-    settings.set_similar_videos_crop_detect_index(idx as i32);
-    settings.set_similar_videos_crop_detect_value(display_names[idx].clone());
-
     // Video Optimizer mode
     let (idx, display_names) = StringComboBoxItems::get_item_and_idx_from_config_name(&custom_settings.video_optimizer_mode, &collected_items.video_optimizer_mode);
     settings.set_video_optimizer_sub_mode_index(idx as i32);
@@ -388,12 +386,13 @@ pub(crate) fn set_combobox_custom_settings_items(settings: &Settings, custom_set
     settings.set_video_optimizer_sub_noise_reduction_index(idx as i32);
     settings.set_video_optimizer_sub_noise_reduction_value(display_names[idx].clone());
 
-    // Video Optimizer hardware encoder (static list; config names are lowercase variants of display names)
+    // Video Optimizer hardware encoder (static list; config names are lowercase variants of display names).
+    // Compared case-sensitively to match the behaviour of every other combo above.
     let hw_encoder_config_names = ["none", "nvenc", "vaapi", "qsv", "videotoolbox", "amf"];
     let hw_encoder_display_names = ["None", "NVENC", "VAAPI", "QSV", "VideoToolbox", "AMF"];
     let hw_idx = hw_encoder_config_names
         .iter()
-        .position(|&s| s == custom_settings.video_optimizer_hardware_encoder.to_lowercase().as_str())
+        .position(|&s| s == custom_settings.video_optimizer_hardware_encoder.as_str())
         .unwrap_or(0);
     settings.set_video_optimizer_sub_hardware_encoder_index(hw_idx as i32);
     settings.set_video_optimizer_sub_hardware_encoder_value(hw_encoder_display_names[hw_idx].into());
@@ -440,7 +439,7 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     settings.set_duplicates_sub_name_case_sensitive(custom_settings.duplicates_sub_name_case_sensitive);
     settings.set_similar_images_show_image_preview(custom_settings.similar_images_show_image_preview);
     settings.set_video_thumbnails_preview(custom_settings.video_thumbnails_preview);
-    settings.set_video_thumbnails_unused_thumbnails(custom_settings.video_thumbnails_unused_thumbnails);
+    settings.set_clear_unused_video_thumbnails(custom_settings.clear_unused_video_thumbnails);
     settings.set_similar_music_compare_fingerprints_only_with_similar_titles(custom_settings.similar_music_compare_fingerprints_only_with_similar_titles);
 
     set_combobox_custom_settings_items(&settings, custom_settings);
@@ -473,6 +472,33 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     );
     settings.set_similar_videos_vid_hash_duration_min(*ALLOWED_VID_HASH_DURATION.start() as f32);
     settings.set_similar_videos_vid_hash_duration_max(*ALLOWED_VID_HASH_DURATION.end() as f32);
+
+    settings.set_similar_videos_crop_detect(custom_settings.similar_videos_crop_detect);
+    settings.set_similar_videos_window_count(
+        custom_settings
+            .similar_videos_window_count
+            .clamp(*ALLOWED_WINDOW_COUNT.start(), *ALLOWED_WINDOW_COUNT.end()) as f32,
+    );
+    settings.set_similar_videos_window_count_min(*ALLOWED_WINDOW_COUNT.start() as f32);
+    settings.set_similar_videos_window_count_max(*ALLOWED_WINDOW_COUNT.end() as f32);
+    settings.set_similar_videos_visual_preset_index(custom_settings.similar_videos_visual_preset_index);
+    settings.set_similar_videos_duration_tolerance_pct(
+        custom_settings
+            .similar_videos_duration_tolerance_pct
+            .clamp(*ALLOWED_DURATION_TOLERANCE_PCT.start() as f32, *ALLOWED_DURATION_TOLERANCE_PCT.end() as f32),
+    );
+    let match_fraction_slider_min = settings.get_similar_videos_min_matching_windows_min();
+    settings.set_similar_videos_min_matching_windows(
+        custom_settings
+            .similar_videos_min_matching_windows
+            .clamp(match_fraction_slider_min, *ALLOWED_MATCH_FRACTION.end() as f32),
+    );
+    let subclip_slider_min = settings.get_similar_videos_subclip_min_match_min();
+    settings.set_similar_videos_subclip_min_match(
+        custom_settings
+            .similar_videos_subclip_min_match
+            .clamp(subclip_slider_min, *ALLOWED_MATCH_FRACTION.end() as f32),
+    );
 
     settings.set_similar_videos_audio_check_content(custom_settings.similar_videos_audio_check_content);
     settings.set_similar_videos_audio_preset_index(custom_settings.similar_videos_audio_preset_index);
@@ -559,6 +585,7 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
     // Popup-specific settings
     settings.set_popup_move_preserve_folder_structure(custom_settings.popup_move_preserve_folder_structure);
     settings.set_popup_move_copy_mode(custom_settings.popup_move_copy_mode);
+    settings.set_popup_move_rename_on_conflict(custom_settings.popup_move_rename_on_conflict);
     settings.set_popup_clean_exif_overwrite_files(custom_settings.popup_clean_exif_overwrite_files);
     settings.set_popup_reencode_video_overwrite_files(custom_settings.popup_reencode_video_overwrite_files);
     settings.set_popup_reencode_video_quality(custom_settings.popup_reencode_video_quality as f32);
@@ -592,7 +619,7 @@ pub(crate) fn set_settings_to_gui(app: &MainWindow, custom_settings: &SettingsCu
         settings.set_duplicates_column_size(fnm(&[sel_px, size_px, name_px, path_px, mod_px], "duplicates"));
         settings.set_empty_folders_column_size(fnm(&[sel_px, name_px, path_px, mod_px], "empty_folders"));
         settings.set_empty_files_column_size(fnm(&[sel_px, size_px, name_px, path_px, mod_px], "empty_files"));
-        settings.set_temporary_files_column_size(fnm(&[sel_px, name_px, path_px, mod_px], "temporary_files"));
+        settings.set_temporary_files_column_size(fnm(&[sel_px, size_px, name_px, path_px, mod_px], "temporary_files"));
         settings.set_big_files_column_size(fnm(&[sel_px, size_px, name_px, path_px, mod_px], "big_files"));
         settings.set_similar_images_column_size(fnm(&[sel_px, 80.0, 80.0, 80.0, name_px, path_px, mod_px], "similar_images"));
         settings.set_similar_videos_column_size(fnm(&[sel_px, size_px, name_px, path_px, 80.0, 80.0, 80.0, 80.0, 80.0, mod_px], "similar_videos"));
@@ -651,7 +678,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let similar_images_show_image_preview = settings.get_similar_images_show_image_preview();
 
     let video_thumbnails_preview = settings.get_video_thumbnails_preview();
-    let video_thumbnails_unused_thumbnails = settings.get_video_thumbnails_unused_thumbnails();
+    let clear_unused_video_thumbnails = settings.get_clear_unused_video_thumbnails();
 
     let similar_music_compare_fingerprints_only_with_similar_titles = settings.get_similar_music_compare_fingerprints_only_with_similar_titles();
 
@@ -674,7 +701,12 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let similar_videos_sub_ignore_same_size = settings.get_similar_videos_sub_ignore_same_size();
     let similar_videos_sub_ignore_same_resolution = settings.get_similar_videos_sub_ignore_same_resolution();
     let similar_videos_sub_similarity = settings.get_similar_videos_sub_current_similarity().round() as i32;
-    let similar_videos_crop_detect = combo_box_items.videos_crop_detect.config_name.clone();
+    let similar_videos_crop_detect = settings.get_similar_videos_crop_detect();
+    let similar_videos_window_count = settings.get_similar_videos_window_count() as u32;
+    let similar_videos_visual_preset_index = settings.get_similar_videos_visual_preset_index();
+    let similar_videos_duration_tolerance_pct = settings.get_similar_videos_duration_tolerance_pct();
+    let similar_videos_min_matching_windows = settings.get_similar_videos_min_matching_windows();
+    let similar_videos_subclip_min_match = settings.get_similar_videos_subclip_min_match();
     let similar_videos_skip_forward_amount = settings.get_similar_videos_skip_forward_amount() as u32;
     let similar_videos_vid_hash_duration = settings.get_similar_videos_vid_hash_duration() as u32;
     let similar_videos_audio_check_content = settings.get_similar_videos_audio_check_content();
@@ -732,7 +764,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
     let video_optimizer_black_bar_min_percentage = settings
         .get_video_optimizer_sub_black_bar_min_percentage()
         .parse::<u8>()
-        .unwrap_or(default_video_optimizer_black_pixel_threshold())
+        .unwrap_or(default_video_optimizer_black_bar_min_percentage())
         .clamp(50, 100);
     let video_optimizer_max_samples = settings
         .get_video_optimizer_sub_max_samples()
@@ -803,7 +835,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         hide_hard_links,
         similar_images_show_image_preview,
         video_thumbnails_preview,
-        video_thumbnails_unused_thumbnails,
+        clear_unused_video_thumbnails,
         similar_images_sub_hash_size,
         similar_images_sub_hash_alg,
         similar_images_sub_resize_algorithm,
@@ -859,6 +891,11 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         similar_videos_skip_forward_amount,
         similar_videos_vid_hash_duration,
         similar_videos_crop_detect,
+        similar_videos_window_count,
+        similar_videos_visual_preset_index,
+        similar_videos_duration_tolerance_pct,
+        similar_videos_min_matching_windows,
+        similar_videos_subclip_min_match,
         video_thumbnails_generate,
         video_thumbnails_percentage,
         video_thumbnails_generate_grid,
@@ -888,6 +925,7 @@ pub(crate) fn collect_settings(app: &MainWindow) -> SettingsCustom {
         column_sizes,
         popup_move_preserve_folder_structure: settings.get_popup_move_preserve_folder_structure(),
         popup_move_copy_mode: settings.get_popup_move_copy_mode(),
+        popup_move_rename_on_conflict: settings.get_popup_move_rename_on_conflict(),
         popup_clean_exif_overwrite_files: settings.get_popup_clean_exif_overwrite_files(),
         popup_reencode_video_overwrite_files: settings.get_popup_reencode_video_overwrite_files(),
         popup_reencode_video_quality: settings.get_popup_reencode_video_quality().round() as u32,
@@ -915,7 +953,6 @@ pub(crate) fn collect_combo_box_settings(app: &MainWindow) -> ComboBoxItems {
     let biggest_files_method_idx = settings.get_biggest_files_sub_method_index() as usize;
     let audio_check_type_idx = settings.get_similar_music_sub_audio_check_type_index() as usize;
     let duplicates_check_method_idx = settings.get_duplicates_sub_check_method_index() as usize;
-    let videos_crop_detect_idx = settings.get_similar_videos_crop_detect_index() as usize;
     let video_optimizer_crop_type_idx = settings.get_video_optimizer_sub_crop_type_index() as usize;
     let video_optimizer_mode_idx = settings.get_video_optimizer_sub_mode_index() as usize;
     let video_optimizer_video_codec_idx = settings.get_video_optimizer_sub_video_codec_index() as usize;
@@ -931,7 +968,6 @@ pub(crate) fn collect_combo_box_settings(app: &MainWindow) -> ComboBoxItems {
         biggest_files_method: collected_combo_boxes.biggest_files_method[biggest_files_method_idx].clone(),
         audio_check_type: collected_combo_boxes.audio_check_type[audio_check_type_idx].clone(),
         duplicates_check_method: collected_combo_boxes.duplicates_check_method[duplicates_check_method_idx].clone(),
-        videos_crop_detect: collected_combo_boxes.videos_crop_detect[videos_crop_detect_idx].clone(),
         video_optimizer_crop_type: collected_combo_boxes.video_optimizer_crop_type[video_optimizer_crop_type_idx].clone(),
         video_optimizer_mode: collected_combo_boxes.video_optimizer_mode[video_optimizer_mode_idx].clone(),
         video_optimizer_video_codec: collected_combo_boxes.video_optimizer_video_codec[video_optimizer_video_codec_idx].clone(),

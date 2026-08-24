@@ -1,9 +1,28 @@
-## Version ? - ??.??.????
+## Version 12.0.1 - 29.07.2026r
+
+### Core
+- Fixed an issue where console windows appeared on Windows when running FFmpeg internally - [#1989](https://github.com/qarmin/czkawka/pull/1989)
+- Added `BuildRuntimeInfo`, a new module that detects compile-time features (HEIF, LibRAW, AVIF) and the runtime availability of FFmpeg and FFprobe at startup - [#1989](https://github.com/qarmin/czkawka/pull/1989)
+
+### Krokiet
+- Added a new "About / Diagnostics" panel to inspect build/runtime features and verify whether specific image files are recognized correctly - [#1989](https://github.com/qarmin/czkawka/pull/1989)
+- Fixed the sort popup not displaying its background - [#2011](https://github.com/qarmin/czkawka/pull/2011)
+- Fixed text overflowing in popups for some languages - [#2011](https://github.com/qarmin/czkawka/pull/2011)
+- Fixed the Video Optimizer optimize confirmation popup content being cropped - [#2011](https://github.com/qarmin/czkawka/pull/2011)
+- Added translations for settings dropdown options - [#2011](https://github.com/qarmin/czkawka/pull/2011)
++ Pinned Slint to version 1.17.0 to avoid a Wayland bug introduced in 1.17.1 that prevented the window size from being restored correctly on startup - [#2011](https://github.com/qarmin/czkawka/pull/2011)
+
+### Cedinia
+- Fixed an incorrect progress bar status - [#1989](https://github.com/qarmin/czkawka/pull/1989)
+- Fixed automatic language detection on first launch - [#1989](https://github.com/qarmin/czkawka/pull/1989)
+- Migrated all raw and unsafe JNI usage (file picker, notifications, Android path setup) to the new `jni-high` crate - [#2011](https://github.com/qarmin/czkawka/pull/2011)
+
+## Version 12.0.0 - 28.06.2026r
 
 ### Czkawka GTK Deprecation Notice
-This is the latest version of Czkawka GTK. From now on, I will no longer provide binaries for it, and users are encouraged to switch to Krokiet.
+**Version 12.0 is the last released version of Czkawka GTK.** No new binaries will be provided from this point on. All users are encouraged to migrate to Krokiet, the new Slint-based GUI frontend.
 
-The project will remain available in the repository. For some time I will ensure it continues to compile with `czkawka_core` library, so it can still be built manually. However, all issues and feature requests specific to Czkawka GTK will be closed, except for critical problems affecting widely used unofficial builds, such as Debian or Docker packages.
+The source code remains in the repository and compatibility with `czkawka_core` will be maintained for some time so the application can still be built manually. However, all issues and feature requests specific to Czkawka GTK will be closed, except for critical problems affecting widely used unofficial builds such as Debian or Docker packages.
 
 ### Breaking changes
 
@@ -11,6 +30,8 @@ The project will remain available in the repository. For some time I will ensure
 - Due to changes in the broken files mode, which now supports multiple checkers and includes additional checks, the file type is no longer stored in the cache. Existing cache files are incompatible with this version and will be automatically regenerated
 - The prehash method has been updated, so cached hash is no longer valid, so it will be automatically regenerated
 - Similar images cache files are incompatible with this version due to geometric invariance support and will be automatically regenerated
+- Similar videos cache files are incompatible with this version due to the switch to a new visual matching engine and will be automatically regenerated
+- The `--crop-detect` CLI option for similar videos now accepts `true`/`false` instead of `none`/`letterbox`/`motion` - the `motion` mode has been removed
 
 ### Core
 - Switched AV1 encoding from the very slow `libaom-av1` to `libsvtav1` - [#1888](https://github.com/qarmin/czkawka/pull/1888)
@@ -30,9 +51,15 @@ The project will remain available in the repository. For some time I will ensure
 - Fixed a bug where relative symlinks were resolved without considering the parent directory - [#1900](https://github.com/qarmin/czkawka/pull/1900)
 - Fixed a prehash cache bypass that caused full hash computation on some files during a second scan - [#1907](https://github.com/qarmin/czkawka/pull/1907)
 - Extended integration tests, to prevent regressions in the future - [#1919](https://github.com/qarmin/czkawka/pull/1919)
+- Fixed unstable prehash when the `read` syscall returned fewer bytes than requested - [#1948](https://github.com/qarmin/czkawka/pull/1948)
+- Switched visual video duplicate detection engine from `vid_dup_finder_lib` to `similario_core`, adding configurable window count, duration tolerance, and subclip detection - [#1948](https://github.com/qarmin/czkawka/pull/1948)
+- Fixed a bug where similar videos were not deleted when using reference-folder mode - [#1948](https://github.com/qarmin/czkawka/pull/1948)
+- Replaced `nom-exif` with `little_exif` for reading EXIF orientation data - [#1948](https://github.com/qarmin/czkawka/pull/1948)
+- Fixed reversed logic of hiding hardlinks in similar images/videos modes - [#1952](https://github.com/qarmin/czkawka/pull/1952)
+- Added a `$TRASH` excluded-items preset (alongside the existing `DEFAULT`) to exclude common Trash/Recycle Bin paths from scans - [#1962](https://github.com/qarmin/czkawka/pull/1962)
+- Reworked internal progress stage tracking, to unify progress calculations across all backends - [#1962](https://github.com/qarmin/czkawka/pull/1962)
 
 ### CLI
-- Added `--geometric-invariance` option to similar images mode - [#1944](https://github.com/qarmin/czkawka/pull/1944)
 
 ### GTK GUI
 - Fixed a crash when using the sort button - [#1837](https://github.com/qarmin/czkawka/pull/1837)
@@ -60,11 +87,11 @@ The project will remain available in the repository. For some time I will ensure
 - Added invert selection within groups - [#1915](https://github.com/qarmin/czkawka/pull/1915)
 - Fixed shortest/longest path selection modes, which previously compared only paths without file names - [#1919](https://github.com/qarmin/czkawka/pull/1919)
 - Ability to restore save/restore data in custom popup - [#1919](https://github.com/qarmin/czkawka/pull/1919)
-- Added a geometric invariance setting to similar images mode - [#1944](https://github.com/qarmin/czkawka/pull/1944)
+- Added "Rename on conflict" option to the move/copy popup to automatically rename files instead of skipping them - [#1948](https://github.com/qarmin/czkawka/pull/1948)
+- Added the ability to rename items - [#1962](https://github.com/qarmin/czkawka/pull/1962)
 
 ### Cedinia
 - Initial experimental release of Cedinia, a new Android app with touch support - [#1821](https://github.com/qarmin/czkawka/pull/1821)
-- Added a geometric invariance setting to similar images mode - [#1944](https://github.com/qarmin/czkawka/pull/1944)
 
 ### Prebuilt binaries
 - Linux prebuilt binaries now include AVIF support (requires `libavif` and `libdav1d`)
@@ -75,17 +102,23 @@ The project will remain available in the repository. For some time I will ensure
 
 ## Fork Modifications (nowaytouse/czkawka)
 
-### Dependency modernization — 2026-06-02
+### Upstream sync - 2026-08-24 (merges `qarmin/czkawka` through `105a520b`, release `12.0.1`)
 
-- **symphonia 0.6** — updated probe/decode API in audio fingerprinting and broken-file audio checks.
-- **nom-exif 3.6** — `MediaSource::open`, `parse_exif`, and revised error/EXIF value types for image orientation.
-- **quick-xml 0.40**, **sevenz-rust2 0.21** — minor crate bumps in broken-file validation.
-- **bincode 2** — cache read/write uses `config::legacy().with_variable_int_encoding()` so existing on-disk cache files from bincode 1.3+ remain compatible; centralized in `czkawka_core/src/common/cache/bincode_cache.rs`.
-- **Slint 1.16.1** — aligned `krokiet` and `cedinia` manifests to current Slint release line (`slint`/`slint-build`), matching the lockfile and current build output.
+- Merged the current upstream scanner, video duplicate detection, Opus handling, progress reporting, runtime diagnostics, and Krokiet/Cedinia UI updates.
+- Retained the fork's Similar Images controls (`only_images_with_same_size`, size-ratio filtering, and `u16` hash sizes through `8192`) alongside upstream geometric invariance.
+- Retained reversible file protection, asynchronous stale-safe image previews, Simplified Chinese resources and bundled Noto Sans SC fonts, and bincode 1.3-compatible cache encoding.
+
+### Dependency modernization - 2026-06-02
+
+- **symphonia 0.6** - updated probe/decode API in audio fingerprinting and broken-file audio checks.
+- **nom-exif 3.6** - `MediaSource::open`, `parse_exif`, and revised error/EXIF value types for image orientation.
+- **quick-xml 0.40**, **sevenz-rust2 0.21** - minor crate bumps in broken-file validation.
+- **bincode 2** - cache read/write uses `config::legacy().with_variable_int_encoding()` so existing on-disk cache files from bincode 1.3+ remain compatible; centralized in `czkawka_core/src/common/cache/bincode_cache.rs`.
+- **Slint 1.17.0** - aligned `krokiet` and `cedinia` manifests to the current Slint release line (`slint`/`slint-build`), matching the lockfile and current build output.
 - Manifest refresh for secondary crates: `log 0.4.29`, `chrono 0.4.44`, `rust-embed 8.11`, `tempfile 3.27`, `regex 1.12`, `num_enum 0.7.6`, and `trash 5.2.6` across `czkawka_core`, `krokiet`, and `cedinia`.
 - **bincode 3** is not adopted yet (would require a separate wire-format migration).
 
-### Upstream sync — 2026-06-02 (`66db83f`, merges `qarmin/czkawka` through `4fab31c`)
+### Upstream sync - 2026-06-02 (`66db83f`, merges `qarmin/czkawka` through `4fab31c`)
 
 - Merged upstream **geometric invariance** for Similar Images ([#1944](https://github.com/qarmin/czkawka/pull/1944)) into Krokiet, Cedinia, GTK, and CLI while keeping fork parameters (`only_same_size`, `size_ratio`, hash sizes up to `8192`).
 - Similar-images cache filenames now include the geometric-invariance mode; existing caches are regenerated (same as upstream).

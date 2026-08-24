@@ -1,4 +1,6 @@
-app_name = Cedinia
+# Cedinia - English (fallback)
+
+# App / top bar titles
 tool_duplicate_files = Duplikaty
 tool_empty_folders = Puste foldery
 tool_similar_images = Podobne obrazy
@@ -10,9 +12,10 @@ tool_bad_extensions = Nieprawidłowe rozszerzenia
 tool_same_music = Duplikaty muzyki
 tool_bad_names = Niepoprawne nazwy
 tool_exif_remover = Dane EXIF
-tool_similar_videos = Similar Videos (Audio)
+tool_similar_videos = Podobne filmy (audio)
 tool_directories = Katalogi
 tool_settings = Ustawienia
+# Home screen tool card descriptions
 home_dup_description = Znajdź pliki o tej samej zawartości
 home_empty_folders_description = Katalogi bez zawartości
 home_similar_images_description = Znajdź wizualnie podobne zdjęcia
@@ -24,7 +27,8 @@ home_bad_extensions_description = Pliki z nieprawidłowym rozszerzeniem
 home_same_music_description = Podobne pliki audio według tagów
 home_bad_names_description = Pliki z problematycznymi znakami w nazwie
 home_exif_description = Obrazy z metadanymi EXIF
-home_similar_videos_description = Find videos with similar audio (no FFmpeg needed)
+home_similar_videos_description = Znajdź filmy z podobnym dźwiękiem
+# Results list
 scanning = Trwa skanowanie...
 stopping = Zatrzymywanie...
 no_results = Brak wyników
@@ -32,7 +36,8 @@ press_start = Naciśnij START, aby rozpocząć skanowanie
 select_label = Zazn.
 deselect_label = Odzn.
 list_label = Lista
-gallery_label = Galeria.
+gallery_label = Galeria
+# Selection popup
 selection_popup_title = Wybór
 select_all = Zaznacz wszystko
 select_except_one = Zaznacz wszystko oprócz jednego
@@ -46,25 +51,32 @@ select_highest_res = Zaznacz najwyższą rozdzielczość
 select_lowest_res = Zaznacz najniższą rozdzielczość
 invert_selection = Odwróć zaznaczenie
 close = Zamknij
+# Deselection popup
 deselection_popup_title = Odznaczanie
 deselect_all = Odznacz wszystko
 deselect_except_one = Odznacz wszystko oprócz jednego
+# Confirm popup
 cancel = Anuluj
 delete = Usuń
 rename = Zmień nazwę
+# Delete errors popup
 delete_errors_title = Nie udało się usunąć niektórych plików:
 ok = OK
+# Stopping overlay
 stopping_overlay_title = Zatrzymywanie
 stopping_overlay_body =
     Kończenie bieżącego skanowania...
-    Proszę czekać.
+        Proszę czekać.
+# Permission popup
 permission_title = Dostęp do plików
 permission_body = Aby skanować pliki, aplikacja potrzebuje dostępu do pamięci urządzenia. Bez tego skanowanie nie będzie możliwe.
 grant = Przyznaj
 no_permission_scan_warning = Brak dostępu do plików - przyznaj uprawnienia
+# Settings screen tabs
 settings_tab_general = Ogólne
 settings_tab_tools = Narzędzia
 settings_tab_diagnostics = Informacje
+# Settings - General tab
 settings_use_cache = Użyj cache
 settings_use_cache_desc = Przyspiesza kolejne skanowania (hashy i obrazów)
 settings_ignore_hidden = Ignoruj ukryte pliki
@@ -88,6 +100,7 @@ settings_allowed_extensions = DOZWOLONE ROZSZERZENIA (puste = wszystkie)
 settings_allowed_extensions_placeholder = np. jpg, png, mp4
 settings_excluded_extensions = WYKLUCZONE ROZSZERZENIA
 settings_excluded_extensions_placeholder = np. bak, tmp, log
+# Settings - Tools section labels
 settings_duplicates_header = DUPLIKATY
 settings_check_method_label = METODA PORÓWNANIA
 settings_check_method = Metoda
@@ -101,6 +114,7 @@ settings_hash_size = Rozmiar hashu
 settings_hash_size_desc = Większy = mniej błędów, ale mniej wyników
 settings_hash_alg = Algorytm haszowania
 settings_image_filter = Filtr skalowania
+settings_geometric_invariance = Niezmienność geometryczna
 settings_ignore_same_size = Ignoruj obrazy o tych samych wymiarach
 settings_gallery_image_fit_cover = Galeria: przycinanie do kwadratu
 settings_gallery_image_fit_cover_desc = Wypełnia kafelek; wyłącz, aby zachować proporcje
@@ -115,24 +129,24 @@ settings_music_artist = Artysta
 settings_music_year = Rok
 settings_music_length = Długość
 settings_music_genre = Gatunek
-settings_music_bitrate = Bitrate
+settings_music_bitrate = Przepływność bitów
 settings_music_approx = Przybliżone porównanie tagów
-settings_temporary_files_header = TEMPORARY FILES
-settings_temporary_files_extensions_label = EXTENSIONS
-settings_temporary_files_extensions_placeholder = e.g. .tmp,.bak,~
-settings_temporary_files_reset = Reset to defaults
+settings_temporary_files_header = PLIKI TYMCZASOWE
+settings_temporary_files_extensions_label = ROZSZERZENIE
+settings_temporary_files_extensions_placeholder = np. .tmp, .bak, ~
+settings_temporary_files_reset = Przywróć domyślne
 settings_broken_files_header = USZKODZONE PLIKI
 settings_broken_files_note = Wymaga dużo zasobów. Zalecane użycie na komputerze.
 settings_broken_files_types_label = SPRAWDZANE TYPY
-settings_broken_audio = Audio
+settings_broken_audio = Dźwięk
 settings_broken_pdf = PDF
 settings_broken_archive = Archiwum
 settings_broken_image = Obraz
-settings_broken_font = Font
-settings_broken_markup = Markup (JSON/XML/TOML)
-settings_similar_videos_header = SIMILAR VIDEOS (AUDIO)
-settings_similar_videos_audio_preset = Audio similarity preset
-settings_similar_videos_audio_preset_desc = Controls how strictly audio must match
+settings_broken_font = Czcionka
+settings_broken_markup = Pliki tekstowe (JSON/XML/TOML)
+settings_similar_videos_header = PODOBNE FILMY (AUDIO)
+settings_similar_videos_audio_preset = Ustawienia podobieństwa dźwięku
+settings_similar_videos_audio_preset_desc = Kontroluje jak ściśle dźwięk musi się zgadzać
 settings_bad_names_header = NIEPOPRAWNE NAZWY
 settings_bad_names_checks_label = SPRAWDZANE REGUŁY
 settings_bad_names_uppercase_ext = Wielkie litery w rozszerzeniu
@@ -140,10 +154,12 @@ settings_bad_names_emoji = Emoji w nazwie
 settings_bad_names_space = Spacje na początku/końcu
 settings_bad_names_non_ascii = Znaki spoza ASCII
 settings_bad_names_duplicated = Powtarzające się znaki
-settings_ignore_same_resolution = Ignore images with the same resolution
-settings_appearance_label = APPEARANCE
-settings_dark_theme = Dark theme
-settings_dark_theme_desc = Use dark colour scheme
+settings_ignore_same_resolution = Ignoruj obrazy o tej samej rozdzielczości
+# Settings - Appearance section
+settings_appearance_label = WYGLĄD
+settings_dark_theme = Ciemny motyw
+settings_dark_theme_desc = Użyj ciemnego schematu kolorów
+# Settings - Diagnostics tab
 diagnostics_header = DIAGNOSTYKA
 diagnostics_thumbnails = Cache miniatur
 diagnostics_app_cache = Cache aplikacji
@@ -152,6 +168,11 @@ diagnostics_clear_thumbnails = Wyczyść miniatury
 diagnostics_open_thumbnails_folder = Otwórz folder
 diagnostics_clear_cache = Wyczyść cache
 diagnostics_open_cache_folder = Otwórz folder
+diagnostics_export_logs = Eksportuj logi
+logs_label = LOGI
+logs_export_title = Eksportuj logi
+logs_export_saved = Logi skopiowane do:
+logs_export_failed = Nie można wyeksportować logów
 diagnostics_collect_test = Test dostępu do plików
 diagnostics_collect_test_desc = Sprawdź liczbę dostępnych plików
 diagnostics_collect_test_run = Uruchom
@@ -161,15 +182,18 @@ diag_confirm_clear_thumbnails = Wyczyścić cache miniatur?
 diag_confirm_clear_cache = Wyczyścić cache aplikacji?
 about_repo = Repozytorium
 about_translate = Tłumaczenia
-about_donate = Wsparcie
+about_donate = Wesprzyj
+# Collect-test result popup
 collect_test_title = Wyniki testu
 collect_test_volumes = Wolumeny:
 collect_test_folders = Foldery:
 collect_test_files = Pliki:
 collect_test_time = Czas:
+# Licenses
 licenses_label = LICENCJA
 third_party_licenses = Licencje zewnętrzne
 licenses_popup_title = Licencje zewnętrzne
+# Directories screen
 directories_include_header = Dołączone
 directories_included = Dołączone
 directories_exclude_header = Wykluczone
@@ -179,9 +203,11 @@ no_paths = Brak ścieżek - dodaj poniżej
 directories_volume_header = Wolumeny
 directories_volume_refresh = Odśwież
 directories_volume_add = Dodaj
-nav_home = Start
+# Bottom navigation
+nav_home = Rozpocznij
 nav_dirs = Katalogi
 nav_settings = Ustawienia
+# Status messages set from Rust
 status_ready = Gotowy
 status_stopped = Zatrzymano
 status_no_results = Brak wyników
@@ -199,60 +225,39 @@ renamed_errors_suffix = błędów
 cleaned_exif_prefix = Usunięto EXIF z
 cleaned_exif_suffix = plików
 cleaned_exif_errors_suffix = błędów
+rename_error_read_file_name = Nie można odczytać nazwy pliku
+rename_error_read_directory = Nie można odczytać katalogu
 and_more_prefix = ...oraz
 and_more_suffix = więcej
+# Gallery / delete popups
 gallery_delete_button = Usuń
 gallery_back = Powrót
 gallery_confirm_delete = Tak, usuń
 deleting_files = Usuwanie plików...
 stop = Zatrzymaj
-files_suffix = plików
 scanning_fallback = Skanowanie...
 app_subtitle = Na cześć Bitwy pod Cedynią (972)
 app_license = Frontend dla Czkawka Core - GPL-3.0
 about_app_label = O aplikacji
 cache_label = PAMIĘĆ PODRĘCZNA
+# Notification
 scan_completed_notification = Skanowanie zakończone - znaleziono { $file_count } elementów
+# Confirm popups (set from Rust)
 confirm_clean_exif = Czy na pewno chcesz usunąć dane EXIF z { $n } wybranych plików?
 confirm_delete_items = Czy na pewno chcesz usunąć { $n } wybranych elementów?
 gallery_confirm_delete_msg = Za chwilę usuniesz { $total_images } obrazów w { $total_groups } grupach.
 gallery_confirm_delete_warning = Wszystkie elementy są zaznaczone w { $unsafe_groups } grupach!
+# Settings - SameMusic fingerprint warning
 same_music_fingerprint_warning = Obliczanie i porównywanie odcisków audio jest bardzo zasobożerne i może trwać długo. Zalecane jest użycie wersji desktopowej.
-stage_collecting_files = Zbieranie plików
-stage_scanning_name = Skanowanie według nazwy
-stage_scanning_size_name = Skanowanie według nazwy i rozmiaru
-stage_scanning_size = Skanowanie według rozmiaru
-stage_pre_hash = Wstępne haszowanie
-stage_full_hash = Haszowanie
-stage_loading_cache = Ładowanie cache
-stage_saving_cache = Zapisywanie cache
-stage_calculating_image_hashes = Obliczanie hashy obrazów
-stage_comparing_images = Porównywanie obrazów
-stage_calculating_video_hashes = Obliczanie hashy wideo
-stage_checking_files = Sprawdzanie plików
-stage_checking_extensions = Sprawdzanie rozszerzeń
-stage_checking_names = Sprawdzanie nazw
-stage_reading_music_tags = Odczyt tagów muzycznych
-stage_comparing_tags = Porównywanie tagów
-stage_calculating_music_fingerprints = Obliczanie odcisków audio
-stage_comparing_fingerprints = Porównywanie odcisków audio
-stage_extracting_exif = Odczyt danych EXIF
-stage_creating_video_thumbnails = Tworzenie miniatur wideo
-stage_processing_videos = Przetwarzanie wideo
-stage_deleting = Usuwanie plików
-stage_renaming = Zmiana nazw plików
-stage_moving = Przenoszenie plików
-stage_hardlinking = Tworzenie twardych linków
-stage_symlinking = Tworzenie dowiązań symbolicznych
-stage_optimizing_videos = Optymalizacja wideo
-stage_cleaning_exif = Usuwanie danych EXIF
-stage_all_hiding_links = Hiding hard links
-stage_empty_files_checking_content = Checking file content
+# Scan stage labels (shown during scan progress)
+# Group headers in scan results
 duplicates_group_header = { $count } plików x { $per_file } / plik = { $total } łącznie
 similar_images_group_header = { $count } podobnych obrazów
 same_music_group_header = { $count } podobnych utworów
-similar_videos_group_header = { $count } similar videos
+similar_videos_group_header = { $count } podobnych filmów
+# Rename confirmation
 confirm_rename_items = Czy na pewno chcesz zmienić nazwę { $n } wybranych plików?
+# Combo-box option labels (translatable display names)
 option_search_mode_biggest = Największe
 option_search_mode_smallest = Najmniejsze
 option_similarity_very_high = Bardzo wysoki
@@ -260,25 +265,27 @@ option_similarity_high = Wysoki
 option_similarity_medium = Średni
 option_similarity_low = Niski
 option_similarity_very_low = Bardzo niski
-option_similarity_minimal = Minimalny.
+option_similarity_minimal = Minimalny
 option_check_method_hash = Hash
 option_check_method_name = Nazwa
 option_check_method_size_and_name = Rozmiar + nazwa
 option_check_method_size = Rozmiar
 option_music_method_tags = Tagi
-option_music_method_audio = Audio
+option_music_method_audio = Dźwięk
 option_min_size_none = Brak
 option_max_size_unlimited = Bez limitu
-option_audio_preset_identical = Identical
-option_audio_preset_clip = Clip in longer
-option_audio_preset_similar = Similar
+option_audio_preset_identical = Identyczny
+option_audio_preset_clip = Dłuższy klip
+option_audio_preset_similar = Podobne
+# Volume labels (shown in the directories screen)
 volume_internal_storage = Pamięć wewnętrzna
 volume_sd_card = Karta SD
 volume_storage = Wolumen pamięci
+# Directories screen
 directories_referenced_tooltip = Referencyjne (nieusuwane)
 directories_include_section_header = DOŁĄCZONE
 directories_exclude_section_header = WYKLUCZONE
-directories_custom_paths = Niestandardowe
+directories_custom_paths = Ścieżki niestandardowe
 directories_check_button = Analizuj
 directories_check_popup_title = Statystyki katalogów
 directories_check_label_included = Dołączone ścieżki:
@@ -298,13 +305,14 @@ path_edit_no_newlines = Ścieżki nie mogą zawierać nowych linii - Enter jest 
 ctx_menu_title = Otwórz
 ctx_open_file = Otwórz element
 ctx_open_folder = Otwórz folder nadrzędny
-dir_open_folder = Open folder
-compare_label = Compare
-compare_loading = Loading images…
-compare_cancelling = Cancelling…
-compare_computing = Computing diff…
-compare_mode_normal = Side
-compare_mode_split = Split
-compare_mode_overlay = Overlay
-compare_mode_diff = Diff
-compare_res_mismatch = Different resolutions – diff may be inaccurate
+dir_open_folder = Otwórz folder
+# Compare view
+compare_label = Porównaj
+compare_loading = Wczytywanie zdjęć...
+compare_cancelling = Anulowanie...
+compare_computing = Obliczanie różnicy...
+compare_mode_normal = Bok
+compare_mode_split = Podziel
+compare_mode_overlay = Nakładka
+compare_mode_diff = Różnica
+compare_res_mismatch = Różna rozdzielczość - różnica może być niedokładna

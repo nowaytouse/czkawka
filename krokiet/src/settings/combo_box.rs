@@ -295,3 +295,21 @@ impl StringComboBoxItems {
         items.iter().map(|e| e.display_name.clone().into()).collect()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use czkawka_core::tools::similar_images::SimilarImagesParameters;
+
+    use super::*;
+
+    #[test]
+    fn similar_image_hash_sizes_match_the_core_range() {
+        let hash_sizes = StringComboBoxItems::regenerate_items().hash_size.into_iter().map(|item| item.value).collect::<Vec<_>>();
+        assert_eq!(hash_sizes, [8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192]);
+
+        for hash_size in hash_sizes {
+            let parameters = SimilarImagesParameters::new(1, hash_size, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+            assert_eq!(parameters.hash_size, hash_size);
+        }
+    }
+}

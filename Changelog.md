@@ -111,6 +111,15 @@ The upstream source code remained available for manual builds at this release. T
 - Made the protected-files list recoverable through temporary and backup files. Read or write failures now block destructive actions instead of silently treating the list as empty.
 - Closed the single-file rename protection bypass, prevented programmatic selection from checking protected rows, preserved full 64-bit file-size tiebreakers, and invalidated stale preview loads on every request.
 
+### Fork invariant audit - 2026-08-25
+
+- Verified the complete Krokiet-to-core Similar Images hash-size path for `8`, `16`, `32`, `64`, `256`, `512`, `1024`, `2048`, `4096`, and `8192`; all values remain `u16` through scan construction and result formatting.
+- Added a regression test that feeds every Krokiet hash-size option into `SimilarImagesParameters`, preventing future upstream syncs from silently reducing the Krokiet range.
+- `16384` / `16K` was not implemented by this fork. Existing `16 KB` labels elsewhere are file-size thresholds, not perceptual hash sizes.
+- Reconfirmed the retained Krokiet fork features: same-size and size-ratio filters, exact byte-size display, highest-quality selection, fail-closed reversible file protection, stale-safe asynchronous previews, the modernized Slint UI, Simplified Chinese locale matching, and bundled Noto Sans SC.
+- Reconfirmed the retained shared support required by Krokiet: `u16` Similar Images hashes through `8192`, upstream geometric invariance, and bincode 1.3-compatible cache encoding with bounded reads and writes.
+- This is Krokiet-complete consolidation, not byte-for-byte retention of every former frontend difference. GTK was removed; Cedinia/CLI fork controls, the shared 14 GB image allocation override, and fork-wide macOS default overrides remain intentionally retired.
+
 ### Upstream sync - 2026-08-24 (merges `qarmin/czkawka` through `105a520b`, release `12.0.1`)
 
 - Merged the current upstream scanner, video duplicate detection, Opus handling, progress reporting, runtime diagnostics, and Krokiet/Cedinia UI updates.

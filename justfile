@@ -112,7 +112,7 @@ fix:
     cargo +nightly fmt
     just _clippy_all_features
     cargo +nightly fmt
-    cargo fmt
+    cargo fmt 2>/dev/null
 
 fixn:
     cargo +nightly fmt

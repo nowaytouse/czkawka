@@ -1,3 +1,18 @@
+## Version 12.0.2 - 09.09.2026r
+
+### Core
+- Surfaced rollback rename failures in `make_hard_link`/`make_file_symlink` instead of silently ignoring them - [#1995](https://github.com/qarmin/czkawka/pull/1995)
+- Switched the XDG portal trash implementation to `async-io`, avoiding a Tokio runtime requirement alongside Slint's async-io backend - [#2025](https://github.com/qarmin/czkawka/pull/2025)
+- Fixed the AVIF license metadata - [#2060](https://github.com/qarmin/czkawka/pull/2060)
+- Fixed the AVIF tests - [#2061](https://github.com/qarmin/czkawka/pull/2061)
+
+### CLI
+- Rejected non-finite user input (e.g. `NaN`/`inf`) in numeric arguments - [#2038](https://github.com/qarmin/czkawka/pull/2038)
+- Added the ability to start a scan in Krokiet via CLI arguments - [#2069](https://github.com/qarmin/czkawka/pull/2069)
+
+### Krokiet
+- Fixed popup OK/Close button text truncation and centered popups more reasonably - [#2043](https://github.com/qarmin/czkawka/pull/2043)
+
 ## Version 12.0.1 - 29.07.2026r
 
 ### Core
@@ -101,6 +116,12 @@ The upstream source code remained available for manual builds at this release. T
 - Added installation scripts (`misc/install_scripts/`) for Linux (apt/dnf/pacman/zypper), macOS (Homebrew), and Windows (winget)
 
 ## Fork Modifications (nowaytouse/czkawka)
+
+### Upstream sync - 2026-09-24 (through `eb8b91db`, release `12.0.2`)
+
+- Merged upstream 12.0.2 and the subsequent Windows GNU stack-size fix, including CLI-triggered Krokiet scans, popup sizing, non-finite numeric input rejection, XDG portal trash updates, rollback error reporting, and AVIF test and license fixes.
+- Preserved the GTK frontend removal, Krokiet's `u16` Similar Images hash sizes through `8192`, same-size and size-ratio filters, highest-quality selection, reversible file protection, asynchronous previews, zh-CN resources and bundled Noto Sans SC, and bincode 2 cache compatibility.
+- Removed redundant Cargo homepage entries, moved test-only `tempfile` to core development dependencies, and cleared redundant-clone lint warnings.
 
 ### Krokiet consolidation and reliability - 2026-08-25
 

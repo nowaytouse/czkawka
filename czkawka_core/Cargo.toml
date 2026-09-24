@@ -1,12 +1,11 @@
 [package]
 name = "czkawka_core"
-version = "12.0.1"
+version = "12.0.2"
 authors = ["Rafał Mikrut <mikrutrafal@protonmail.com>"]
 edition = "2024"
 rust-version = "1.94.1"
 description = "Core of Czkawka app"
 license = "MIT"
-homepage = "https://github.com/qarmin/czkawka"
 repository = "https://github.com/qarmin/czkawka"
 build = "build.rs"
 
@@ -55,8 +54,6 @@ symphonia = { version = "0.6", features = ["all"] }
 blake3 = "1.5"
 crc32fast = "1.4"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
-
-tempfile = "3.13"
 
 # Video Duplicates
 similario_core = "0.2.0"
@@ -110,8 +107,8 @@ glibc_musl_version = "0.1.0"
 
 rand = "0.10.0"
 
-ashpd = { version = "0.13.2", optional = true, features = ["trash"] }
-tokio = { version = "1.49.0", optional = true }
+ashpd = { version = "0.13.2", optional = true, default-features = false, features = ["async-io", "trash"] }
+async-io = { version = "2.6.0", optional = true }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 trash = "5.1"
@@ -126,6 +123,7 @@ glibc_musl_version = "0.1.0"
 [dev-dependencies]
 criterion =  { version = "0.8", default-features = false, features = [] }
 rand = "0.10.0"
+tempfile = "3.13"
 
 [[bench]]
 name = "hash_calculation_benchmark"
@@ -143,6 +141,6 @@ libavif = ["image/avif-native", "image/avif"]
 blake_pure = ["blake3/pure"]
 # Allows to use trash on Linux when using xdg-portal, needed by e.g. flatpak where normal trash access always fails
 # No-op on other OSes, it is slower and provides less helpful error messages
-xdg_portal_trash = ["ashpd", "tokio"]
+xdg_portal_trash = ["ashpd", "async-io"]
 [lints]
 workspace = true

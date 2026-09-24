@@ -309,8 +309,7 @@ fn test_similar_images_avif_files_are_found() {
 
 #[cfg(feature = "libavif")]
 #[test]
-fn test_similar_images_avif_degenerate_gradient_hashes_are_ignored() {
-    // Solid colors produce all-zero gradient hashes, which are intentionally ignored to avoid false positives.
+fn test_similar_images_avif_striped_pattern_are_all_similar_under_gradient_hash() {
     let test_path = get_heif_images_path();
 
     let params = SimilarImagesParameters::new(0, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
@@ -324,6 +323,6 @@ fn test_similar_images_avif_degenerate_gradient_hashes_are_ignored() {
 
     let info = finder.get_information();
     assert_eq!(info.initial_found_files, 3);
-    assert_eq!(info.number_of_groups, 0);
-    assert_eq!(info.number_of_duplicates, 0);
+    assert_eq!(info.number_of_groups, 1, "All striped AVIFs should be one group under gradient hash");
+    assert_eq!(info.number_of_duplicates, 2);
 }

@@ -49,12 +49,12 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (all-features branch)
 
-This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `105a520b`, release `12.0.1`) and adds:
+This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`) and adds:
 
 ### From upstream (merged regularly)
 
 - **Geometric invariance (Similar Images)** - match mirrored/flipped images; optional 90-degree rotation (`Off` / `Mirror + Flip` / `Mirror + Flip + Rotate 90`). Similar-images cache files change when this setting changes; the cache is regenerated automatically.
-- Other upstream fixes and features from the 11.0.x line (see [Changelog.md](Changelog.md)).
+- Other upstream fixes and features through 12.0.2 (see [Changelog.md](Changelog.md)).
 
 ### Fork-only
 

@@ -204,6 +204,12 @@ component SelectGridSection inherits VerticalLayout {
         label_d: Translations.settings_select_label_except_longest_text;
         changed => { Callabler.update_select_buttons(); }
     }
+
+    CheckBoxComponent {
+        model <=> Settings.select_show_except_highest_quality;
+        name: Translations.settings_select_label_except_highest_quality_text;
+        toggled => { Callabler.update_select_buttons(); }
+    }
 }
 
 component ThreadSliderComponent inherits HorizontalLayout {

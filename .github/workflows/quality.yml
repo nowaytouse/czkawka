@@ -2,19 +2,36 @@ name: 🧹 Quality
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, all-features ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, all-features ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: '0'
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
+
+      - name: Cache Cargo sources
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-sources-v1-${{ hashFiles('Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-sources-v1-
 
       - name: Install native libraries
         run: sudo apt update || true; sudo apt install -y libraw-dev libheif-dev libavif-dev libdav1d-dev libasound2-dev
@@ -37,5 +54,9 @@ jobs:
 
       - name: Run clippy
         run: |
-          cargo clippy --all-targets --all-features -- -D warnings
-          cargo clippy --all-targets -- -D warnings
+          cargo clippy --locked --all-targets --all-features -- -D warnings
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo clippy --locked --all-targets --no-default-features --features winit_software -- -D warnings
+
+      - name: Run regression tests
+        run: cargo test --locked --workspace

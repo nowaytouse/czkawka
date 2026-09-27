@@ -16,6 +16,7 @@ use crate::common::progress_data::{CacheLoadPhase, DuplicateStage, ProgressData,
 use crate::common::progress_stop_handler::{check_if_stop_received, prepare_thread_handler_common};
 use crate::common::tool_data::{CommonData, CommonToolData};
 use crate::common::traits::ResultEntry;
+use crate::flc;
 use crate::tools::duplicate::{
     DuplicateEntry, DuplicateFinder, DuplicateFinderParameters, Info, PREHASHING_BUFFER_SIZE, THREAD_BUFFER, filter_hard_links, hash_calculation, hash_calculation_limit,
 };
@@ -39,27 +40,11 @@ impl DuplicateFinder {
 
     #[fun_time(message = "check_files_name", level = "debug")]
     pub(crate) fn check_files_name(&mut self, stop_flag: &Arc<AtomicBool>, progress_sender: Option<&Sender<ProgressData>>) -> WorkContinueStatus {
-        let group_by_func = if self.get_params().case_sensitive_name_comparison {
-            |fe: &FileEntry| {
-                fe.path
-                    .file_name()
-                    .unwrap_or_else(|| panic!("Found invalid file_name \"{}\" (cannot panic, because it is always normal file)", fe.path.to_string_lossy()))
-                    .to_string_lossy()
-                    .to_string()
-            }
-        } else {
-            |fe: &FileEntry| {
-                fe.path
-                    .file_name()
-                    .unwrap_or_else(|| panic!("Found invalid file_name \"{}\" (cannot panic, because it is always normal file)", fe.path.to_string_lossy()))
-                    .to_string_lossy()
-                    .to_lowercase()
-            }
-        };
+        let case_sensitive = self.get_params().case_sensitive_name_comparison;
 
         let result = DirTraversalBuilder::new()
             .common_data(&self.common_data)
-            .group_by(group_by_func)
+            .group_by(move |fe: &FileEntry| Self::filename_key(fe, case_sensitive))
             .checking_method(CheckingMethod::Name)
             .stop_flag(stop_flag)
             .progress_sender(progress_sender)
@@ -74,6 +59,7 @@ impl DuplicateFinder {
                 self.files_with_identical_names = grouped_file_entries
                     .into_iter()
                     .filter_map(|(name, vector)| {
+                        let name = self.validate_filename_group(name, &vector)?;
                         if vector.len() > 1 {
                             Some((name, vector.into_iter().map(FileEntry::into_duplicate_entry).collect()))
                         } else {
@@ -100,6 +86,24 @@ impl DuplicateFinder {
         }
     }
 
+    pub(super) fn filename_key(file: &FileEntry, case_sensitive: bool) -> Option<String> {
+        file.path.to_str()?;
+        let name = file.path.file_name()?.to_str()?;
+        Some(if case_sensitive { name.to_string() } else { name.to_lowercase() })
+    }
+
+    pub(super) fn validate_filename_group(&mut self, name: Option<String>, files: &[FileEntry]) -> Option<String> {
+        if name.is_none() {
+            for file in files {
+                self.common_data
+                    .text_messages
+                    .warnings
+                    .push(flc!("core_skipped_non_utf8_name", file = file.path.to_string_lossy()));
+            }
+        }
+        name
+    }
+
     fn calculate_name_stats(&mut self) {
         if self.common_data.use_reference_folders {
             for (_fe, vector) in self.files_with_identical_names_referenced.values() {
@@ -116,33 +120,11 @@ impl DuplicateFinder {
 
     #[fun_time(message = "check_files_size_name", level = "debug")]
     pub(crate) fn check_files_size_name(&mut self, stop_flag: &Arc<AtomicBool>, progress_sender: Option<&Sender<ProgressData>>) -> WorkContinueStatus {
-        let group_by_func = if self.get_params().case_sensitive_name_comparison {
-            |fe: &FileEntry| {
-                (
-                    fe.size,
-                    fe.path
-                        .file_name()
-                        .unwrap_or_else(|| panic!("Found invalid file_name \"{}\" (cannot panic, because it is always normal file)", fe.path.to_string_lossy()))
-                        .to_string_lossy()
-                        .to_string(),
-                )
-            }
-        } else {
-            |fe: &FileEntry| {
-                (
-                    fe.size,
-                    fe.path
-                        .file_name()
-                        .unwrap_or_else(|| panic!("Found invalid file_name \"{}\" (cannot panic, because it is always normal file)", fe.path.to_string_lossy()))
-                        .to_string_lossy()
-                        .to_lowercase(),
-                )
-            }
-        };
+        let case_sensitive = self.get_params().case_sensitive_name_comparison;
 
         let result = DirTraversalBuilder::new()
             .common_data(&self.common_data)
-            .group_by(group_by_func)
+            .group_by(move |fe: &FileEntry| (fe.size, Self::filename_key(fe, case_sensitive)))
             .checking_method(CheckingMethod::SizeName)
             .stop_flag(stop_flag)
             .progress_sender(progress_sender)
@@ -155,9 +137,10 @@ impl DuplicateFinder {
 
                 self.files_with_identical_size_names = grouped_file_entries
                     .into_iter()
-                    .filter_map(|(size_name, vector)| {
+                    .filter_map(|((size, name), vector)| {
+                        let name = self.validate_filename_group(name, &vector)?;
                         if vector.len() > 1 {
-                            Some((size_name, vector.into_iter().map(FileEntry::into_duplicate_entry).collect()))
+                            Some(((size, name), vector.into_iter().map(FileEntry::into_duplicate_entry).collect()))
                         } else {
                             None
                         }

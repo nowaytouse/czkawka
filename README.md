@@ -59,15 +59,19 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 ### Fork-only
 
 - **File protection** - mark any result as protected so it is never deleted, moved, hardlinked, symlinked or renamed by the app. Protected files stay visible in the results with an amber marker and a disabled checkbox, and are remembered across scans and restarts (stored in `protected_files.json`). Protect/unprotect a whole selection with the toolbar buttons, or a single file from the right-click context menu; clear the whole set from Settings.
+- **Exact filename mode** - a dedicated mode inside Duplicate Files groups matching filenames, including extensions and letter case, across folders without comparing file contents or sizes. Allowed extensions can restrict the scan to media. Matching names do not prove identical content; review results before using the existing protected-file, reference-folder, confirmation, and trash safeguards. Unsupported non-UTF-8 file paths are skipped with a warning instead of being grouped through lossy conversion.
 - **Similar Images extras** - hash sizes up to `8192`, **only same size** filter, **size ratio** filter, and exact byte size in results (on top of upstream similarity settings).
-- **Select all except highest quality** - selection mode in Similar Images that spares the largest pixel count in each group (file size breaks ties).
+- **Select all except highest quality** - selection mode in Similar Images that spares the largest pixel count in each group (file size breaks ties). Its visibility can be changed in Settings and is remembered across restarts.
+- **macOS scan notifications** - notification dispatch runs outside the GUI thread to avoid nested main-loop processing by the legacy notification backend.
 - **Modernized Krokiet UI** - updated color system, clearer active and hover states, improved spacing, and refreshed popup and list styling.
 - **Simplified Chinese (zh-CN)** - Noto Sans SC is bundled in Krokiet; maintain it with `just sync-zh-cn`; system locales such as `zh`, `zh-CN`, and `zh-Hans-CN` map to zh-CN on first run.
 - **Krokiet-only fork policy** - the legacy `czkawka_gui` GTK source, packaging, and launchers are intentionally removed. CLI and Cedinia follow upstream behavior; shared core changes are limited to capabilities required by Krokiet and cache compatibility.
 
 ### Dependency stack (fork maintenance)
 
-The fork keeps **bincode 2** with the legacy wire format so existing cache binaries remain readable. Other dependency versions follow the merged upstream baseline unless Krokiet requires a targeted change. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+The fork keeps **bincode 2** with the legacy wire format so existing cache binaries remain readable. Krokiet and Cedinia use **Slint 1.18.1**, which includes the fix for the Wayland window-size regression that originally required the upstream 1.17.0 pin. Compatible stable dependency updates are recorded in `Cargo.lock`; incompatible major versions and prereleases are not adopted automatically. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+
+Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 
 ### Maintaining the fork
 

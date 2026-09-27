@@ -303,6 +303,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn duplicate_mode_buttons_match_check_method_indices() {
+        let methods = StringComboBoxItems::regenerate_items().duplicates_check_method;
+        assert_eq!(methods[0].value, CheckingMethod::Hash);
+        assert_eq!(methods[0].config_name, "hash");
+        assert_eq!(methods[2].value, CheckingMethod::Name);
+        assert_eq!(methods[2].config_name, "name");
+    }
+
+    #[test]
     fn similar_image_hash_sizes_match_the_core_range() {
         let hash_sizes = StringComboBoxItems::regenerate_items().hash_size.into_iter().map(|item| item.value).collect::<Vec<_>>();
         assert_eq!(hash_sizes, [8, 16, 32, 64, 256, 512, 1024, 2048, 4096, 8192]);

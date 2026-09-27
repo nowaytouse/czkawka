@@ -4,6 +4,9 @@ import { SettingsList } from "settings_list.slint";
 import { GuiState } from "../globals/gui_state.slint";
 import { About } from "about.slint";
 import { Settings } from "../globals/settings.slint";
+import { Translations } from "../globals/translations.slint";
+import { FontSizes } from "../globals/fonts.slint";
+import { Button } from "std-widgets.slint";
 
 export component MainList {
     callback show_clean_cache_popup();
@@ -40,10 +43,53 @@ export component MainList {
 
     callback changed_active_tab();
 
+    property <bool> exact_filename_mode: Settings.duplicates_sub_check_method_index == 2 && Settings.duplicates_sub_name_case_sensitive;
+
+    duplicate_modes := HorizontalLayout {
+        visible: GuiState.active_tab == ActiveTab.DuplicateFiles;
+        width: parent.width;
+        height: 34px;
+        spacing: 5px;
+        alignment: start;
+        Button {
+            text: Translations.subsettings_duplicates_standard_mode_text;
+            checked: !root.exact_filename_mode;
+            enabled: !root.working;
+            clicked => {
+                if (root.exact_filename_mode) {
+                    Settings.duplicates_sub_check_method_index = 0;
+                    Settings.duplicates_sub_check_method_value = Settings.duplicates_sub_check_method[0];
+                }
+                GuiState.visible_tool_settings = true;
+            }
+        }
+        Button {
+            text: Translations.subsettings_duplicates_exact_name_mode_text;
+            checked: root.exact_filename_mode;
+            enabled: !root.working;
+            clicked => {
+                Settings.duplicates_sub_check_method_index = 2;
+                Settings.duplicates_sub_check_method_value = Settings.duplicates_sub_check_method[2];
+                Settings.duplicates_sub_name_case_sensitive = true;
+                GuiState.visible_tool_settings = true;
+            }
+        }
+    }
+
+    duplicate_mode_hint := Text {
+        visible: GuiState.active_tab == ActiveTab.DuplicateFiles;
+        y: duplicate_modes.height + 5px;
+        width: parent.width;
+        text: Translations.subsettings_duplicates_next_scan_hint_text;
+        wrap: word-wrap;
+        font-size: FontSizes.normal;
+    }
+
     duplicates := SelectableTableView {
         visible: GuiState.active_tab == ActiveTab.DuplicateFiles;
         min-width: 200px;
-        height: parent.height;
+        y: duplicate_mode_hint.y + duplicate_mode_hint.height + 5px;
+        height: max(0px, parent.height - self.y);
         columns <=> Settings.duplicates_column_name;
         column_sizes <=> Settings.duplicates_column_size;
         values <=> duplicate_files_model;

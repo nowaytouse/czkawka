@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [macos-latest]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.1
 
       - name: Setup env
         run: |
@@ -104,7 +104,7 @@ jobs:
           bash misc/pack_all_backends.sh mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }} mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}.zip
 
       - name: Store MacOS
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: all-${{ runner.os }}-${{ runner.arch }}-${{ env.VERS }}
           path: |

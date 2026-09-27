@@ -90,6 +90,8 @@ component SliderWrapper inherits HorizontalLayout {
 }
 
 export component ToolSettings {
+    property <bool> exact_filename_mode: Settings.duplicates_sub_check_method_index == 2 && Settings.duplicates_sub_name_case_sensitive;
+
     ScrollView {
         VerticalLayout {
             visible: GuiState.active_tab == ActiveTab.SimilarImages;
@@ -208,6 +210,7 @@ export component ToolSettings {
             SubsettingsHeader { }
 
             ComboBoxWrapper {
+                visible: !root.exact_filename_mode;
                 text: Translations.subsettings_duplicates_check_method_text;
                 model: Settings.duplicates_sub_check_method;
                 current_index <=> Settings.duplicates_sub_check_method_index;
@@ -215,6 +218,7 @@ export component ToolSettings {
             }
 
             ComboBoxWrapper {
+                visible: !root.exact_filename_mode;
                 text: Translations.subsettings_images_duplicates_hash_type_text;
                 model: Settings.duplicates_sub_available_hash_type;
                 current_index <=> Settings.duplicates_sub_available_hash_type_index;
@@ -222,9 +226,29 @@ export component ToolSettings {
             }
 
             CheckBoxWrapper {
+                visible: !root.exact_filename_mode;
                 text: Translations.subsettings_duplicates_name_case_sensitive_text;
                 checked <=> Settings.duplicates_sub_name_case_sensitive;
                 height: 25px;
+            }
+
+            if root.exact_filename_mode: Text {
+                text: Translations.subsettings_duplicates_exact_name_hint_text;
+                wrap: word-wrap;
+                font-size: FontSizes.normal;
+                vertical-stretch: 0;
+            }
+
+            if root.exact_filename_mode: TextComponent {
+                name: Translations.settings_allowed_extensions_text;
+                model <=> Settings.allowed_extensions;
+            }
+
+            if root.exact_filename_mode: Text {
+                text: Translations.subsettings_duplicates_exact_name_warning_text;
+                wrap: word-wrap;
+                font-size: FontSizes.normal;
+                vertical-stretch: 0;
             }
 
             Rectangle { }

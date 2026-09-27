@@ -117,6 +117,17 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Filename cleanup and reliability - 2026-09-27
+
+- Added an independent Exact filename mode inside Krokiet's Duplicate Files tool. It reuses the existing name scanner, matches the complete case-sensitive basename across folders, supports allowed-extension filtering, and leaves existing results and selections unchanged until the next scan.
+- Kept deletion manual and retained reference-folder handling, protected-file checks, confirmations, and trash behavior. Added regressions for different contents and sizes, Unicode filenames, extension and case distinctions, reference folders, and non-UTF-8 names.
+- Name and Size + Name scans now skip unsupported non-UTF-8 file paths with warnings instead of potentially grouping distinct raw names through lossy text conversion. Fork zh-CN maintenance restores and validates the new UI strings and this core safety warning.
+- Moved macOS scan-completion notification dispatch to a detached worker so the legacy backend cannot pump a nested main run loop in the GUI callback. Added a worker-thread regression; live GUI/Space-switch crash reproduction remains a manual acceptance check.
+- Exposed the persisted highest-quality selection visibility setting in Krokiet Settings. Similar Images still supports all fork hash dimensions through `8192`; `16384` / `16K` remains unsupported.
+- Updated Slint and slint-build to 1.18.1 for both Slint frontends, Krokiet fontique to 0.11.1, and compatible stable lockfile dependencies. Slint includes the [Wayland window-width restoration fix](https://github.com/slint-ui/slint/pull/13245); bincode 2 legacy cache encoding is unchanged.
+- Enabled quality CI for `all-features`, added lockfile-enforced regression tests, disabled incremental CI builds, cached only Cargo sources, and updated checkout/upload-artifact to 7.0.1 and cache to 6.1.0.
+- Kept local `Krokiet.app` build bundles out of version control without modifying the existing bundle.
+
 ### Upstream sync - 2026-09-24 (through `eb8b91db`, release `12.0.2`)
 
 - Merged upstream 12.0.2 and the subsequent Windows GNU stack-size fix, including CLI-triggered Krokiet scans, popup sizing, non-finite numeric input rejection, XDG portal trash updates, rollback error reporting, and AVIF test and license fixes.

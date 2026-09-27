@@ -394,6 +394,7 @@ translate:
 sync-zh-cn:
     uv run python misc/fill_zh_cn_missing.py
     uv run misc/ai_translate/validate_translations.py krokiet/i18n --languages zh-CN
+    uv run misc/ai_translate/validate_translations.py czkawka_core/i18n --languages zh-CN
 
 sync-fork-i18n: sync-zh-cn
 

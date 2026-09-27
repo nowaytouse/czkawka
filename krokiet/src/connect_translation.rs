@@ -175,6 +175,11 @@ fn translate_items(app: &MainWindow) {
     translation.set_subsettings_images_duplicates_hash_type_text(flk!("subsettings_images_duplicates_hash_type").into());
     translation.set_subsettings_duplicates_check_method_text(flk!("subsettings_duplicates_check_method").into());
     translation.set_subsettings_duplicates_name_case_sensitive_text(flk!("subsettings_duplicates_name_case_sensitive").into());
+    translation.set_subsettings_duplicates_standard_mode_text(flk!("subsettings_duplicates_standard_mode").into());
+    translation.set_subsettings_duplicates_exact_name_mode_text(flk!("subsettings_duplicates_exact_name_mode").into());
+    translation.set_subsettings_duplicates_next_scan_hint_text(flk!("subsettings_duplicates_next_scan_hint").into());
+    translation.set_subsettings_duplicates_exact_name_hint_text(flk!("subsettings_duplicates_exact_name_hint").into());
+    translation.set_subsettings_duplicates_exact_name_warning_text(flk!("subsettings_duplicates_exact_name_warning").into());
     translation.set_subsettings_biggest_files_sub_method_text(flk!("subsettings_biggest_files_sub_method").into());
     translation.set_subsettings_biggest_files_sub_number_of_files_text(flk!("subsettings_biggest_files_sub_number_of_files").into());
     translation.set_subsettings_videos_max_difference_text(flk!("subsettings_videos_max_difference").into());
@@ -413,6 +418,7 @@ fn translate_items(app: &MainWindow) {
     translation.set_settings_select_label_longest_text(flk!("settings_select_label_longest_text").into());
     translation.set_settings_select_label_except_shortest_text(flk!("settings_select_label_except_shortest_text").into());
     translation.set_settings_select_label_except_longest_text(flk!("settings_select_label_except_longest_text").into());
+    translation.set_settings_select_label_except_highest_quality_text(flk!("selection_all_except_highest_quality").into());
     translation.set_settings_clean_cache_button_text(flk!("settings_clean_cache_button_text").into());
     translation.set_popup_clean_cache_title_text(flk!("popup_clean_cache_title_text").into());
     translation.set_popup_clean_cache_confirmation_text(flk!("popup_clean_cache_confirmation_text").into());

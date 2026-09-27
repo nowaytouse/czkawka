@@ -14,6 +14,7 @@ core_cannot_read_metadata_file = Cannot read metadata of file {$file}, reason {$
 core_file_modified_before_epoch = File {$name} seems to have been modified before the Unix Epoch
 core_folder_modified_before_epoch = Folder {$name} seems to have been modified before the Unix Epoch
 core_file_no_modification_date = Unable to get modification date from file {$name}, reason {$reason}
+core_skipped_non_utf8_name = Skipped file {$file}: filename-based cleanup requires a valid UTF-8 file path; this file was not included in cleanup results.
 core_folder_no_modification_date = Unable to get modification date from folder {$name}, reason {$reason}
 
 core_cannot_start_scan_no_included_paths = Cannot start scan, because there are no included paths

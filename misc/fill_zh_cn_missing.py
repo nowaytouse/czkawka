@@ -11,7 +11,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / "ai_translate")
 from ftl_utils import parse_ftl_file  # noqa: E402
 from translate import serialize_ftl_entries  # noqa: E402
 
-# Fork-maintained zh-CN for keys missing from Crowdin sync (krokiet).
+# Fork-maintained zh-CN for keys missing from Crowdin sync.
+CORE_ZH_CN: dict[str, str] = {
+    "core_skipped_non_utf8_name": "已跳过文件 { $file }：按文件名清理需要有效的 UTF-8 文件路径；此文件未列入清理结果.",
+}
+
 KROKIET_ZH_CN: dict[str, str] = {
     "compare_overlay_text": "叠加",
     "compare_split_text": "分屏",
@@ -84,6 +88,11 @@ KROKIET_ZH_CN: dict[str, str] = {
     "subsettings_broken_files_video_ffmpeg_info": "使用 ffmpeg 深度检查视频（完整解码）。非常慢，且可能报告吹毛求疵的错误，即使文件可正常播放。",
     "subsettings_broken_files_video_ffprobe": "视频（ffprobe）",
     "subsettings_broken_files_video_ffprobe_info": "使用 ffprobe 快速检查视频（头信息校验）。",
+    "subsettings_duplicates_standard_mode": "其他检查方法",
+    "subsettings_duplicates_exact_name_mode": "精确文件名",
+    "subsettings_duplicates_next_scan_hint": "模式更改在下次扫描时生效。已有结果和勾选状态不会改变.",
+    "subsettings_duplicates_exact_name_hint": "在“路径”中添加多个文件夹，按含扩展名的完整文件名精确匹配，区分大小写。仅筛选媒体时，在“允许的扩展名”中填写 image,video,music；留空则扫描所有文件。该筛选项与其他工具共用.",
+    "subsettings_duplicates_exact_name_warning": "同名不代表内容相同，文件大小和内容可能不同。请核对每个路径，保留需要的副本；将选中项移到废纸篓比永久删除更安全。参考文件夹和受保护文件仍受到保护.",
     "subsettings_empty_files_non_printable_content": "仅含不可打印字符的文件",
     "subsettings_empty_files_non_printable_content_hint": "同时查找非空但仅含不可打印 ASCII 字符的文件：空字符、空格、制表符、回车、换行、垂直制表符、换页符。",
     "subsettings_empty_files_type": "要查找的其他文件类型",
@@ -176,7 +185,9 @@ def main() -> None:
     root = pathlib.Path(__file__).resolve().parent.parent
     added = merge_zh_cn(root / "krokiet/i18n", "krokiet", KROKIET_ZH_CN)
     print(f"krokiet: added {added} zh-CN keys")
-    if added == 0:
+    core_added = merge_zh_cn(root / "czkawka_core/i18n", "czkawka_core", CORE_ZH_CN)
+    print(f"czkawka_core: added {core_added} zh-CN keys")
+    if added + core_added == 0:
         print("Nothing to add.")
 
 

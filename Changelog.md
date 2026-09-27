@@ -119,8 +119,9 @@ The upstream source code remained available for manual builds at this release. T
 
 ### Filename cleanup and reliability - 2026-09-27
 
-- Added an independent Exact filename mode inside Krokiet's Duplicate Files tool. It reuses the existing name scanner, matches the complete case-sensitive basename across folders, supports allowed-extension filtering, and leaves existing results and selections unchanged until the next scan.
+- Added an independent Exact File Names tab to Krokiet. It reuses the existing name scanner without content hashing, matches the complete case-sensitive basename across folders, supports allowed-extension filtering, and keeps scan results and selections separate from Duplicate Files.
 - Kept deletion manual and retained reference-folder handling, protected-file checks, confirmations, and trash behavior. Added regressions for different contents and sizes, Unicode filenames, extension and case distinctions, reference folders, and non-UTF-8 names.
+- The Exact File Names tab does not offer hardlink or symlink actions because same-name files may contain different data.
 - Name and Size + Name scans now skip unsupported non-UTF-8 file paths with warnings instead of potentially grouping distinct raw names through lossy text conversion. Fork zh-CN maintenance restores and validates the new UI strings and this core safety warning.
 - Moved macOS scan-completion notification dispatch to a detached worker so the legacy backend cannot pump a nested main run loop in the GUI callback. Added a worker-thread regression; live GUI/Space-switch crash reproduction remains a manual acceptance check.
 - Exposed the persisted highest-quality selection visibility setting in Krokiet Settings. Similar Images still supports all fork hash dimensions through `8192`; `16384` / `16K` remains unsupported.

@@ -178,7 +178,7 @@ pub(crate) fn set_select_buttons(app: &MainWindow) {
     let mut base_buttons = vec![SelectMode::SelectCustom, SelectMode::SelectAll, SelectMode::UnselectAll, SelectMode::InvertSelection];
 
     let additional_buttons = match active_tab {
-        ActiveTab::DuplicateFiles | ActiveTab::SimilarVideos | ActiveTab::SimilarMusic => vec![
+        ActiveTab::DuplicateFiles | ActiveTab::ExactFilenames | ActiveTab::SimilarVideos | ActiveTab::SimilarMusic => vec![
             (SelectMode::InvertSelectionInGroup, true),
             (SelectMode::SelectOldest, settings.get_select_show_oldest()),
             (SelectMode::SelectNewest, settings.get_select_show_newest()),

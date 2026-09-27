@@ -117,7 +117,7 @@ pub(crate) fn connect_scan_button(
         };
 
         match active_tab {
-            ActiveTab::DuplicateFiles => scan_duplicates(a, scan_data),
+            ActiveTab::DuplicateFiles | ActiveTab::ExactFilenames => scan_duplicates(a, scan_data, active_tab),
             ActiveTab::EmptyFolders => scan_empty_folders(a, scan_data),
             ActiveTab::BigFiles => scan_big_files(a, scan_data),
             ActiveTab::EmptyFiles => scan_empty_files(a, scan_data),

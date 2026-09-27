@@ -28,6 +28,7 @@ export component ActionButtons inherits HorizontalLayout {
     callback show_action_popup(PopupRequest);
 
     in-out property <[SingleMainListModel]> duplicate_files_model: [];
+    in-out property <[SingleMainListModel]> exact_filenames_model: [];
     in-out property <[SingleMainListModel]> empty_folder_model: [];
     in-out property <[SingleMainListModel]> big_files_model: [];
     in-out property <[SingleMainListModel]> empty_files_model: [];
@@ -53,6 +54,7 @@ export component ActionButtons inherits HorizontalLayout {
 
     in-out property <bool> checked_anything: (
         (active_tab == ActiveTab.DuplicateFiles && (GuiState.selected_results_duplicates > 0 || GuiState.selected_results_duplicates2 > 0)) ||
+        (active_tab == ActiveTab.ExactFilenames && (GuiState.selected_results_exact_filenames > 0 || GuiState.selected_results_exact_filenames2 > 0)) ||
         (active_tab == ActiveTab.SimilarImages && (GuiState.selected_results_similar_images > 0 || GuiState.selected_results_similar_images2 > 0)) ||
         (active_tab == ActiveTab.SimilarVideos && (GuiState.selected_results_similar_videos > 0 || GuiState.selected_results_similar_videos2 > 0)) ||
         (active_tab == ActiveTab.SimilarMusic && (GuiState.selected_results_similar_music > 0 || GuiState.selected_results_similar_music2 > 0)) ||
@@ -69,6 +71,7 @@ export component ActionButtons inherits HorizontalLayout {
     );
     in-out property <bool> results_available: (
         (active_tab == ActiveTab.DuplicateFiles && duplicate_files_model.length > 0) ||
+        (active_tab == ActiveTab.ExactFilenames && exact_filenames_model.length > 0) ||
         (active_tab == ActiveTab.EmptyFolders && empty_folder_model.length > 0) ||
         (active_tab == ActiveTab.BigFiles && big_files_model.length > 0) ||
         (active_tab == ActiveTab.EmptyFiles && empty_files_model.length > 0) ||
@@ -266,7 +269,7 @@ export component ActionButtons inherits HorizontalLayout {
         }
     }
 
-    if lists_enabled && GuiState.tool_with_groups: hardlink_button := Button {
+    if lists_enabled && GuiState.tool_with_groups && active_tab != ActiveTab.ExactFilenames: hardlink_button := Button {
         height: parent.height;
         enabled: base_buttons_may_be_available && self.visible && checked_anything;
         text: self.visible && Settings.show_only_icons ? "" : Translations.hardlink_button_text;
@@ -277,7 +280,7 @@ export component ActionButtons inherits HorizontalLayout {
         }
     }
 
-    if lists_enabled && GuiState.tool_with_groups: softlink_button := Button {
+    if lists_enabled && GuiState.tool_with_groups && active_tab != ActiveTab.ExactFilenames: softlink_button := Button {
         height: parent.height;
         enabled: base_buttons_may_be_available && self.visible && checked_anything;
         text: self.visible && Settings.show_only_icons ? "" : Translations.softlink_button_text;

@@ -10,7 +10,7 @@ use slint::{ComponentHandle, Weak};
 use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
-use crate::{Callabler, GuiState, MainWindow};
+use crate::{ActiveTab, Callabler, GuiState, MainWindow, flk};
 
 pub(crate) fn connect_symlink(app: &MainWindow, progress_sender: Sender<ProgressData>, stop_flag: Arc<AtomicBool>) {
     let a = app.as_weak();
@@ -21,6 +21,10 @@ pub(crate) fn connect_symlink(app: &MainWindow, progress_sender: Sender<Progress
         stop_flag.store(false, Ordering::Relaxed);
         let app = a.upgrade().expect("Failed to upgrade app :(");
         let active_tab = app.global::<GuiState>().get_active_tab();
+        if active_tab == ActiveTab::ExactFilenames {
+            app.invoke_show_error_popup(flk!("rust_exact_filename_link_action_blocked").into());
+            return;
+        }
 
         let processor = ModelProcessor::new(active_tab);
         processor.symlink_selected_items(progress_sender, weak_app, stop_flag);

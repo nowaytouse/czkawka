@@ -100,7 +100,7 @@ pub(super) fn build_custom_select_columns(active_tab: ActiveTab) -> Vec<CustomSe
     let full_path = flk!("column_full_path");
 
     match active_tab {
-        ActiveTab::DuplicateFiles => vec![
+        ActiveTab::DuplicateFiles | ActiveTab::ExactFilenames => vec![
             col_full_path!(&full_path),
             col_str!(&file_name, StrDataDuplicateFiles::Name),
             col_str!(&path, StrDataDuplicateFiles::Path),

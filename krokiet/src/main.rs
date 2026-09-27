@@ -244,6 +244,7 @@ pub(crate) fn zeroing_all_models(app: &MainWindow) {
     app.set_empty_files_model(Rc::new(VecModel::default()).into());
     app.set_similar_images_model(Rc::new(VecModel::default()).into());
     app.set_duplicate_files_model(Rc::new(VecModel::default()).into());
+    app.set_exact_filenames_model(Rc::new(VecModel::default()).into());
     app.set_similar_music_model(Rc::new(VecModel::default()).into());
     app.set_big_files_model(Rc::new(VecModel::default()).into());
     app.set_bad_extensions_model(Rc::new(VecModel::default()).into());

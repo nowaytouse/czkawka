@@ -16,12 +16,24 @@ use crate::common::{MAX_INT_DATA_DUPLICATE_FILES, MAX_STR_DATA_DUPLICATE_FILES, 
 use crate::connect_scan::{MessagesData, ScanData, get_dt_timestamp_string, get_text_messages, insert_data_to_model, reset_selection_at_end, set_common_settings};
 use crate::{ActiveTab, GuiState, MainWindow, flk};
 
-pub(crate) fn scan_duplicates(a: Weak<MainWindow>, sd: ScanData) {
+fn scan_mode(active_tab: ActiveTab, check_method: CheckingMethod, case_sensitive: bool) -> (CheckingMethod, bool) {
+    if active_tab == ActiveTab::ExactFilenames {
+        (CheckingMethod::Name, true)
+    } else {
+        (check_method, case_sensitive)
+    }
+}
+
+pub(crate) fn scan_duplicates(a: Weak<MainWindow>, sd: ScanData, active_tab: ActiveTab) {
     thread::Builder::new()
         .stack_size(DEFAULT_THREAD_SIZE)
         .spawn(move || {
             let hash_type = sd.combo_box_items.duplicates_hash_type.value;
-            let check_method = sd.combo_box_items.duplicates_check_method.value;
+            let (check_method, case_sensitive) = scan_mode(
+                active_tab,
+                sd.combo_box_items.duplicates_check_method.value,
+                sd.custom_settings.duplicates_sub_name_case_sensitive,
+            );
 
             let params = DuplicateFinderParameters::new(
                 check_method,
@@ -29,7 +41,7 @@ pub(crate) fn scan_duplicates(a: Weak<MainWindow>, sd: ScanData) {
                 sd.custom_settings.duplicate_use_prehash,
                 sd.custom_settings.duplicate_minimal_hash_cache_size as u64,
                 sd.custom_settings.duplicate_minimal_prehash_cache_size as u64,
-                sd.custom_settings.duplicates_sub_name_case_sensitive,
+                case_sensitive,
             );
             let mut tool = DuplicateFinder::new(params);
 
@@ -91,12 +103,29 @@ pub(crate) fn scan_duplicates(a: Weak<MainWindow>, sd: ScanData) {
                 CheckingMethod::SizeName => (info.number_of_duplicated_files_by_size_name, info.number_of_groups_by_size_name, info.lost_space_by_size),
                 _ => unreachable!("invalid check method {:?}", tool.get_check_method()),
             };
-            sd.shared_models.lock().expect("Mutex poisoned").shared_duplication_state = Some(tool);
+            let mut models = sd.shared_models.lock().expect("Mutex poisoned");
+            if active_tab == ActiveTab::ExactFilenames {
+                models.shared_exact_filenames_state = Some(tool);
+            } else {
+                models.shared_duplication_state = Some(tool);
+            }
+            drop(models);
 
             let messages_data = MessagesData { critical, messages };
 
             a.upgrade_in_event_loop(move |app| {
-                write_duplicate_results(&app, vector, messages_data, info, sd, stopped_search, duplicates_number, groups_number, lost_space);
+                write_duplicate_results(
+                    &app,
+                    vector,
+                    messages_data,
+                    info,
+                    sd,
+                    active_tab,
+                    stopped_search,
+                    duplicates_number,
+                    groups_number,
+                    lost_space,
+                );
             })
         })
         .expect("Cannot start thread - not much we can do here");
@@ -107,6 +136,7 @@ fn write_duplicate_results(
     messages_data: MessagesData,
     info: duplicate::Info,
     sd: ScanData,
+    active_tab: ActiveTab,
     stopped_search: bool,
     items_found: usize,
     groups: usize,
@@ -128,14 +158,16 @@ fn write_duplicate_results(
             insert_data_to_model(&items, data_model_str, data_model_int, None);
         }
     }
-    app.set_duplicate_files_model(items.into());
+    active_tab.set_tool_model(app, items.into());
     if let Some(critical) = messages_data.critical {
         app.invoke_scan_ended(critical.into());
     } else {
         if !stopped_search && sd.basic_settings.play_audio_on_scan_completion {
             sd.audio_player.play_scan_completed();
         }
-        let result_message = if lost_space > 0 {
+        let result_message = if active_tab == ActiveTab::ExactFilenames {
+            flk!("rust_found_exact_filename_matches", items_found = items_found, groups = groups, time = scanning_time_str)
+        } else if lost_space > 0 {
             flk!(
                 "rust_found_duplicate_files",
                 items_found = items_found,
@@ -152,12 +184,17 @@ fn write_duplicate_results(
             )
         };
         if !stopped_search && sd.basic_settings.show_notification_on_scan_completion {
-            crate::notification_manager::send_scan_completed_notification("Duplicate Files", &result_message);
+            let tool_name = if active_tab == ActiveTab::ExactFilenames {
+                flk!("tool_exact_filenames")
+            } else {
+                flk!("tool_duplicate_files")
+            };
+            crate::notification_manager::send_scan_completed_notification(&tool_name, &result_message);
         }
         app.invoke_scan_ended(result_message.into());
     }
     app.global::<GuiState>().set_info_text(messages_data.messages.into());
-    reset_selection_at_end(app, ActiveTab::DuplicateFiles);
+    reset_selection_at_end(app, active_tab);
 }
 fn prepare_data_model_duplicates(fe: DuplicateEntry) -> (ModelRc<SharedString>, ModelRc<i32>) {
     let (directory, file) = split_path(fe.get_path());
@@ -173,4 +210,15 @@ fn prepare_data_model_duplicates(fe: DuplicateEntry) -> (ModelRc<SharedString>, 
     let data_model_int_arr: [i32; MAX_INT_DATA_DUPLICATE_FILES] = [modification_split.0, modification_split.1, size_split.0, size_split.1];
     let data_model_int = VecModel::from_slice(&data_model_int_arr);
     (data_model_str, data_model_int)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn exact_filename_tab_ignores_duplicate_scan_method() {
+        assert_eq!(scan_mode(ActiveTab::ExactFilenames, CheckingMethod::Hash, false), (CheckingMethod::Name, true));
+        assert_eq!(scan_mode(ActiveTab::DuplicateFiles, CheckingMethod::Hash, false), (CheckingMethod::Hash, false));
+    }
 }

@@ -74,6 +74,7 @@ export component MainWindow inherits Window {
         step_name: "Cache",
     };
     in-out property <[SingleMainListModel]> duplicate_files_model: [];
+    in-out property <[SingleMainListModel]> exact_filenames_model: [];
     in-out property <[SingleMainListModel]> empty_folder_model: [];
     in-out property <[SingleMainListModel]> big_files_model: [];
     in-out property <[SingleMainListModel]> empty_files_model: [];
@@ -117,6 +118,7 @@ export component MainWindow inherits Window {
                         horizontal-stretch: 0.5;
                         working: root.scanning || root.processing;
                         duplicate_files_model <=> root.duplicate_files_model;
+                        exact_filenames_model <=> root.exact_filenames_model;
                         empty_folder_model <=> root.empty_folder_model;
                         big_files_model <=> root.big_files_model;
                         empty_files_model <=> root.empty_files_model;
@@ -178,6 +180,7 @@ export component MainWindow inherits Window {
 
         action_buttons := ActionButtons {
             duplicate_files_model <=> root.duplicate_files_model;
+            exact_filenames_model <=> root.exact_filenames_model;
             empty_folder_model <=> root.empty_folder_model;
             big_files_model <=> root.big_files_model;
             empty_files_model <=> root.empty_files_model;

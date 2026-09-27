@@ -373,13 +373,15 @@ impl ActiveTab {
                 StrDataSimilarImages::Size => SortIdx::IntIdxPair(IntDataSimilarImages::SizePart1 as i32, IntDataSimilarImages::SizePart2 as i32),
                 StrDataSimilarImages::Resolution => SortIdx::IntIdx(IntDataSimilarImages::PixelCount as i32),
             },
-            Self::DuplicateFiles => match StrDataDuplicateFiles::try_from(str_idx as u8).unwrap_or_else(|_| panic!("Invalid str idx {str_idx} for DuplicateFiles")) {
-                StrDataDuplicateFiles::Name | StrDataDuplicateFiles::Path => SortIdx::StrIdx(str_idx),
-                StrDataDuplicateFiles::ModificationDate => {
-                    SortIdx::IntIdxPair(IntDataDuplicateFiles::ModificationDatePart1 as i32, IntDataDuplicateFiles::ModificationDatePart2 as i32)
+            Self::DuplicateFiles | Self::ExactFilenames => {
+                match StrDataDuplicateFiles::try_from(str_idx as u8).unwrap_or_else(|_| panic!("Invalid str idx {str_idx} for DuplicateFiles")) {
+                    StrDataDuplicateFiles::Name | StrDataDuplicateFiles::Path => SortIdx::StrIdx(str_idx),
+                    StrDataDuplicateFiles::ModificationDate => {
+                        SortIdx::IntIdxPair(IntDataDuplicateFiles::ModificationDatePart1 as i32, IntDataDuplicateFiles::ModificationDatePart2 as i32)
+                    }
+                    StrDataDuplicateFiles::Size => SortIdx::IntIdxPair(IntDataDuplicateFiles::SizePart1 as i32, IntDataDuplicateFiles::SizePart2 as i32),
                 }
-                StrDataDuplicateFiles::Size => SortIdx::IntIdxPair(IntDataDuplicateFiles::SizePart1 as i32, IntDataDuplicateFiles::SizePart2 as i32),
-            },
+            }
             Self::BigFiles => match StrDataBigFiles::try_from(str_idx as u8).unwrap_or_else(|_| panic!("Invalid str idx {str_idx} for BigFiles")) {
                 StrDataBigFiles::Name | StrDataBigFiles::Path => SortIdx::StrIdx(str_idx),
                 StrDataBigFiles::ModificationDate => SortIdx::IntIdxPair(IntDataBigFiles::ModificationDatePart1 as i32, IntDataBigFiles::ModificationDatePart2 as i32),
@@ -463,7 +465,7 @@ impl ActiveTab {
             Self::EmptyFolders => StrDataEmptyFolders::Path as usize,
             Self::EmptyFiles => StrDataEmptyFiles::Path as usize,
             Self::SimilarImages => StrDataSimilarImages::Path as usize,
-            Self::DuplicateFiles => StrDataDuplicateFiles::Path as usize,
+            Self::DuplicateFiles | Self::ExactFilenames => StrDataDuplicateFiles::Path as usize,
             Self::BigFiles => StrDataBigFiles::Path as usize,
             Self::TemporaryFiles => StrDataTemporaryFiles::Path as usize,
             Self::SimilarVideos => StrDataSimilarVideos::Path as usize,
@@ -483,7 +485,7 @@ impl ActiveTab {
             Self::EmptyFolders => StrDataEmptyFolders::Name as usize,
             Self::EmptyFiles => StrDataEmptyFiles::Name as usize,
             Self::SimilarImages => StrDataSimilarImages::Name as usize,
-            Self::DuplicateFiles => StrDataDuplicateFiles::Name as usize,
+            Self::DuplicateFiles | Self::ExactFilenames => StrDataDuplicateFiles::Name as usize,
             Self::BigFiles => StrDataBigFiles::Name as usize,
             Self::TemporaryFiles => StrDataTemporaryFiles::Name as usize,
             Self::SimilarVideos => StrDataSimilarVideos::Name as usize,
@@ -510,7 +512,7 @@ impl ActiveTab {
             Self::EmptyFiles => IntDataEmptyFiles::ModificationDatePart1 as usize,
             Self::EmptyFolders => IntDataEmptyFolders::ModificationDatePart1 as usize,
             Self::SimilarImages => IntDataSimilarImages::ModificationDatePart1 as usize,
-            Self::DuplicateFiles => IntDataDuplicateFiles::ModificationDatePart1 as usize,
+            Self::DuplicateFiles | Self::ExactFilenames => IntDataDuplicateFiles::ModificationDatePart1 as usize,
             Self::BigFiles => IntDataBigFiles::ModificationDatePart1 as usize,
             Self::TemporaryFiles => IntDataTemporaryFiles::ModificationDatePart1 as usize,
             Self::SimilarVideos => IntDataSimilarVideos::ModificationDatePart1 as usize,
@@ -528,7 +530,7 @@ impl ActiveTab {
         let res = match self {
             Self::EmptyFiles => IntDataEmptyFiles::SizePart1 as usize,
             Self::SimilarImages => IntDataSimilarImages::SizePart1 as usize,
-            Self::DuplicateFiles => IntDataDuplicateFiles::SizePart1 as usize,
+            Self::DuplicateFiles | Self::ExactFilenames => IntDataDuplicateFiles::SizePart1 as usize,
             Self::BigFiles => IntDataBigFiles::SizePart1 as usize,
             Self::SimilarVideos => IntDataSimilarVideos::SizePart1 as usize,
             Self::SimilarMusic => IntDataSimilarMusic::SizePart1 as usize,
@@ -614,7 +616,7 @@ impl ActiveTab {
             | Self::BadNames
             | Self::ExifRemover
             | Self::VideoOptimizer => false,
-            Self::SimilarImages | Self::DuplicateFiles | Self::SimilarVideos | Self::SimilarMusic => true,
+            Self::SimilarImages | Self::DuplicateFiles | Self::ExactFilenames | Self::SimilarVideos | Self::SimilarMusic => true,
             Self::Settings | Self::About => panic!("Button should be disabled"),
         }
     }
@@ -624,6 +626,7 @@ impl ActiveTab {
             Self::SimilarImages => app.get_similar_images_model(),
             Self::EmptyFiles => app.get_empty_files_model(),
             Self::DuplicateFiles => app.get_duplicate_files_model(),
+            Self::ExactFilenames => app.get_exact_filenames_model(),
             Self::BigFiles => app.get_big_files_model(),
             Self::TemporaryFiles => app.get_temporary_files_model(),
             Self::SimilarVideos => app.get_similar_videos_model(),
@@ -644,6 +647,7 @@ impl ActiveTab {
             Self::SimilarImages => app.set_similar_images_model(model),
             Self::EmptyFiles => app.set_empty_files_model(model),
             Self::DuplicateFiles => app.set_duplicate_files_model(model),
+            Self::ExactFilenames => app.set_exact_filenames_model(model),
             Self::BigFiles => app.set_big_files_model(model),
             Self::TemporaryFiles => app.set_temporary_files_model(model),
             Self::SimilarVideos => app.set_similar_videos_model(model),

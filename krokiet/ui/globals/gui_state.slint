@@ -36,8 +36,8 @@ export global GuiState {
     in-out property <bool> choosing_include_directories;
     in-out property <bool> visible_tool_settings;
 
-    in-out property <bool> available_subsettings: active_tab == ActiveTab.BadNames || active_tab == ActiveTab.SimilarImages || active_tab == ActiveTab.DuplicateFiles || active_tab == ActiveTab.SimilarVideos || active_tab == ActiveTab.SimilarMusic || active_tab == ActiveTab.BigFiles || active_tab == ActiveTab.BrokenFiles || active_tab == ActiveTab.VideoOptimizer || active_tab == ActiveTab.ExifRemover || active_tab == ActiveTab.TemporaryFiles || active_tab == ActiveTab.EmptyFiles;
-    in-out property <bool> tool_with_groups: active_tab == ActiveTab.SimilarImages || active_tab == ActiveTab.DuplicateFiles || active_tab == ActiveTab.SimilarVideos || active_tab == ActiveTab.SimilarMusic;
+    in-out property <bool> available_subsettings: active_tab == ActiveTab.BadNames || active_tab == ActiveTab.SimilarImages || active_tab == ActiveTab.DuplicateFiles || active_tab == ActiveTab.ExactFilenames || active_tab == ActiveTab.SimilarVideos || active_tab == ActiveTab.SimilarMusic || active_tab == ActiveTab.BigFiles || active_tab == ActiveTab.BrokenFiles || active_tab == ActiveTab.VideoOptimizer || active_tab == ActiveTab.ExifRemover || active_tab == ActiveTab.TemporaryFiles || active_tab == ActiveTab.EmptyFiles;
+    in-out property <bool> tool_with_groups: active_tab == ActiveTab.SimilarImages || active_tab == ActiveTab.DuplicateFiles || active_tab == ActiveTab.ExactFilenames || active_tab == ActiveTab.SimilarVideos || active_tab == ActiveTab.SimilarMusic;
     in-out property <ActiveTab> active_tab: ActiveTab.DuplicateFiles;
     in-out property <bool> is_tool_tab_active: active_tab != ActiveTab.Settings && active_tab != ActiveTab.About;
 
@@ -58,6 +58,7 @@ export global GuiState {
 
     in-out property <[{name: string, tab: ActiveTab}]> tools_model: [
         { name: Translations.tool_duplicate_files_text, tab: ActiveTab.DuplicateFiles },
+        { name: Translations.tool_exact_filenames_text, tab: ActiveTab.ExactFilenames },
         { name: Translations.tool_empty_folders_text, tab: ActiveTab.EmptyFolders },
         { name: Translations.tool_big_files_text, tab: ActiveTab.BigFiles },
         { name: Translations.tool_empty_files_text, tab: ActiveTab.EmptyFiles },
@@ -78,6 +79,8 @@ export global GuiState {
     // Bad workaround for missing i64 support in Slint(2 i32 are used instead):
     in-out property <int> selected_results_duplicates: 0;
     in-out property <int> selected_results_duplicates2: 0;
+    in-out property <int> selected_results_exact_filenames: 0;
+    in-out property <int> selected_results_exact_filenames2: 0;
     in-out property <int> selected_results_similar_images: 0;
     in-out property <int> selected_results_similar_images2: 0;
     in-out property <int> selected_results_similar_videos: 0;

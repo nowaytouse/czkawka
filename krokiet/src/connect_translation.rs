@@ -138,6 +138,7 @@ fn translate_items(app: &MainWindow) {
     translation.set_ref_text(flk!("ref").into());
     translation.set_path_text(flk!("path").into());
     translation.set_tool_duplicate_files_text(flk!("tool_duplicate_files").into());
+    translation.set_tool_exact_filenames_text(flk!("tool_exact_filenames").into());
     translation.set_tool_empty_folders_text(flk!("tool_empty_folders").into());
     translation.set_tool_big_files_text(flk!("tool_big_files").into());
     translation.set_tool_empty_files_text(flk!("tool_empty_files").into());
@@ -175,9 +176,6 @@ fn translate_items(app: &MainWindow) {
     translation.set_subsettings_images_duplicates_hash_type_text(flk!("subsettings_images_duplicates_hash_type").into());
     translation.set_subsettings_duplicates_check_method_text(flk!("subsettings_duplicates_check_method").into());
     translation.set_subsettings_duplicates_name_case_sensitive_text(flk!("subsettings_duplicates_name_case_sensitive").into());
-    translation.set_subsettings_duplicates_standard_mode_text(flk!("subsettings_duplicates_standard_mode").into());
-    translation.set_subsettings_duplicates_exact_name_mode_text(flk!("subsettings_duplicates_exact_name_mode").into());
-    translation.set_subsettings_duplicates_next_scan_hint_text(flk!("subsettings_duplicates_next_scan_hint").into());
     translation.set_subsettings_duplicates_exact_name_hint_text(flk!("subsettings_duplicates_exact_name_hint").into());
     translation.set_subsettings_duplicates_exact_name_warning_text(flk!("subsettings_duplicates_exact_name_warning").into());
     translation.set_subsettings_biggest_files_sub_method_text(flk!("subsettings_biggest_files_sub_method").into());
@@ -479,8 +477,9 @@ fn translate_items(app: &MainWindow) {
     translation.set_context_menu_copy_full_path_text(flk!("context_menu_copy_full_path_text").into());
     translation.set_context_menu_rename_text(flk!("context_menu_rename_text").into());
 
-    let tools_model: [(SharedString, ActiveTab); TOOLS_NUMBER] = [
+    let tools_model: [(SharedString, ActiveTab); TOOLS_NUMBER + 1] = [
         (flk!("tool_duplicate_files").into(), ActiveTab::DuplicateFiles),
+        (flk!("tool_exact_filenames").into(), ActiveTab::ExactFilenames),
         (flk!("tool_empty_folders").into(), ActiveTab::EmptyFolders),
         (flk!("tool_big_files").into(), ActiveTab::BigFiles),
         (flk!("tool_empty_files").into(), ActiveTab::EmptyFiles),

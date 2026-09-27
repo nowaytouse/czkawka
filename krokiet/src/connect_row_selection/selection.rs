@@ -75,8 +75,9 @@ pub(crate) fn recalculate_small_selection_if_needed(model: &ModelRc<SingleMainLi
 }
 
 pub(crate) fn initialize_selection_struct() {
-    let tools: [ActiveTab; TOOLS_NUMBER] = [
+    let tools: [ActiveTab; TOOLS_NUMBER + 1] = [
         ActiveTab::DuplicateFiles,
+        ActiveTab::ExactFilenames,
         ActiveTab::EmptyFolders,
         ActiveTab::BigFiles,
         ActiveTab::EmptyFiles,

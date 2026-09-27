@@ -22,6 +22,10 @@ pub(crate) fn set_number_of_enabled_items(app: &MainWindow, active_tab: ActiveTa
             app.global::<GuiState>().set_selected_results_duplicates(it1);
             app.global::<GuiState>().set_selected_results_duplicates2(it2);
         }
+        ActiveTab::ExactFilenames => {
+            app.global::<GuiState>().set_selected_results_exact_filenames(it1);
+            app.global::<GuiState>().set_selected_results_exact_filenames2(it2);
+        }
         ActiveTab::EmptyFolders => {
             app.global::<GuiState>().set_selected_results_empty_folders(it1);
             app.global::<GuiState>().set_selected_results_empty_folders2(it2);
@@ -91,6 +95,10 @@ pub(crate) fn get_number_of_enabled_items(app: &MainWindow, active_tab: ActiveTa
         ActiveTab::DuplicateFiles => (
             app.global::<GuiState>().get_selected_results_duplicates(),
             app.global::<GuiState>().get_selected_results_duplicates2(),
+        ),
+        ActiveTab::ExactFilenames => (
+            app.global::<GuiState>().get_selected_results_exact_filenames(),
+            app.global::<GuiState>().get_selected_results_exact_filenames2(),
         ),
         ActiveTab::EmptyFolders => (
             app.global::<GuiState>().get_selected_results_empty_folders(),

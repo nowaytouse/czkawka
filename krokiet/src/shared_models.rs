@@ -21,6 +21,7 @@ use crate::ActiveTab;
 
 pub struct SharedModels {
     pub shared_duplication_state: Option<DuplicateFinder>,
+    pub shared_exact_filenames_state: Option<DuplicateFinder>,
     pub shared_empty_folders_state: Option<EmptyFolder>,
     pub shared_empty_files_state: Option<EmptyFiles>,
     pub shared_temporary_files_state: Option<Temporary>,
@@ -40,6 +41,7 @@ impl SharedModels {
     pub fn new() -> Self {
         Self {
             shared_duplication_state: None,
+            shared_exact_filenames_state: None,
             shared_empty_folders_state: None,
             shared_empty_files_state: None,
             shared_temporary_files_state: None,
@@ -64,6 +66,7 @@ impl SharedModels {
         let cd = chosen_dir;
         let result = match active_tab {
             ActiveTab::DuplicateFiles => self.shared_duplication_state.as_ref().map(|x| x.save_all_in_one(cd, "results_duplicates")),
+            ActiveTab::ExactFilenames => self.shared_exact_filenames_state.as_ref().map(|x| x.save_all_in_one(cd, "results_exact_filenames")),
             ActiveTab::EmptyFolders => self.shared_empty_folders_state.as_ref().map(|x| x.save_all_in_one(cd, "results_empty_directories")),
             ActiveTab::EmptyFiles => self.shared_empty_files_state.as_ref().map(|x| x.save_all_in_one(cd, "results_empty_files")),
             ActiveTab::TemporaryFiles => self.shared_temporary_files_state.as_ref().map(|x| x.save_all_in_one(cd, "results_temporary_files")),
@@ -94,6 +97,7 @@ impl SharedModels {
     pub(crate) fn get_use_reference_folders(&self, active_tab: ActiveTab) -> bool {
         let used_reference_folder = match active_tab {
             ActiveTab::DuplicateFiles => self.shared_duplication_state.as_ref().map(|e| e.get_use_reference_folders()),
+            ActiveTab::ExactFilenames => self.shared_exact_filenames_state.as_ref().map(|e| e.get_use_reference_folders()),
             ActiveTab::EmptyFolders => self.shared_empty_folders_state.as_ref().map(|e| e.get_use_reference_folders()),
             ActiveTab::EmptyFiles => self.shared_empty_files_state.as_ref().map(|e| e.get_use_reference_folders()),
             ActiveTab::TemporaryFiles => self.shared_temporary_files_state.as_ref().map(|e| e.get_use_reference_folders()),

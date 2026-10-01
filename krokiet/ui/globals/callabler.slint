@@ -1,4 +1,4 @@
-import { LoadImagePreviewRequest, RenameFileRequest, RowSelectItemsWithShiftRequest, SelectItemsCustomColumnsRequest, SelectMode, SortColumnMode, SortMode, UpdateCustomSelectColumnRequest } from "common.slint";
+import { ActiveTab, LoadImagePreviewRequest, RenameFileRequest, RowSelectItemsWithShiftRequest, SelectItemsCustomColumnsRequest, SelectMode, SortColumnMode, SortMode, UpdateCustomSelectColumnRequest } from "common.slint";
 import { Palette } from "std-widgets.slint";
 import { Settings } from "settings.slint";
 
@@ -89,7 +89,7 @@ export global Callabler {
     callback unprotect_selected_items();
     callback row_toggle_protected(int);
     callback clear_all_protected_files();
-    callback filter_protected_files_after_scan();
+    callback filter_protected_files_after_scan(ActiveTab);
 
     callback theme_changed();
     theme_changed => {

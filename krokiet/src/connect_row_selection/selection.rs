@@ -473,7 +473,7 @@ fn rows_reverse_checked_selection(selection: &SelectionData, model: &ModelRc<Sin
         let new_model = model
             .iter()
             .map(|mut row| {
-                if row.focused_row {
+                if row.focused_row && !row.protected {
                     assert!(!row.header_row); // Header row should not be selected
                     row.checked = !row.checked;
                     if row.checked {
@@ -494,6 +494,9 @@ fn rows_reverse_checked_selection(selection: &SelectionData, model: &ModelRc<Sin
                 .unwrap_or_else(|| panic!("Failed to get row data with id {id}, with model {} items", model.row_count()));
             assert!(model_data.focused_row);
             assert!(!model_data.header_row);
+            if model_data.protected {
+                continue;
+            }
             model_data.checked = !model_data.checked;
             if model_data.checked {
                 checked_items += 1;
@@ -511,6 +514,29 @@ mod tests {
     use super::*;
     use crate::common::create_model_from_model_vec;
     use crate::test_common::get_model_vec;
+
+    #[test]
+    fn space_selection_never_checks_protected_rows() {
+        for exceeded_limit in [false, true] {
+            let mut rows = get_model_vec(2);
+            rows[0].focused_row = true;
+            rows[0].protected = true;
+            rows[1].focused_row = true;
+            let model = create_model_from_model_vec(&rows);
+            let selection = SelectionData {
+                number_of_selected_rows: 2,
+                selected_rows: if exceeded_limit { vec![] } else { vec![0, 1] },
+                exceeded_limit,
+            };
+
+            let (checked, unchecked, new_model) = rows_reverse_checked_selection(&selection, &model);
+            let result = new_model.unwrap_or(model);
+
+            assert_eq!((checked, unchecked), (1, 0));
+            assert!(!result.row_data(0).unwrap().checked);
+            assert!(result.row_data(1).unwrap().checked);
+        }
+    }
 
     #[test]
     fn rows_deselect_all_by_mode_with_exceeded_limit() {

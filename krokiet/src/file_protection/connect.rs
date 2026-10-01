@@ -214,9 +214,8 @@ fn connect_clear_all(app: &MainWindow) {
 
 fn connect_filter_after_scan(app: &MainWindow) {
     let a = app.as_weak();
-    app.global::<Callabler>().on_filter_protected_files_after_scan(move || {
+    app.global::<Callabler>().on_filter_protected_files_after_scan(move |scanned_tab| {
         let app = a.upgrade().expect("Failed to upgrade app :(");
-        let active_tab = app.global::<GuiState>().get_active_tab();
         let protected = {
             let pf = PROTECTED_FILES.lock().expect("Failed to lock protected files");
             pf.files.clone()
@@ -231,8 +230,8 @@ fn connect_filter_after_scan(app: &MainWindow) {
             let Some(app) = app_weak.upgrade() else {
                 return;
             };
-            mark_protected_in_model(&app, active_tab, &protected);
-            info!("Marked protected files in scan results for {active_tab:?}");
+            mark_protected_in_model(&app, scanned_tab, &protected);
+            info!("Marked protected files in scan results for {scanned_tab:?}");
         });
     });
 }

@@ -68,6 +68,7 @@ export component MainWindow inherits Window {
     in-out property <bool> stop_requested: false;
     in-out property <bool> scanning: false;
     in-out property <bool> processing: false;
+    private property <ActiveTab> scanning_tab: ActiveTab.DuplicateFiles;
     in-out property <ProgressToSend> progress_datas: {
         current_progress: 15,
         all_progress: 20,
@@ -97,6 +98,7 @@ export component MainWindow inherits Window {
                 horizontal-stretch: 0.0;
                 changed_active_tab() => {
                     GuiState.preview_visible = false;
+                    Callabler.load_image_preview({ path: "", crop_left: -1, crop_top: -1, crop_right: -1, crop_bottom: -1, original_width: -1, original_height: -1 });
                     main_list.changed_active_tab();
                 }
             }
@@ -205,6 +207,8 @@ export component MainWindow inherits Window {
             }
             scan_starting(item) => {
                 text_summary_text = Translations.searching_text;
+                scanning_tab = item;
+                main_list.reset_selection(item);
                 root.scan_starting(item);
                 main_list.scan_started(); // Need to clear sorting state
             }
@@ -465,7 +469,7 @@ export component MainWindow inherits Window {
         text_summary_text = scan_text;
         root.scanning = false;
         root.stop_requested = false;
-        Callabler.filter_protected_files_after_scan();
+        Callabler.filter_protected_files_after_scan(scanning_tab);
     }
 
     processing_ended(process_text) => {

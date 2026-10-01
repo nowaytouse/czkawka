@@ -117,6 +117,12 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Exact File Names GUI reliability - 2026-10-01
+
+- Exposed the existing image preview toggle in Exact File Names subsettings and included the tab label in Krokiet's translated sidebar width measurement. The tab uses Krokiet's existing on-demand side preview rather than loading thumbnails for every result row.
+- Kept protected rows unchecked when keyboard Space toggles a focused selection, including large selections. Scan completion now applies protection marks to the tab that started the scan even if the user switches tabs before it finishes.
+- Cancelled pending image preview loads when switching tabs or starting a new scan so an old image cannot reappear with new results.
+
 ### Filename cleanup and reliability - 2026-09-27
 
 - Added an independent Exact File Names tab to Krokiet. It reuses the existing name scanner without content hashing, matches the complete case-sensitive basename across folders, supports allowed-extension filtering, and keeps scan results and selections separate from Duplicate Files.

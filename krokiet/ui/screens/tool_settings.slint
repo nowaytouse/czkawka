@@ -236,6 +236,12 @@ export component ToolSettings {
             padding: 10px;
             SubsettingsHeader { }
 
+            CheckBoxWrapper {
+                text: Translations.settings_duplicate_image_preview_text;
+                checked <=> Settings.duplicate_image_preview;
+                height: 25px;
+            }
+
             Text {
                 text: Translations.subsettings_duplicates_exact_name_hint_text;
                 wrap: word-wrap;

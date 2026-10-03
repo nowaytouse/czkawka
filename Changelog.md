@@ -117,6 +117,16 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Rolling latest-stable dependencies - 2026-10-03
+
+- Made rolling dependency maintenance an explicit fork policy in `AGENTS.md` and `DEPENDENCIES.md`. Added `just upgrade-check` and extended `just upgrade` to cover major and exact-pinned stable releases across the workspace and standalone tools. Updates require compatibility fixes, the normal quality gates and a clean fork push/pull handoff; no background CI monitor is installed.
+- Refreshed workspace manifests and `Cargo.lock`, including lofty 0.25.4, lopdf 0.45.0, sevenz-rust2 0.23.0, rawler 0.8.0, ruzstd 0.9.0, yaml-rust2 0.13.0 and optional libheif-rs 3.0.0. Retained Slint/slint-build 1.18.1, fontique compatibility, optional decoder features and Krokiet hash sizes up to 8192.
+- Updated the independent regression/benchmark tool dependencies, removed unused benchmark dependencies and fixed the image benchmark's ARM-only unused-mut warning. The icon helper remains a target-less manifest template and is reviewed separately (editpe 0.2.4).
+- Updated Python quality tools to Ruff 0.16.8, mypy 2.4.0 and ty 0.0.84; kept Python 3.13 as a minimum instead of restricting all runs to that single minor version.
+- Pinned bincode to 2.0.1: published 3.0.0 intentionally does not compile and has no serde feature. Kept the existing legacy cache encoding and documented the replacement migration requirements instead of claiming a version-only upgrade.
+- Updated active GitHub Actions to verified release SHAs, Android Gradle plugin to stable 9.4.1 and the Docker base to digest-pinned Ubuntu 26.04. Rejected the previous local AGP alpha and Ubuntu 26.10 development image. Android builds require compatible Gradle 9.6.0+ and JDK 17+.
+- Validated locally on macOS ARM64: `just fix` with the new Python tools, `just clip`, locked workspace tests (377 passed, zero failed, six ignored), standalone tool checks and a core check on latest stable Rust 1.99.0. The two existing cfg-specific ashpd/rawler manifest warnings remain; no code warnings were introduced. No hosted CI, Docker/Android runtime or live GUI validation is claimed, and existing app bundles were not replaced.
+
 ### Exact File Names GUI reliability - 2026-10-01
 
 - Exposed the existing image preview toggle in Exact File Names subsettings and included the tab label in Krokiet's translated sidebar width measurement. The tab uses Krokiet's existing on-demand side preview rather than loading thumbnails for every result row.

@@ -69,7 +69,9 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 
 ### Dependency stack (fork maintenance)
 
-The fork keeps **bincode 2** with the legacy wire format so existing cache binaries remain readable. Krokiet and Cedinia use **Slint 1.18.1**, which includes the fix for the Wayland window-size regression that originally required the upstream 1.17.0 pin. Compatible stable dependency updates are recorded in `Cargo.lock`; incompatible major versions and prereleases are not adopted automatically. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+**Rolling latest-stable dependencies are a fork feature.** `just upgrade-check` previews updates, including major versions and exact pins; `just upgrade` updates workspace and standalone Cargo tools. Changes still require API migration, feature validation and the normal quality gates. Build-tool and container versions are reviewed alongside Rust crates; prereleases are opt-in. See [DEPENDENCIES.md](DEPENDENCIES.md) for the procedure and reviewed exceptions.
+
+The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia use current stable **Slint 1.18.1**, with matched runtime/build versions and compatible fontique. The committed `Cargo.lock` records the resolved stack. See [Changelog.md](Changelog.md) under *Fork Modifications*.
 
 Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 
@@ -78,7 +80,10 @@ Quality CI also runs on `all-features`, uses the committed lockfile, checks defa
 ```bash
 git fetch upstream
 git merge upstream/master   # preserve the GTK deletion and Krokiet-only features
+just upgrade-check          # review latest stable dependencies and migrate available updates
 just fix
+just clip
+cargo test --locked --workspace
 ```
 
 See [AGENTS.md](AGENTS.md) for i18n (`just sync-zh-cn`) and architecture notes.

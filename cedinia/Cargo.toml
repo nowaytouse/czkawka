@@ -30,7 +30,7 @@ xxhash-rust = { version = "0.8", features = ["xxh3"] }
 # Translations
 i18n-embed = { version = "0.16", features = ["fluent-system", "desktop-requester"] }
 i18n-embed-fl = "0.10"
-rust-embed = { version = "8.5", features = ["debug-embed"] }
+rust-embed = { version = "8.12", features = ["debug-embed"] }
 
 
 [target.'cfg(target_os = "android")'.dependencies]
@@ -49,7 +49,7 @@ android_logger = "0.15.1"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
 rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }
-trash = "5.2.5"
+trash = "5.2.9"
 notify-rust = "4"
 #slint = { path = "/home/rafal/test/slint/api/rs/slint/", default-features = false, features = [
 #slint = { git = "https://github.com/slint-ui/slint.git", default-features = false, features = [
@@ -68,7 +68,7 @@ slint-build = "=1.18.1"
 
 # Used by build.rs to compile Java helpers to DEX when cross-compiling for Android.
 # The build.rs itself guards on TARGET containing "android" so this is a no-op on desktop.
-android-build = "0.1.2"
+android-build = "0.1.4"
 
 [features]
 default = []

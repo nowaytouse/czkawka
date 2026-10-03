@@ -364,6 +364,8 @@ committing).
 just run krokiet          # debug run
 just runr krokiet         # fast_release run
 just fix                  # format + clippy + Python checks
+just upgrade-check        # preview latest stable dependencies, including major and pinned releases
+just upgrade              # update dependencies; compatibility review and quality gates still required
 just translate            # AI-translate all projects
 just validate_translations [--fix]
 just sync-zh-cn           # fork: fill and validate Krokiet zh-CN gaps
@@ -383,6 +385,28 @@ After merging: `just fix`, `just clip`, `cargo test -p krokiet -p czkawka_core`,
 
 ---
 
+## Rolling dependencies (fork maintenance)
+
+Latest stable dependencies are a maintained fork feature. During dependency maintenance and
+upstream synchronization, run `just upgrade-check`, verify published versions against primary
+sources, and upgrade to the latest stable releases, including major versions. Adapt callers and
+tests rather than freezing old versions merely to avoid migration. Check Rust, Android build
+tools, GitHub Actions and container bases as well as workspace and standalone Cargo manifests.
+Do not introduce prereleases unless the user specifically requests them.
+
+Follow [DEPENDENCIES.md](DEPENDENCIES.md) for the update procedure and current exceptions.
+Every exception needs a concrete compatibility or safety reason and an exit condition; review
+it again on each pass. Keep Slint runtime/build versions synchronized and fontique compatible.
+Preserve cache bytes, optional decoders, Krokiet-only features, GTK deletion and hash sizes up to
+8192. Do not disable features to make an upgrade compile.
+
+After changes, run `just fix`, `just clip`, locked workspace tests and checks for changed standalone
+tools. Update `README.md` and `Changelog.md`, stage intended files explicitly, use an `[AI]` commit
+title, push only the fork, pull with `--ff-only`, and verify remote equality and clean porcelain.
+Do not monitor CI, add background monitors, or replace release binaries without a separate request.
+
+---
+
 ## Known Defects / Limitations (this fork)
 
 - **GTK frontend removed** – `czkawka_gui` source, builds, packaging, translations, and launchers are intentionally absent from this fork. Future upstream merges must preserve the deletion.
@@ -390,7 +414,7 @@ After merging: `just fix`, `just clip`, `cargo test -p krokiet -p czkawka_core`,
 - **Non-English translations are AI-generated** – only the English `.ftl` files are hand-edited; all other locales are machine-translated via Crowdin and may contain errors or missing entries.
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
 - **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
-- **bincode 2 on fork (`all-features`)** – core cache I/O uses bincode 2 with the legacy 1.3+ encoding; existing `.bin` cache files should load without regeneration. A future bincode 3 migration would break on-disk caches unless versioned filenames are introduced.
+- **bincode 2 on fork (`all-features`)** - core cache I/O pins 2.0.1 with the legacy 1.3+ encoding; existing `.bin` cache files should load without regeneration. Published 3.0.0 is a non-compiling retirement notice. A maintained replacement needs byte-level compatibility proof or explicitly versioned cache filenames; see `DEPENDENCIES.md`.
 - **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
 - **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools. Its visibility toggle is persisted in `BasicSettings.select_show_except_highest_quality`.
 

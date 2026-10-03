@@ -79,8 +79,21 @@ bench:
 bench_clean:
     rm -rf target/criterion
 
+# Requires cargo-edit. Preview includes major and exact-pinned stable releases.
+upgrade-check:
+    cargo upgrade --dry-run --incompatible allow --pinned allow --ignore-rust-version --exclude bincode
+    cargo upgrade --dry-run --manifest-path ci_tester/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --dry-run --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --dry-run --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --dry-run --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+
+# Updates files; review compatibility and run the required gates before committing.
 upgrade:
-    cargo +nightly -Z unstable-options update --breaking
+    cargo upgrade --incompatible allow --pinned allow --ignore-rust-version --exclude bincode
+    cargo upgrade --manifest-path ci_tester/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo update
 
 macos_gui_clippy_features := "krokiet/audio,krokiet/femtovg,krokiet/femtovg_wgpu,krokiet/heif,krokiet/libavif,krokiet/libraw,krokiet/skia_opengl,krokiet/software,krokiet/winit_femtovg,krokiet/winit_skia_opengl,krokiet/winit_software,krokiet/xdg_portal_trash,cedinia/femtovg,cedinia/femtovg_wgpu,cedinia/skia_opengl,cedinia/software,cedinia/winit_femtovg,cedinia/winit_skia_opengl,cedinia/winit_software"
@@ -317,7 +330,7 @@ android_symbolize dump:
     "$ANDROID_NDK_HOME/ndk-stack" -sym target/aarch64-linux-android/debug -dump {{dump}}
 
 # Build a signed release AAB suitable for Google Play Store upload.
-# Requires gradle 8.9+ in PATH (e.g. sdk install gradle 8.9 via sdkman).
+# Requires compatible stable Gradle 9.6.0+ and JDK 17+ in PATH.
 # The libcedinia.so is compiled by cargo-apk and the DEX is already embedded
 # in the .so via include_bytes! – no separate Java compilation is needed.
 android_build_aab:

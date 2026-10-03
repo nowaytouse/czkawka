@@ -7,5 +7,5 @@ edition = "2021"
 czkawka_core = { path = "../../czkawka_core", default-features = false }
 walkdir = "2.5.0"
 humansize = "2.1"
-rayon = "1.10.0"
+rayon = "1.12.0"
 strum = { version = "0.28.0", features = ["strum_macros", "derive"] }

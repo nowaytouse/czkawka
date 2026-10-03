@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [macos-latest]
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup env
         run: |
@@ -104,7 +104,7 @@ jobs:
           bash misc/pack_all_backends.sh mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }} mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}.zip
 
       - name: Store MacOS
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: all-${{ runner.os }}-${{ runner.arch }}-${{ env.VERS }}
           path: |
@@ -121,7 +121,7 @@ jobs:
 
       - name: Release
         if: ${{ github.ref == 'refs/heads/master' && vars.HAVE_PAT_REPOSITORY_TOKEN == '1' }}
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: "Nightly"
           files: |

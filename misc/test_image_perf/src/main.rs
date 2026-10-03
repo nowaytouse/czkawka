@@ -28,7 +28,10 @@ fn print_items() {
 
     #[allow(unused_mut)]
     let mut app_cpu_version = "Baseline";
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     let mut os_cpu_version = "Baseline";
+    #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+    let os_cpu_version = "Baseline";
     if cfg!(target_feature = "sse2") {
         app_cpu_version = "x86-64-v1 (SSE2)";
     }

@@ -49,7 +49,10 @@ android {
     // there before invoking Gradle.
     sourceSets {
         named("main") {
-            res.setSrcDirs(setOf(file("../../res")))
+            res.directories.apply {
+                clear()
+                add(file("../../res").absolutePath)
+            }
         }
     }
 }

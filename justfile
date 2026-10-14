@@ -79,9 +79,9 @@ bench:
 bench_clean:
     rm -rf target/criterion
 
-# Requires cargo-edit. Preview includes major and exact-pinned stable releases.
+# Requires cargo-edit. Fontique follows Slint's API version, not its independent latest release.
 upgrade-check:
-    cargo upgrade --dry-run --incompatible allow --pinned allow --ignore-rust-version --exclude bincode
+    cargo upgrade --dry-run --incompatible allow --pinned allow --ignore-rust-version --exclude bincode --exclude fontique
     cargo upgrade --dry-run --manifest-path ci_tester/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
@@ -89,7 +89,7 @@ upgrade-check:
 
 # Updates files; review compatibility and run the required gates before committing.
 upgrade:
-    cargo upgrade --incompatible allow --pinned allow --ignore-rust-version --exclude bincode
+    cargo upgrade --incompatible allow --pinned allow --ignore-rust-version --exclude bincode --exclude fontique
     cargo upgrade --manifest-path ci_tester/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version

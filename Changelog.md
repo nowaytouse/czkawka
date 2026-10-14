@@ -117,6 +117,17 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Upstream check and Android preview dependencies - 2026-10-14
+
+- Refetched official and fork refs and verified that upstream master still ends at eb8b91db (12.0.2). No newer official commits were available; preserved GTK removal, 8192 hash sizes, independent Exact File Names state, protection/selection guards, asynchronous previews/notifications, zh-CN fonts and legacy cache bytes.
+- Adopted the explicitly requested latest Android previews: AGP 9.5.0-alpha09 and Kotlin Gradle plugin 2.5.0-Beta1. A real Gradle trace identified the bundled KGP 2.2.10 as the caller of deprecated `Configuration.setVisible`; the documented higher-KGP classpath upgrade removes the warning. Kept built-in Kotlin enabled and the updated resource-directory DSL, without a legacy Kotlin plugin or warning suppression.
+- Updated the Android workflow from NDK r27 to stable r30 LTS (30.0.16248370). App SDK levels, signing and permission behavior are unchanged; local Gradle configuration checks are not Android package/device acceptance.
+- Preserved and refreshed the existing stable Rust dependency updates, including ZIP 9.0.3, sevenz-rust2 0.24.0, rodio 0.23.0 and rust-embed 8.13.0, plus standalone tool updates. Kept fontique 0.11.1 matched to Slint 1.18.1 and excluded independent fontique upgrades from the helper. Retained the documented stable Docker base and bincode cache encoding.
+- Adapted the standalone regression tester to ZIP 9's fallible filename API. Invalid entry names fail with the archive path and entry index instead of being silently skipped or converted lossily; existing entry normalization and timestamps are retained.
+- Removed the macOS conditional-dependency warnings without disabling backends: XDG portal dependencies are now Linux-only, and the pure-Rust RAW dependency is explicitly referenced in LibRaw builds for dependency lint. The Linux portal graph and the warning-free platform-compatible clippy configuration were checked.
+- Restored the tracked CLAUDE.md link to AGENTS.md with user approval. Preserved the pre-existing dependency edits in a named stash before integration; existing app bundles and older backups were untouched.
+- Local validation passed: warning-free `just fix`/`just clip`, locked workspace tests (377 passed, zero failed, six ignored), both changed standalone all-target checks and zh-CN validation. Gradle help, app task registration and resolved build dependencies passed strict warning checks. The local host has no Android SDK/NDK; no APK/device/live GUI acceptance or hosted CI result is claimed.
+
 ### Rolling latest-stable dependencies - 2026-10-03
 
 - Made rolling dependency maintenance an explicit fork policy in `AGENTS.md` and `DEPENDENCIES.md`. Added `just upgrade-check` and extended `just upgrade` to cover major and exact-pinned stable releases across the workspace and standalone tools. Updates require compatibility fixes, the normal quality gates and a clean fork push/pull handoff; no background CI monitor is installed.

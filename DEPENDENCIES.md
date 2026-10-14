@@ -44,7 +44,8 @@ repository, remote default branch, installed apps or release binaries as part of
 | Dependency | Current contract | Reason and exit condition |
 |------------|------------------|---------------------------|
 | `bincode` | Exact `2.0.1`, serde with legacy variable-integer encoding | Published `3.0.0` is a retirement notice whose source deliberately fails compilation and has no serde feature. Re-evaluate a maintained replacement on each update pass; migrate only with byte-level compatibility fixtures for existing 1.3+ caches, or explicitly version new cache files and document invalidation. |
-| Slint family | Matched exact runtime/build releases; compatible fontique | Update pins together when a newer stable Slint is published. Confirm the prior Wayland window-size fix, renderer support and bundled Chinese font remain functional. |
+| Slint family | Matched exact runtime/build releases; compatible fontique | Update pins together when a newer stable Slint is published. The updater excludes independent fontique bumps: Slint 1.18.1 exposes the fontique-011 API and needs the 0.11.1 dlopen feature configuration. Revisit when the Slint family changes; preserve renderer support and the bundled Chinese font. |
+| Android previews | AGP 9.5.0-alpha09 and KGP 2.5.0-Beta1 | Explicitly requested on 2026-10-14. Keep built-in Kotlin enabled and use Android's documented higher-KGP classpath mechanism. Recheck the latest preview coordinates and Gradle warning gate on each Android dependency pass; do not extend this opt-in to other ecosystems or alter app SDK levels without reviewing runtime behavior. |
 | macOS Skia | Platform-compatible feature set | Upstream Skia has separate Metal and Vulkan macOS prebuilt artifacts. Validate supported combinations separately; do not combine unsupported backends or remove them from other platforms. |
 
 The bincode retirement notice is documented in the [published source](https://docs.rs/crate/bincode/3.0.0/source/src/lib.rs).
@@ -52,7 +53,41 @@ The [Android Gradle plugin compatibility table](https://developer.android.com/bu
 defines the corresponding Gradle requirements. Recheck both when updating; this document does
 not assert that an old exception remains necessary indefinitely.
 
-## Last reviewed: 2026-10-03
+## Last reviewed: 2026-10-14
+
+- Fresh official Git refs and GitHub commit metadata agree on `upstream/master` at
+  `eb8b91dbb4d25dff416202674ee0de84ee4b5e5c`. The fork contains it; no newer merge was needed.
+- Adopted AGP `9.5.0-alpha09` and explicitly upgraded its embedded KGP from `2.2.10` to the
+  latest published preview `2.5.0-Beta1`. A traced `Configuration.setVisible` warning came
+  from KGP, not project code. `gradle help --warning-mode fail --no-daemon` passed on Gradle
+  `9.8.1` / JDK `27` without that warning. No warning suppression or built-in Kotlin opt-out
+  is used. See [Android's higher-KGP upgrade instructions](https://developer.android.com/build/releases/agp-9-0-0-release-notes#upgrade-to-a-higher-kgp-version).
+- Android Rust libraries remain at the latest compatible releases: android-activity `0.6.1`,
+  jni-high `0.1.0`, android_logger `0.15.1`, android-build `0.1.4` and matched Slint `1.18.1`.
+  The `backend-android-activity-06` type boundary is retained.
+- Updated the Android workflow's NDK from `27.2.12479018` to stable r30 LTS
+  `30.0.16248370`, verified in Google's SDK repository stable channel. App SDK levels,
+  signing and runtime permission behavior are unchanged. The local host has no Android
+  SDK/NDK or Rust Android target, so no APK build or device verification is claimed.
+- Preserved existing stable dependency updates, including ZIP `9.0.3`, sevenz-rust2 `0.24.0`,
+  rodio `0.23.0` and rust-embed `8.13.0`, and updated standalone tools. Fontique stays aligned
+  at `0.11.1`; bincode and GTK-removal invariants are unchanged. Docker keeps the previously
+  verified Ubuntu `26.04` digest; a newer digest could not be fetched due to registry TLS errors.
+- Removed the two macOS conditional-dependency warnings: the Linux-only portal dependencies
+  now use target-specific declarations, and the fallback RAW dependency remains explicit
+  when LibRaw is selected. `just fix` passed without warnings; a Linux-target dependency
+  graph check still resolves ashpd through the portal feature.
+- Locked workspace tests passed: 377 including doctests, zero failures and six existing
+  ignored cases. Exact filename/reference-folder scans, protected Space selection and
+  bincode-1-compatible cache byte fixtures passed. `just clip` passed without warnings and
+  Krokiet zh-CN translations validated successfully.
+- Both changed standalone tools passed all-target compilation after adapting the regression
+  tester's ZIP 9 filename result to fail with archive/entry context on invalid names.
+  Android `help`, all app task registration and resolved build dependencies passed with
+  `--warning-mode fail`. These checks do not replace an APK build, device test or live GUI
+  acceptance; no installed app bundle was replaced and hosted CI was not monitored.
+
+## Previous review: 2026-10-03
 
 - Workspace direct dependencies are at their latest stable requirements, except the documented
   bincode retirement. Slint/slint-build remain at the current stable `1.18.1`.

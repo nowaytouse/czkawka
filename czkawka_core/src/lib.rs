@@ -1,3 +1,7 @@
+// Keep the fallback decoder visible to dependency lint when this build selects LibRaw.
+#[cfg(feature = "libraw")]
+use rawler as _;
+
 pub mod common;
 pub mod helpers;
 pub mod localizer_core;

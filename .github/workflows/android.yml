@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # NDK releases: https://developer.android.com/ndk/downloads/revision_history
-      # Latest stable NDK r27 (27.2.12479018)
-      NDK_VERSION: 27.2.12479018
+      # Stable NDK r30 LTS; toolchain updates do not change app SDK levels.
+      NDK_VERSION: 30.0.16248370
       # API levels & cumulative device share: https://apilevels.com/
       # 21=Android 5.0 (99.8%), 26=Android 8.0 (94.8%), 28=Android 9.0 (91.8%)
       # Google Play min target SDK policy: https://developer.android.com/google/play/requirements/target-sdk
@@ -111,7 +111,7 @@ jobs:
       #     mv app/build/outputs/bundle/release/app-release.aab ../../cedinia.aab
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cedinia-${{ env.VERS }}-apk
           path: |

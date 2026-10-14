@@ -89,7 +89,10 @@ fn load_zip(zip_path: &str) -> Vec<TestFileEntry> {
         let mut zf = archive.by_index(i).unwrap();
 
         // Zip stores directories with a trailing '/'; normalise it away.
-        let raw = zf.name().to_owned();
+        let raw = zf
+            .name()
+            .unwrap_or_else(|e| panic!("Cannot read entry {i} name from {zip_path}: {e}"))
+            .into_owned();
         let path = raw.trim_end_matches('/').to_owned();
         if path.is_empty() {
             continue;

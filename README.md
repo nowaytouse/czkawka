@@ -49,7 +49,7 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (all-features branch)
 
-This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`) and adds:
+This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-14 with no newer commits) and adds:
 
 ### From upstream (merged regularly)
 
@@ -72,6 +72,8 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 **Rolling latest-stable dependencies are a fork feature.** `just upgrade-check` previews updates, including major versions and exact pins; `just upgrade` updates workspace and standalone Cargo tools. Changes still require API migration, feature validation and the normal quality gates. Build-tool and container versions are reviewed alongside Rust crates; prereleases are opt-in. See [DEPENDENCIES.md](DEPENDENCIES.md) for the procedure and reviewed exceptions.
 
 The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia use current stable **Slint 1.18.1**, with matched runtime/build versions and compatible fontique. The committed `Cargo.lock` records the resolved stack. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+
+Android build dependencies have an explicit preview opt-in: **AGP 9.5.0-alpha09** and **Kotlin Gradle plugin 2.5.0-Beta1**, with Gradle 9.8.1 locally checked. The Kotlin runtime override follows Android's documented upgrade mechanism and removes the old bundled plugin's Gradle deprecation warning without disabling built-in Kotlin. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. This configuration check is not an APK/device test.
 
 Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 

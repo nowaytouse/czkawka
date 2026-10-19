@@ -117,6 +117,16 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Warning visibility and filesystem reliability - 2026-10-19
+
+- Fixed inherited Krokiet batch-rename paths that could replace an existing filename or extension target. Destination checks include dangling symlinks and surface inspection failures; batches are ordered so two selected items cannot silently replace each other's destination. Single-row rename uses the same check and rejects dot names and NUL characters. External concurrent destination changes can still race with the checked rename; no atomic no-replace guarantee is claimed.
+- Replaced test-only rename implementations with real filesystem regressions while retaining the model-processor mock at its own test boundary.
+- Made Android Java class cleanup fail closed instead of silently bundling stale classes after a cleanup failure. Retained successful javac/D8 diagnostics and both output streams on errors; added host-runnable cleanup and diagnostic regressions without requiring an Android SDK.
+- Hardened regression-fixture materialization: reject traversal, absolute/ambiguous paths, duplicate entries and file/symlink ancestors before writing; create files exclusively and symlinks last to prevent case-alias redirection. Refuse stale test roots instead of deleting unknown contents and report cleanup failures. Valid file bytes, mtimes and intentionally broken symlinks remain supported.
+- Reviewed the existing dependency edits: retained sevenz-rust2 0.24.1, AGP 9.5.0-alpha10 and setup-java 6.1.0, and kept Fontique 0.11.1 aligned with Slint 1.18.1. Ubuntu 26.10 is now stable, but its proposed registry digest could not be independently verified, so the previously verified 26.04 pin remains. Preserved the original edits in a named local stash.
+- Rechecked official master at eb8b91db with no newer commits. GTK removal, 8192 hash sizes, independent Exact File Names state, file protection, preview/notification generation guards, zh-CN fonts and legacy cache encoding are unchanged. No hosted CI monitoring, release bundle replacement, APK/device or live GUI acceptance is claimed.
+- Local validation passed on macOS ARM64 / Rust 1.94.1: final warning-free `just fix` and `just clip`, locked workspace tests (383 passed, zero failed, six existing ignored cases), five standalone fixture tests with strict clippy, zh-CN validation and strict Gradle configuration/task/dependency checks. The rename collision tests first failed against the old production paths and passed after the fix; the real archive-driven CLI integration suite was not run.
+
 ### Upstream check and Android preview dependencies - 2026-10-14
 
 - Refetched official and fork refs and verified that upstream master still ends at eb8b91db (12.0.2). No newer official commits were available; preserved GTK removal, 8192 hash sizes, independent Exact File Names state, protection/selection guards, asynchronous previews/notifications, zh-CN fonts and legacy cache bytes.

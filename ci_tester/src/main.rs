@@ -2,18 +2,17 @@ mod advanced_tests;
 mod test_cases;
 mod test_file_system;
 
-use advanced_tests::{AdvancedTestCase, all_advanced_test_cases};
-use test_cases::{TestCase, all_test_cases};
-use test_file_system::TestFileEntry;
-
 use std::collections::{BTreeMap, BTreeSet};
-use std::fs;
 use std::process::{Command, Output, Stdio};
-use std::env;
+use std::{env, fs};
+
+use advanced_tests::{all_advanced_test_cases, AdvancedTestCase};
 use log::info;
 use rayon::prelude::*;
+use test_cases::{all_test_cases, TestCase};
+use test_file_system::TestFileEntry;
 
-//  shared state 
+//  shared state
 
 #[derive(Default, Clone, Debug)]
 pub(crate) struct CollectedFiles {
@@ -35,7 +34,7 @@ struct Failure {
     error: String,
 }
 
-//  entry point 
+//  entry point
 
 // App runs - ./ci_tester PATH_TO_CZKAWKA
 fn main() {
@@ -55,7 +54,7 @@ fn main() {
     COLLECTED_FILES.set(baseline);
     ZIP_ENTRIES.set(entries);
 
-    let test_cases     = all_test_cases();
+    let test_cases = all_test_cases();
     let advanced_cases = all_advanced_test_cases();
 
     println!(
@@ -92,22 +91,14 @@ fn main() {
 
         let n_fail = standard_failures.len() + advanced_failures.len();
         let n_total = test_cases.len() + advanced_cases.len();
-        println!(
-            "Attempt {}/{}: {}/{} passed",
-            attempt + 1, ATTEMPTS,
-            n_total - n_fail, n_total,
-        );
+        println!("Attempt {}/{}: {}/{} passed", attempt + 1, ATTEMPTS, n_total - n_fail, n_total,);
 
         all_failures.extend(standard_failures);
         all_failures.extend(advanced_failures);
     }
 
     if all_failures.is_empty() {
-        println!(
-            "\nAll {} tests passed ({} attempts).",
-            test_cases.len() + advanced_cases.len(),
-            ATTEMPTS,
-        );
+        println!("\nAll {} tests passed ({} attempts).", test_cases.len() + advanced_cases.len(), ATTEMPTS,);
     } else {
         // Group by test name so repeated failures across attempts are shown once.
         let mut by_name: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -118,7 +109,9 @@ fn main() {
         let total_failures: usize = by_name.values().map(|v| v.len()).sum();
         eprintln!(
             "\n====== {} UNIQUE FAILURE(S) ({} total across {} attempts) ======",
-            by_name.len(), total_failures, ATTEMPTS,
+            by_name.len(),
+            total_failures,
+            ATTEMPTS,
         );
         for (name, errors) in &by_name {
             eprintln!("  [{}/{}] {}", errors.len(), ATTEMPTS, name);
@@ -136,34 +129,31 @@ fn main() {
 }
 
 fn test_args() {
-    let modes = [
-        "dup", "big", "empty-folders", "empty-files", "temp", "image",
-        "symlinks", "broken", "ext", "video", "music",
-    ];
+    let modes = ["dup", "big", "empty-folders", "empty-files", "temp", "image", "symlinks", "broken", "ext", "video", "music"];
     for mode in modes {
+        fs::create_dir("RandomDirWithoutContent").expect("create fresh argument-test directory");
         info!("Testing mode args: {mode}");
-        let _ = fs::remove_dir_all("RandomDirWithoutContent");
-        fs::create_dir_all("RandomDirWithoutContent").expect("Should not fail in tests");
-        run_with_good_status(
-            &[CZKAWKA_PATH.get().as_str(), mode, "-d", "RandomDirWithoutContent", "-H", "-W"],
-            false,
-        )
-        .expect("test_args failed");
+        run_with_good_status(&[CZKAWKA_PATH.get().as_str(), mode, "-d", "RandomDirWithoutContent", "-H", "-W"], false).expect("test_args failed");
+        fs::remove_dir("RandomDirWithoutContent").expect("remove argument-test directory");
     }
-    let _ = fs::remove_dir_all("RandomDirWithoutContent");
 }
 
-//  test runners 
+//  test runners
 
 fn run_standard_test(tc: &TestCase) -> Result<(), String> {
     let dir = format!("TestFiles_{}", tc.name);
+    fs::create_dir(&dir).map_err(|e| format!("create fresh test directory {dir}: {e}"))?;
     let result = run_standard_test_inner(tc, &dir);
-    let _ = fs::remove_dir_all(&dir);
-    result
+    let cleanup = fs::remove_dir_all(&dir).map_err(|e| format!("remove test directory {dir}: {e}"));
+    match (result, cleanup) {
+        (Err(test), Err(cleanup)) => Err(format!("{test}; cleanup failed: {cleanup}")),
+        (Err(test), _) => Err(test),
+        (_, Err(cleanup)) => Err(cleanup),
+        (Ok(()), Ok(())) => Ok(()),
+    }
 }
 
 fn run_standard_test_inner(tc: &TestCase, dir: &str) -> Result<(), String> {
-    let _ = fs::remove_dir_all(dir);
     unzip_files(dir)?;
 
     // Build the czkawka command: replace the "TestFiles" placeholder and append -H.
@@ -175,25 +165,23 @@ fn run_standard_test_inner(tc: &TestCase, dir: &str) -> Result<(), String> {
 
     run_with_good_status(&cmd, false).map_err(|e| format!("czkawka failed: {e}"))?;
 
-    file_folder_diffs(
-        COLLECTED_FILES.get(),
-        dir,
-        tc.expected_files,
-        tc.expected_folders,
-        tc.expected_symlinks,
-    )
+    file_folder_diffs(COLLECTED_FILES.get(), dir, tc.expected_files, tc.expected_folders, tc.expected_symlinks)
 }
 
 fn run_advanced_test(tc: &AdvancedTestCase) -> Result<(), String> {
     let dir = format!("TestFiles_adv_{}", tc.name);
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(&dir).map_err(|e| format!("create_dir_all({dir}): {e}"))?;
+    fs::create_dir(&dir).map_err(|e| format!("create fresh test directory {dir}: {e}"))?;
     let result = (tc.run)(&dir);
-    let _ = fs::remove_dir_all(&dir);
-    result
+    let cleanup = fs::remove_dir_all(&dir).map_err(|e| format!("remove test directory {dir}: {e}"));
+    match (result, cleanup) {
+        (Err(test), Err(cleanup)) => Err(format!("{test}; cleanup failed: {cleanup}")),
+        (Err(test), _) => Err(test),
+        (_, Err(cleanup)) => Err(cleanup),
+        (Ok(()), Ok(())) => Ok(()),
+    }
 }
 
-//  infrastructure (pub(crate) so advanced_tests.rs can use them) 
+//  infrastructure (pub(crate) so advanced_tests.rs can use them)
 
 /// Write the full test file tree to `dir` using the in-memory snapshot.
 /// Replaces the previous `unzip -qq -X TestFiles.zip -d <dir>` shell call.
@@ -225,15 +213,8 @@ pub(crate) fn run_with_good_status(str_command: &[&str], print_output: bool) -> 
     ))
 }
 
-fn file_folder_diffs(
-    baseline: &CollectedFiles,
-    dir: &str,
-    expected_files: &[&str],
-    expected_folders: &[&str],
-    expected_symlinks: &[&str],
-) -> Result<(), String> {
-    let current = collect_all_files_and_dirs(dir)
-        .map_err(|e| format!("collect_all_files_and_dirs({dir}): {e}"))?;
+fn file_folder_diffs(baseline: &CollectedFiles, dir: &str, expected_files: &[&str], expected_folders: &[&str], expected_symlinks: &[&str]) -> Result<(), String> {
+    let current = collect_all_files_and_dirs(dir).map_err(|e| format!("collect_all_files_and_dirs({dir}): {e}"))?;
 
     let mut diff_files: Vec<&str> = baseline.files.difference(&current.files).map(|s| s.as_str()).collect();
     let mut diff_folders: Vec<&str> = baseline.folders.difference(&current.folders).map(|s| s.as_str()).collect();
@@ -243,7 +224,7 @@ fn file_folder_diffs(
     diff_folders.sort_unstable();
     diff_symlinks.sort_unstable();
 
-    let mut exp_files   = expected_files.to_vec();
+    let mut exp_files = expected_files.to_vec();
     let mut exp_folders = expected_folders.to_vec();
     let mut exp_symlinks = expected_symlinks.to_vec();
 
@@ -253,22 +234,20 @@ fn file_folder_diffs(
 
     let mut errors: Vec<String> = Vec::new();
     if diff_files != exp_files {
-        errors.push(format!(
-            "files mismatch\n    expected: {exp_files:?}\n    got:      {diff_files:?}"
-        ));
+        errors.push(format!("files mismatch\n    expected: {exp_files:?}\n    got:      {diff_files:?}"));
     }
     if diff_folders != exp_folders {
-        errors.push(format!(
-            "folders mismatch\n    expected: {exp_folders:?}\n    got:      {diff_folders:?}"
-        ));
+        errors.push(format!("folders mismatch\n    expected: {exp_folders:?}\n    got:      {diff_folders:?}"));
     }
     if diff_symlinks != exp_symlinks {
-        errors.push(format!(
-            "symlinks mismatch\n    expected: {exp_symlinks:?}\n    got:      {diff_symlinks:?}"
-        ));
+        errors.push(format!("symlinks mismatch\n    expected: {exp_symlinks:?}\n    got:      {diff_symlinks:?}"));
     }
 
-    if errors.is_empty() { Ok(()) } else { Err(errors.join("\n")) }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors.join("\n"))
+    }
 }
 
 /// Collects all entries under `dir` and returns them as *relative* paths
@@ -276,7 +255,7 @@ fn file_folder_diffs(
 /// regardless of the concrete directory name chosen per test.
 pub(crate) fn collect_all_files_and_dirs(dir: &str) -> std::io::Result<CollectedFiles> {
     let prefix = format!("{dir}/");
-    let mut files   = BTreeSet::new();
+    let mut files = BTreeSet::new();
     let mut folders = BTreeSet::new();
     let mut symlinks = BTreeSet::new();
 
@@ -305,9 +284,5 @@ pub(crate) fn collect_all_files_and_dirs(dir: &str) -> std::io::Result<Collected
 }
 
 fn collect_output(output: &Output) -> String {
-    format!(
-        "{}\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-    )
+    format!("{}\n{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr),)
 }

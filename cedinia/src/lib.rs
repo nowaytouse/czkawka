@@ -1,6 +1,11 @@
 #![allow(clippy::unwrap_used)]
 #![allow(clippy::indexing_slicing)]
 #![allow(clippy::todo)]
+
+#[cfg(test)]
+#[path = "../build_support.rs"]
+mod build_support_tests;
+
 mod app;
 mod callbacks;
 pub mod common;

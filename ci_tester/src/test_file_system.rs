@@ -38,15 +38,16 @@
 //! | Videos/V3.webm  | 471 868   | 2006-07-24 03:21       | overall oldest (dup group) |
 //! | Videos/V5.mp4   | 435 803   | 2023-10-12 15:48       | newest                 |
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::Path;
 
 use crate::CollectedFiles;
 
-//  data types 
+//  data types
 
+#[derive(Clone, Copy, Debug)]
 pub(crate) enum EntryKind {
     Dir,
     File,
@@ -67,16 +68,41 @@ pub(crate) struct TestFileEntry {
     pub mtime_unix_secs: Option<u64>,
 }
 
-//  loading 
+//  loading
 
-/// Read every entry from the zip and append additional synthetic entries.
-/// Returns the complete list used by both `default_test_files` and
-/// `baseline_from_entries`.
+/// Read and validate zip and synthetic entries for materialization and baseline calculation.
 pub(crate) fn load_all_test_entries(zip_path: &str) -> Vec<TestFileEntry> {
     let mut entries = load_zip(zip_path);
     validate_known_file_sizes(&entries);
     add_synthetic_entries(&mut entries);
+    validate_entry_paths(&entries).unwrap_or_else(|e| panic!("Invalid entries in {zip_path}: {e}"));
     entries
+}
+
+fn validate_entry_paths(entries: &[TestFileEntry]) -> Result<(), String> {
+    let mut paths: BTreeMap<&str, EntryKind> = BTreeMap::new();
+
+    for entry in entries {
+        let path = entry.path.as_str();
+        if path.contains('\\') || path.contains('\0') || path.contains(':') || path.split('/').any(|part| matches!(part, "" | "." | "..")) {
+            return Err(format!("unsafe path {path:?}"));
+        }
+        if let Some(previous_kind) = paths.get(path) {
+            return Err(format!("duplicate path {path:?} ({previous_kind:?} and {:?})", entry.kind));
+        }
+
+        for (existing, kind) in &paths {
+            if path.starts_with(&format!("{existing}/")) && matches!(kind, EntryKind::File | EntryKind::Symlink) {
+                return Err(format!("path {path:?} is beneath {kind:?} entry {existing:?}"));
+            }
+            if existing.starts_with(&format!("{path}/")) && matches!(entry.kind, EntryKind::File | EntryKind::Symlink) {
+                return Err(format!("path {existing:?} is beneath {:?} entry {path:?}", entry.kind));
+            }
+        }
+        paths.insert(path, entry.kind);
+    }
+
+    Ok(())
 }
 
 fn load_zip(zip_path: &str) -> Vec<TestFileEntry> {
@@ -89,14 +115,8 @@ fn load_zip(zip_path: &str) -> Vec<TestFileEntry> {
         let mut zf = archive.by_index(i).unwrap();
 
         // Zip stores directories with a trailing '/'; normalise it away.
-        let raw = zf
-            .name()
-            .unwrap_or_else(|e| panic!("Cannot read entry {i} name from {zip_path}: {e}"))
-            .into_owned();
-        let path = raw.trim_end_matches('/').to_owned();
-        if path.is_empty() {
-            continue;
-        }
+        let raw = zf.name().unwrap_or_else(|e| panic!("Cannot read entry {i} name from {zip_path}: {e}")).into_owned();
+        let path = if zf.is_dir() { raw.strip_suffix('/').unwrap_or(&raw) } else { &raw }.to_owned();
 
         let mtime_unix_secs = zf.last_modified().and_then(zip_dt_to_unix_secs);
 
@@ -106,13 +126,28 @@ fn load_zip(zip_path: &str) -> Vec<TestFileEntry> {
         if is_symlink {
             let mut data = Vec::new();
             zf.read_to_end(&mut data).unwrap();
-            entries.push(TestFileEntry { path, kind: EntryKind::Symlink, data, mtime_unix_secs });
+            entries.push(TestFileEntry {
+                path,
+                kind: EntryKind::Symlink,
+                data,
+                mtime_unix_secs,
+            });
         } else if zf.is_dir() {
-            entries.push(TestFileEntry { path, kind: EntryKind::Dir, data: Vec::new(), mtime_unix_secs });
+            entries.push(TestFileEntry {
+                path,
+                kind: EntryKind::Dir,
+                data: Vec::new(),
+                mtime_unix_secs,
+            });
         } else {
             let mut data = Vec::new();
             zf.read_to_end(&mut data).unwrap();
-            entries.push(TestFileEntry { path, kind: EntryKind::File, data, mtime_unix_secs });
+            entries.push(TestFileEntry {
+                path,
+                kind: EntryKind::File,
+                data,
+                mtime_unix_secs,
+            });
         }
     }
 
@@ -153,7 +188,7 @@ fn zip_dt_to_unix_secs(dt: zip::DateTime) -> Option<u64> {
 fn validate_known_file_sizes(entries: &[TestFileEntry]) {
     /// (relative path, expected size in bytes)
     const KNOWN_SIZES: &[(&str, usize)] = &[
-        //  Images 
+        //  Images
         // A1 = A2 = A5 (identical bytes, 8 772 B each).
         // A3.png is perceptually similar to A1/A2/A5 (same visual content).
         ("Images/A1.jpg", 8772),
@@ -161,14 +196,14 @@ fn validate_known_file_sizes(entries: &[TestFileEntry]) {
         ("Images/A3.png", 20920),
         ("Images/A4.jpg", 25105),
         ("Images/A5.jpg", 8772),
-        //  Music 
+        //  Music
         // M1 = M2 = M5 (identical bytes, 43 730 B each).
         ("Music/M1.mp3", 43730),
         ("Music/M2.mp3", 43730),
         ("Music/M3.flac", 450079),
         ("Music/M4.mp3", 3754941),
         ("Music/M5.mp3", 43730),
-        //  Videos 
+        //  Videos
         // V1 = V2 = V5 (identical bytes, 435 803 B each).
         // V3.webm is perceptually similar (same visual content, different format).
         ("Videos/V1.mp4", 435803),
@@ -176,10 +211,10 @@ fn validate_known_file_sizes(entries: &[TestFileEntry]) {
         ("Videos/V3.webm", 471868),
         ("Videos/V4.mp4", 323521),
         ("Videos/V5.mp4", 435803),
-        //  Bad extension 
+        //  Bad extension
         // BE.jpg is actually an MP4 (ftypisom magic bytes).
         ("BadExtensions/BE.jpg", 126240),
-        //  Broken files 
+        //  Broken files
         ("Broken/Br.jpg", 6),
         ("Broken/Br.mp3", 7),
         ("Broken/Br.pdf", 7),
@@ -195,9 +230,7 @@ fn validate_known_file_sizes(entries: &[TestFileEntry]) {
         .collect();
 
     for &(path, expected_size) in KNOWN_SIZES {
-        let actual = file_map.get(path).copied().unwrap_or_else(|| {
-            panic!("TestFiles.zip is missing expected file '{path}'")
-        });
+        let actual = file_map.get(path).copied().unwrap_or_else(|| panic!("TestFiles.zip is missing expected file '{path}'"));
         assert_eq!(
             actual, expected_size,
             "TestFiles.zip: '{path}' has size {actual} B but expected {expected_size} B - wrong zip version?"
@@ -209,7 +242,7 @@ fn validate_known_file_sizes(entries: &[TestFileEntry]) {
 /// needed for specific test cases.  This is the preferred way to add small,
 /// purpose-built test assets without touching the zip.
 fn add_synthetic_entries(entries: &mut Vec<TestFileEntry>) {
-    //  Bad-names test assets 
+    //  Bad-names test assets
     // A JPEG file whose extension is all-uppercase (.JPG).  The `bad-names -u`
     // flag will detect and rename it to photo.jpg, letting the test verify that
     // BadNames/photo.JPG disappears from the directory tree.
@@ -231,11 +264,12 @@ fn add_synthetic_entries(entries: &mut Vec<TestFileEntry>) {
     });
 }
 
-//  baseline 
+//  baseline
 
 /// Derive the `CollectedFiles` baseline directly from the in-memory entry list.
 /// This avoids the write-then-scan cycle that was previously needed.
 pub(crate) fn baseline_from_entries(entries: &[TestFileEntry]) -> CollectedFiles {
+    validate_entry_paths(entries).unwrap_or_else(|e| panic!("Invalid test entry paths: {e}"));
     let mut files = BTreeSet::new();
     let mut folders = BTreeSet::new();
     let mut symlinks = BTreeSet::new();
@@ -257,41 +291,62 @@ pub(crate) fn baseline_from_entries(entries: &[TestFileEntry]) -> CollectedFiles
     CollectedFiles { files, folders, symlinks }
 }
 
-//  writing to disk 
+//  writing to disk
 
-/// Recreate the full test directory tree under `dir`.
-///
-/// This is the Rust-native replacement for `unzip -qq -X TestFiles.zip -d <dir>`.
-/// Both zip-based and synthetic entries are written, so the on-disk layout is
-/// identical to what `baseline_from_entries` describes.
-///
-/// The `-X` flag of the old `unzip` command preserved modification timestamps;
-/// we replicate that behaviour by calling `filetime::set_file_mtime` after
-/// each file write.  This is critical for tests that rely on time-based
-/// deletion strategies (OO / ON / AEO / AEN).
+fn create_fixture_directories(root: &Path, relative: &Path) -> Result<(), String> {
+    let mut directory = root.to_path_buf();
+    for part in relative.components() {
+        directory.push(part);
+        match fs::create_dir(&directory) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                let metadata = fs::symlink_metadata(&directory).map_err(|e| format!("inspect directory {directory:?}: {e}"))?;
+                if !metadata.is_dir() {
+                    return Err(format!("fixture ancestor is not a real directory: {directory:?}"));
+                }
+            }
+            Err(error) => return Err(format!("mkdir {directory:?}: {error}")),
+        }
+    }
+    Ok(())
+}
+
+/// Materialize validated entries into an empty directory without overwriting existing paths.
+/// Preserve file mtimes for deterministic time-based deletion tests (OO / ON / AEO / AEN).
 pub(crate) fn default_test_files(dir: &str, entries: &[TestFileEntry]) -> Result<(), String> {
-    for entry in entries {
+    validate_entry_paths(entries)?;
+    let metadata = fs::symlink_metadata(dir).map_err(|e| format!("inspect test directory {dir}: {e}"))?;
+    if !metadata.is_dir() || fs::read_dir(dir).map_err(|e| format!("read test directory {dir}: {e}"))?.next().is_some() {
+        return Err(format!("test directory must be an empty real directory: {dir}"));
+    }
+    // Create symlinks last so case-insensitive aliases cannot redirect subsequent writes.
+    let (links, regular): (Vec<_>, Vec<_>) = entries.iter().partition(|entry| matches!(entry.kind, EntryKind::Symlink));
+    for entry in regular.into_iter().chain(links) {
         let full = format!("{dir}/{}", entry.path);
         match entry.kind {
             EntryKind::Dir => {
-                fs::create_dir_all(&full).map_err(|e| format!("mkdir {full}: {e}"))?;
+                create_fixture_directories(Path::new(dir), Path::new(&entry.path))?;
             }
             EntryKind::File => {
-                if let Some(parent) = Path::new(&full).parent() {
-                    fs::create_dir_all(parent).map_err(|e| format!("mkdir {parent:?}: {e}"))?;
+                if let Some(parent) = Path::new(&entry.path).parent() {
+                    create_fixture_directories(Path::new(dir), parent)?;
                 }
-                fs::write(&full, &entry.data).map_err(|e| format!("write {full}: {e}"))?;
+                fs::OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&full)
+                    .and_then(|mut file| file.write_all(&entry.data))
+                    .map_err(|e| format!("write {full}: {e}"))?;
 
                 // Restore the original mtime so that time-ordering tests are deterministic.
                 if let Some(secs) = entry.mtime_unix_secs {
                     let ft = filetime::FileTime::from_unix_time(secs as i64, 0);
-                    filetime::set_file_mtime(&full, ft)
-                        .map_err(|e| format!("set_file_mtime {full}: {e}"))?;
+                    filetime::set_file_mtime(&full, ft).map_err(|e| format!("set_file_mtime {full}: {e}"))?;
                 }
             }
             EntryKind::Symlink => {
-                if let Some(parent) = Path::new(&full).parent() {
-                    fs::create_dir_all(parent).map_err(|e| format!("mkdir {parent:?}: {e}"))?;
+                if let Some(parent) = Path::new(&entry.path).parent() {
+                    create_fixture_directories(Path::new(dir), parent)?;
                 }
                 // The symlink target is stored as raw bytes in the zip.
                 let target = std::str::from_utf8(&entry.data)
@@ -299,17 +354,25 @@ pub(crate) fn default_test_files(dir: &str, entries: &[TestFileEntry]) -> Result
                     .trim_end_matches('\0');
 
                 #[cfg(unix)]
-                std::os::unix::fs::symlink(target, &full)
-                    .map_err(|e| format!("symlink {target:?} → {full}: {e}"))?;
+                std::os::unix::fs::symlink(target, &full).map_err(|e| format!("symlink {target:?} → {full}: {e}"))?;
 
                 #[cfg(not(unix))]
                 {
                     // Symlinks are Unix-only; create an empty placeholder on Windows.
                     let _ = target;
-                    fs::write(&full, b"").map_err(|e| format!("write stub {full}: {e}"))?;
+                    fs::OpenOptions::new()
+                        .write(true)
+                        .create_new(true)
+                        .open(&full)
+                        .and_then(|mut file| file.write_all(b""))
+                        .map_err(|e| format!("write stub {full}: {e}"))?;
                 }
             }
         }
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "test_file_system_tests.rs"]
+mod tests;

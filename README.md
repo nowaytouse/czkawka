@@ -49,7 +49,7 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (all-features branch)
 
-This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-14 with no newer commits) and adds:
+This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-19 with no newer commits) and adds:
 
 ### From upstream (merged regularly)
 
@@ -66,6 +66,7 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 - **Modernized Krokiet UI** - updated color system, clearer active and hover states, improved spacing, and refreshed popup and list styling.
 - **Simplified Chinese (zh-CN)** - Noto Sans SC is bundled in Krokiet; maintain it with `just sync-zh-cn`; system locales such as `zh`, `zh-CN`, and `zh-Hans-CN` map to zh-CN on first run.
 - **Krokiet-only fork policy** - the legacy `czkawka_gui` GTK source, packaging, and launchers are intentionally removed. CLI and Cedinia follow upstream behavior; shared core changes are limited to capabilities required by Krokiet and cache compatibility.
+- **Reliability maintenance** - Krokiet rejects existing rename destinations, including dangling symlinks, and orders batch renames to prevent intra-batch collisions. Android builds stop if stale Java classes cannot be removed and retain compiler diagnostics. The regression harness validates fixture paths and creates fresh, non-overwriting test trees. These checks are not a sandbox against concurrent external filesystem changes.
 
 ### Dependency stack (fork maintenance)
 
@@ -73,7 +74,7 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 
 The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia use current stable **Slint 1.18.1**, with matched runtime/build versions and compatible fontique. The committed `Cargo.lock` records the resolved stack. See [Changelog.md](Changelog.md) under *Fork Modifications*.
 
-Android build dependencies have an explicit preview opt-in: **AGP 9.5.0-alpha09** and **Kotlin Gradle plugin 2.5.0-Beta1**, with Gradle 9.8.1 locally checked. The Kotlin runtime override follows Android's documented upgrade mechanism and removes the old bundled plugin's Gradle deprecation warning without disabling built-in Kotlin. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. This configuration check is not an APK/device test.
+Android build dependencies have an explicit preview opt-in: **AGP 9.5.0-alpha10** and **Kotlin Gradle plugin 2.5.0-Beta1**, with Gradle 9.8.1 locally checked. The Kotlin runtime override follows Android's documented upgrade mechanism and removes the old bundled plugin's Gradle deprecation warning without disabling built-in Kotlin. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. This configuration check is not an APK/device test.
 
 Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 

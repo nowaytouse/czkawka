@@ -45,7 +45,8 @@ repository, remote default branch, installed apps or release binaries as part of
 |------------|------------------|---------------------------|
 | `bincode` | Exact `2.0.1`, serde with legacy variable-integer encoding | Published `3.0.0` is a retirement notice whose source deliberately fails compilation and has no serde feature. Re-evaluate a maintained replacement on each update pass; migrate only with byte-level compatibility fixtures for existing 1.3+ caches, or explicitly version new cache files and document invalidation. |
 | Slint family | Matched exact runtime/build releases; compatible fontique | Update pins together when a newer stable Slint is published. The updater excludes independent fontique bumps: Slint 1.18.1 exposes the fontique-011 API and needs the 0.11.1 dlopen feature configuration. Revisit when the Slint family changes; preserve renderer support and the bundled Chinese font. |
-| Android previews | AGP 9.5.0-alpha09 and KGP 2.5.0-Beta1 | Explicitly requested on 2026-10-14. Keep built-in Kotlin enabled and use Android's documented higher-KGP classpath mechanism. Recheck the latest preview coordinates and Gradle warning gate on each Android dependency pass; do not extend this opt-in to other ecosystems or alter app SDK levels without reviewing runtime behavior. |
+| Android previews | AGP 9.5.0-alpha10 and KGP 2.5.0-Beta1 | Explicitly requested on 2026-10-14. Keep built-in Kotlin enabled and use Android's documented higher-KGP classpath mechanism. Recheck the latest preview coordinates and Gradle warning gate on each Android dependency pass; do not extend this opt-in to other ecosystems or alter app SDK levels without reviewing runtime behavior. |
+| Ubuntu image | Verified 26.04 digest | Ubuntu 26.10 is stable as of 2026-10-15, but registry requests timed out during the 2026-10-19 review. Adopt 26.10 once the official multi-platform digest can be independently verified; the proposed unverified pin is preserved in the local dependency snapshot. |
 | macOS Skia | Platform-compatible feature set | Upstream Skia has separate Metal and Vulkan macOS prebuilt artifacts. Validate supported combinations separately; do not combine unsupported backends or remove them from other platforms. |
 
 The bincode retirement notice is documented in the [published source](https://docs.rs/crate/bincode/3.0.0/source/src/lib.rs).
@@ -53,7 +54,26 @@ The [Android Gradle plugin compatibility table](https://developer.android.com/bu
 defines the corresponding Gradle requirements. Recheck both when updating; this document does
 not assert that an old exception remains necessary indefinitely.
 
-## Last reviewed: 2026-10-14
+## Last reviewed: 2026-10-19
+
+- Official master is still `eb8b91db`; the fork contains every official commit. Kept sevenz-rust2
+  `0.24.1`, AGP `9.5.0-alpha10` and setup-java `6.1.0` at its verified release SHA.
+- Corrected the existing independent Fontique `0.12.0` edit to `0.11.1`: Slint `1.18.1` still
+  depends on the `0.11` package, so enabling dlopen on `0.12` would not configure Slint's fonts.
+  Bincode, renderer/decoder features and Android SDK levels remain unchanged.
+- Gradle `help`, `buildEnvironment` and all app task registration passed together with
+  `--warning-mode fail` on Gradle `9.8.1` / JDK `27`. Android build helpers now retain javac/D8
+  diagnostics instead of hiding successful-tool warnings; this is not APK/device acceptance.
+- Preserved the six pre-existing dependency edits in the non-clearing local stash
+  `pre-warning-hardening dependency edits 2026-10-19` before integration. Retained the verified
+  Docker image for the registry-verification reason above; no old stash or app bundle was removed.
+- `just upgrade-check` found no additional stable direct updates outside the reviewed exceptions.
+  Final `just fix` and `just clip` passed without warnings on Rust `1.94.1`; locked workspace tests
+  passed 383 cases with zero failures and six existing ignored cases. Five standalone fixture tests,
+  strict standalone clippy and Krokiet zh-CN validation passed. This does not establish APK/device,
+  live GUI, container-build or archive-driven CLI integration acceptance.
+
+## Previous review: 2026-10-14
 
 - Fresh official Git refs and GitHub commit metadata agree on `upstream/master` at
   `eb8b91dbb4d25dff416202674ee0de84ee4b5e5c`. The fork contains it; no newer merge was needed.

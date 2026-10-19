@@ -1,6 +1,9 @@
 use std::env;
 use std::path::PathBuf;
 
+#[path = "build_support.rs"]
+mod build_support;
+
 fn main() {
     emit_build_info();
 
@@ -40,9 +43,7 @@ fn compile_android_java() {
     let out_dir: PathBuf = env::var_os("OUT_DIR").expect("OUT_DIR environment variable not set").into();
     let out_class_dir = out_dir.join("java_classes");
 
-    if out_class_dir.try_exists().unwrap_or(false) {
-        let _ = std::fs::remove_dir_all(&out_class_dir);
-    }
+    build_support::remove_previous_classes(&out_class_dir).unwrap_or_else(|e| panic!("{e}"));
     std::fs::create_dir_all(&out_class_dir).unwrap_or_else(|e| panic!("Cannot create output directory {out_class_dir:?} - {e}"));
 
     let android_jar = android_build::android_jar(None).expect("No Android platform SDK found; install SDK");
@@ -70,7 +71,9 @@ fn compile_android_java() {
         .output()
         .unwrap_or_else(|e| panic!("Could not run javac: {e}"));
 
-    assert!(status.status.success(), "Java compilation failed:\n{}", String::from_utf8_lossy(&status.stderr));
+    for warning in build_support::tool_output_diagnostics("javac", &status).unwrap_or_else(|e| panic!("{e}")) {
+        println!("cargo:warning={warning}");
+    }
 
     // Convert .class files to a single classes.dex.
     let dex_out = Dexer::new()
@@ -86,7 +89,9 @@ fn compile_android_java() {
         .output()
         .unwrap_or_else(|e| panic!("Error running D8: {e}"));
 
-    assert!(dex_out.status.success(), "Dex conversion failed:\n{}", String::from_utf8_lossy(&dex_out.stderr));
+    for warning in build_support::tool_output_diagnostics("D8", &dex_out).unwrap_or_else(|e| panic!("{e}")) {
+        println!("cargo:warning={warning}");
+    }
 
     for f in &java_files {
         println!("cargo:rerun-if-changed={f}");

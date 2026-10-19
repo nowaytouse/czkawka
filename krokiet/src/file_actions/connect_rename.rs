@@ -87,13 +87,12 @@ fn connect_rename_single_file(app: &MainWindow) {
             report_failure(&app, crate::flk!("rust_rename_single_protected"));
             return;
         }
-        if Path::new(&new_full_path).exists() {
-            warn!("Single rename rejected: target {new_full_path:?} already exists");
-            report_failure(&app, crate::flk!("rust_rename_single_target_exists"));
-            return;
-        }
-        if let Err(e) = std::fs::rename(&old_full_path, &new_full_path) {
+        if let Err(e) = checked_rename(Path::new(&old_full_path), Path::new(&new_full_path)) {
             error!("Failed to rename {old_full_path:?} to {new_full_path:?}: {e}");
+            if e.kind() == std::io::ErrorKind::AlreadyExists {
+                report_failure(&app, crate::flk!("rust_rename_single_target_exists"));
+                return;
+            }
             report_failure(
                 &app,
                 crate::flk!("rust_failed_to_rename_file", old_path = old_full_path, new_path = new_full_path, error = e.to_string()),
@@ -142,12 +141,34 @@ fn connect_rename_single_file(app: &MainWindow) {
         }
 
         let new_full_path = build_full_path(&folder, new_name);
-        Path::new(&new_full_path).exists()
+        match std::fs::symlink_metadata(&new_full_path) {
+            Ok(_) => true,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
+            Err(error) => {
+                warn!("Cannot inspect rename target {new_full_path:?}: {error}");
+                true
+            }
+        }
     });
 }
 
 fn is_valid_rename_target_name(new_name: &str) -> bool {
-    !new_name.is_empty() && !new_name.contains('/') && !new_name.contains('\\')
+    !matches!(new_name, "" | "." | "..") && !new_name.contains(['/', '\\', '\0'])
+}
+
+fn checked_rename(source: &Path, target: &Path) -> std::io::Result<()> {
+    match std::fs::symlink_metadata(target) {
+        Ok(_) => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                format!("Rename target already exists: {}", target.display()),
+            ));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(std::io::Error::new(error.kind(), format!("Cannot inspect rename target {}: {error}", target.display()))),
+    }
+    // shortcut: external changes can race this check; use atomic no-replace rename once supported by the Rust minimum.
+    std::fs::rename(source, target)
 }
 
 fn build_full_path(folder: &str, name: &str) -> String {
@@ -186,7 +207,7 @@ impl ModelProcessor {
                 simpler_model,
                 &ProcessFunction::Simple(Box::new(rm_fnc)),
                 MessageType::Rename,
-                false,
+                true,
             );
         });
     }
@@ -213,13 +234,12 @@ impl ModelProcessor {
                 simpler_model,
                 &ProcessFunction::Simple(Box::new(rm_fnc)),
                 MessageType::Rename,
-                false,
+                true,
             );
         });
     }
 }
 
-#[cfg(not(test))]
 fn rename_single_file_name_item(data: &SimplerSingleMainListModel, path_idx: usize, name_idx: usize, new_file_name_idx: usize) -> Result<(), String> {
     use std::path::MAIN_SEPARATOR;
     let folder = &data.val_str[path_idx];
@@ -229,7 +249,7 @@ fn rename_single_file_name_item(data: &SimplerSingleMainListModel, path_idx: usi
     let new_full_path = format!("{folder}{MAIN_SEPARATOR}{new_file_name}");
     let old_full_path = format!("{folder}{MAIN_SEPARATOR}{file_name}");
 
-    if let Err(e) = std::fs::rename(&old_full_path, &new_full_path) {
+    if let Err(e) = checked_rename(Path::new(&old_full_path), Path::new(&new_full_path)) {
         Err(crate::flk!(
             "rust_failed_to_rename_file",
             old_path = old_full_path,
@@ -241,7 +261,6 @@ fn rename_single_file_name_item(data: &SimplerSingleMainListModel, path_idx: usi
     }
 }
 
-#[cfg(not(test))]
 fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usize, name_idx: usize, ext_idx: usize) -> Result<(), String> {
     use std::path::MAIN_SEPARATOR;
     let folder = &data.val_str[path_idx];
@@ -252,7 +271,7 @@ fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usi
     let new_full_path = format!("{folder}{MAIN_SEPARATOR}{file_stem}.{new_extension}");
     let old_full_path = format!("{folder}{MAIN_SEPARATOR}{file_name}");
 
-    if let Err(e) = std::fs::rename(&old_full_path, &new_full_path) {
+    if let Err(e) = checked_rename(Path::new(&old_full_path), Path::new(&new_full_path)) {
         Err(crate::flk!(
             "rust_failed_to_rename_file",
             old_path = old_full_path,
@@ -265,25 +284,10 @@ fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usi
 }
 
 #[cfg(test)]
-fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usize, _name_idx: usize, _ext_idx: usize) -> Result<(), String> {
-    let full_path = &data.val_str[path_idx];
-    if full_path.contains("test_error") {
-        return Err(format!("Test error for item: {full_path}"));
-    }
-    Ok(())
-}
-
-#[cfg(test)]
-fn rename_single_file_name_item(data: &SimplerSingleMainListModel, path_idx: usize, _name_idx: usize, _file_name: usize) -> Result<(), String> {
-    let full_path = &data.val_str[path_idx];
-    if full_path.contains("test_error") {
-        return Err(format!("Test error for item: {full_path}"));
-    }
-    Ok(())
-}
-
-#[cfg(test)]
 mod tests {
+    use std::fs;
+    use std::sync::atomic::AtomicU64;
+
     use crossbeam_channel::{Receiver, unbounded};
     use slint::{Model, ModelRc, VecModel};
 
@@ -305,11 +309,13 @@ mod tests {
             }
             let simplified_model = model.to_simpler_enumerated_vec();
 
-            let path_idx = 0;
-            let name_idx = 0;
-            let ext_idx = 0;
-
-            let rm_fnc = move |data: &SimplerSingleMainListModel| rename_single_extension_item(data, path_idx, name_idx, ext_idx);
+            let rm_fnc = |data: &SimplerSingleMainListModel| {
+                if data.val_str[0].contains("test_error") {
+                    Err(format!("Test error for item: {}", data.val_str[0]))
+                } else {
+                    Ok(())
+                }
+            };
 
             let output = Self::process_items(
                 simplified_model,
@@ -368,6 +374,9 @@ mod tests {
         assert!(!is_valid_rename_target_name(""));
         assert!(!is_valid_rename_target_name("has/slash"));
         assert!(!is_valid_rename_target_name("has\\backslash"));
+        assert!(!is_valid_rename_target_name("."));
+        assert!(!is_valid_rename_target_name(".."));
+        assert!(!is_valid_rename_target_name("has\0nul"));
     }
 
     #[test]
@@ -383,5 +392,67 @@ mod tests {
     #[test]
     fn single_rename_rejects_protected_row() {
         assert!(is_single_rename_protected(true, "/does/not/need/to/exist"));
+    }
+
+    fn rename_fixture() -> (std::path::PathBuf, SimplerSingleMainListModel) {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let dir = std::env::temp_dir().join(format!(
+            "krokiet_rename_{}_{}_{}",
+            std::process::id(),
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join("source.bad"), b"source bytes").unwrap();
+        let mut data = SimplerSingleMainListModel::from(&get_model_vec(1)[0]);
+        data.val_str = vec![dir.to_str().unwrap().to_owned(), "source.bad".into(), "source.jpg".into(), "jpg".into()];
+        (dir, data)
+    }
+
+    #[test]
+    fn batch_rename_preserves_existing_target() {
+        let (dir, data) = rename_fixture();
+        fs::write(dir.join("source.jpg"), b"existing bytes").unwrap();
+        let result = rename_single_file_name_item(&data, 0, 1, 2);
+        let source = fs::read(dir.join("source.bad"));
+        let destination = fs::read(dir.join("source.jpg")).unwrap();
+        fs::remove_dir_all(&dir).unwrap();
+        assert!(result.is_err());
+        assert_eq!(source.unwrap(), b"source bytes");
+        assert_eq!(destination, b"existing bytes");
+    }
+
+    #[test]
+    fn extension_rename_preserves_existing_target() {
+        let (dir, data) = rename_fixture();
+        fs::write(dir.join("source.jpg"), b"existing bytes").unwrap();
+        let result = rename_single_extension_item(&data, 0, 1, 3);
+        let source = fs::read(dir.join("source.bad"));
+        let destination = fs::read(dir.join("source.jpg")).unwrap();
+        fs::remove_dir_all(&dir).unwrap();
+        assert!(result.is_err());
+        assert_eq!(source.unwrap(), b"source bytes");
+        assert_eq!(destination, b"existing bytes");
+    }
+
+    #[test]
+    fn batch_rename_moves_source_to_free_target() {
+        let (dir, data) = rename_fixture();
+        rename_single_file_name_item(&data, 0, 1, 2).unwrap();
+        assert!(!dir.join("source.bad").exists());
+        assert_eq!(fs::read(dir.join("source.jpg")).unwrap(), b"source bytes");
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn batch_rename_preserves_dangling_symlink_target() {
+        let (dir, data) = rename_fixture();
+        std::os::unix::fs::symlink("missing-file", dir.join("source.jpg")).unwrap();
+        let result = rename_single_extension_item(&data, 0, 1, 3);
+        assert!(result.is_err());
+        assert_eq!(fs::read_link(dir.join("source.jpg")).unwrap(), Path::new("missing-file"));
+        assert_eq!(fs::read(dir.join("source.bad")).unwrap(), b"source bytes");
+        fs::remove_dir_all(dir).unwrap();
     }
 }

@@ -81,11 +81,15 @@ bench_clean:
 
 # Requires cargo-edit. Fontique follows Slint's API version, not its independent latest release.
 upgrade-check:
+    cargo search bincode --limit 1
+    cargo search fontique --limit 1
     cargo upgrade --dry-run --incompatible allow --pinned allow --ignore-rust-version --exclude bincode --exclude fontique
     cargo upgrade --dry-run --manifest-path ci_tester/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo update --dry-run --ignore-rust-version
+    uv lock --project misc --upgrade --dry-run --prerelease disallow
 
 # Updates files; review compatibility and run the required gates before committing.
 upgrade:
@@ -94,7 +98,9 @@ upgrade:
     cargo upgrade --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
-    cargo update
+    cargo update --ignore-rust-version
+    cp misc/pyproject.toml .
+    uv lock --upgrade --prerelease disallow
 
 macos_gui_clippy_features := "krokiet/audio,krokiet/femtovg,krokiet/femtovg_wgpu,krokiet/heif,krokiet/libavif,krokiet/libraw,krokiet/skia_opengl,krokiet/software,krokiet/winit_femtovg,krokiet/winit_skia_opengl,krokiet/winit_software,krokiet/xdg_portal_trash,cedinia/femtovg,cedinia/femtovg_wgpu,cedinia/skia_opengl,cedinia/software,cedinia/winit_femtovg,cedinia/winit_skia_opengl,cedinia/winit_software"
 

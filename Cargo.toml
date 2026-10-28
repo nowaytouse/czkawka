@@ -14,6 +14,13 @@ exclude = [
 ]
 resolver = "3"
 
+[workspace.dependencies]
+# Upgrade the UI family together; patch releases are not frozen to a single build.
+slint = { version = "~1.18.1", default-features = false }
+slint-build = "~1.18.1"
+# Enable dlopen on the Fontique API series actually used by this Slint family.
+fontique = { version = "0.11.1", default-features = false, features = ["fontconfig-dlopen", "std"] }
+
 # Temporary solution for spamming mouse events in Slint
 # Even with workaround, performance is quite low in specific cases in Cedinia
 #o

@@ -20,7 +20,8 @@ env:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    # Select the current GA image explicitly during the latest-label migration.
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -38,7 +39,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default 1.94.1
+          rustup default stable
           rustup component add rustfmt
           rustup component add clippy
 

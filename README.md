@@ -49,7 +49,7 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (all-features branch)
 
-This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-19 with no newer commits) and adds:
+This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-29 with no newer commits) and adds:
 
 ### From upstream (merged regularly)
 
@@ -70,13 +70,15 @@ This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka
 
 ### Dependency stack (fork maintenance)
 
-**Rolling latest-stable dependencies are a fork feature.** `just upgrade-check` previews updates, including major versions and exact pins; `just upgrade` updates workspace and standalone Cargo tools. Changes still require API migration, feature validation and the normal quality gates. Build-tool and container versions are reviewed alongside Rust crates; prereleases are opt-in. See [DEPENDENCIES.md](DEPENDENCIES.md) for the procedure and reviewed exceptions.
+**Rolling latest-stable dependencies are a fork feature.** `just upgrade-check` previews workspace/standalone Rust requirements, transitive updates and Python tools, and reports the current releases of contract exceptions. `just upgrade` updates Cargo lockfiles and refreshes the local Python lock with stable releases. Python tools use rolling lower bounds rather than exact freezes. Changes still require API migration, feature validation and the normal quality gates before publication. Build-tool and container versions are reviewed alongside Rust crates; prereleases are opt-in. See [DEPENDENCIES.md](DEPENDENCIES.md) for the procedure and reviewed exceptions.
 
-The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia use current stable **Slint 1.18.1**, with matched runtime/build versions and compatible fontique. The committed `Cargo.lock` records the resolved stack. See [Changelog.md](Changelog.md) under *Fork Modifications*.
+The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia share **Slint 1.18.1** runtime/build requirements in `[workspace.dependencies]`, permitting compatible patch releases instead of exact pins. Fontique follows Slint's API series, not its independent newest series; new Slint minor/major releases are reviewed by the upgrader. `Cargo.lock` records exact resolved versions for reproducibility. See [Changelog.md](Changelog.md) under *Fork Modifications*.
 
-Android build dependencies have an explicit preview opt-in: **AGP 9.5.0-alpha10** and **Kotlin Gradle plugin 2.5.0-Beta1**, with Gradle 9.8.1 locally checked. The Kotlin runtime override follows Android's documented upgrade mechanism and removes the old bundled plugin's Gradle deprecation warning without disabling built-in Kotlin. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. This configuration check is not an APK/device test.
+Android build dependencies have an explicit preview opt-in: **AGP 9.6.0-alpha02** and **Kotlin Gradle plugin 2.5.0-Beta2**, checked against published Maven metadata. The Kotlin runtime override keeps Android's documented upgrade mechanism and built-in Kotlin enabled. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. Gradle resolution and APK/device acceptance have not been run for this source refresh.
 
 Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
+
+Moving `ubuntu-latest` jobs explicitly select the current GitHub-hosted GA image, **Ubuntu 26.04**, avoiding the migration notice. Linux artifact builders keep their **Ubuntu 24.04** ABI baseline. Normal CI toolchains follow Rust `stable`; the dedicated minimum-Rust regression job stays at `1.94.1`. Docker uses verified digest-pinned **Ubuntu 26.10**. These are separate compatibility and reproducibility contracts, not blanket version freezes.
 
 ### Maintaining the fork
 

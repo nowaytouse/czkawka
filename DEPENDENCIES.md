@@ -11,8 +11,12 @@ paths must agree. Prereleases require a separate explicit request.
    edits and stashes; never clear them to create a clean baseline.
 2. Install `cargo-edit` if missing (`cargo install cargo-edit --locked`). Run `just upgrade-check`
    for a non-mutating preview, then `just upgrade` to update workspace and standalone crates.
-   The preview includes major releases and exact pins. It ignores the old Rust minimum when
-   discovering releases so an outdated MSRV cannot silently hide a required migration.
+   The preview includes major releases, transitive updates, Python tools and current registry
+   releases for excluded contract exceptions. Discovery and lock refresh ignore the old Rust
+   minimum so an outdated MSRV cannot silently hide a required migration; review the resulting MSRV.
+   Python tool requirements use rolling lower bounds. The updater copies `misc/pyproject.toml`
+   to the generated root project and refreshes its local lock with prereleases disallowed;
+   ordinary `just fix` can then sync that reviewed lock without installing updates on every run.
 3. Check release notes and primary package metadata for breaking changes, MSRV changes,
    security notices and retired packages. If a usable latest release needs newer stable Rust,
    raise the workspace's minimum consistently and verify with that toolchain. Review exact
@@ -25,12 +29,14 @@ paths must agree. Prereleases require a separate explicit request.
    `editpe` version manually instead of passing it to Cargo's workspace updater.
 5. Adapt changed APIs without dropping scanners, renderers, optional image decoders, file
    protection or other fork features. Update both Slint runtimes and build dependencies
-   together; keep direct fontique compatible with Slint's resolved fontique.
+   together through `[workspace.dependencies]`; keep direct fontique compatible with Slint's
+   resolved fontique. Slint permits patch updates within the reviewed minor series; its newer
+   minor/major releases remain discoverable with `--incompatible allow`.
 6. Run `just fix`, `just clip` and `cargo test --locked --workspace`. Check changed standalone
    crates with their own manifests. Validate native decoder features where the platform
    supports them; desktop checks do not prove Android, Linux, Windows or live GUI behavior.
 7. Review the complete diff and `git diff --check`. Record updates and exceptions in the
-   fork changelog. Explicitly stage intended files, commit with an `[AI]` title, push
+   fork changelog. When publication is authorized, explicitly stage intended files, commit with an `[AI]` title, push
    `origin/all-features`, pull with `--ff-only`, and verify clean tracked/untracked porcelain
    plus zero ahead/behind against the fetched fork branch. Preserve ignored app bundles,
    backups and existing stashes.
@@ -44,9 +50,9 @@ repository, remote default branch, installed apps or release binaries as part of
 | Dependency | Current contract | Reason and exit condition |
 |------------|------------------|---------------------------|
 | `bincode` | Exact `2.0.1`, serde with legacy variable-integer encoding | Published `3.0.0` is a retirement notice whose source deliberately fails compilation and has no serde feature. Re-evaluate a maintained replacement on each update pass; migrate only with byte-level compatibility fixtures for existing 1.3+ caches, or explicitly version new cache files and document invalidation. |
-| Slint family | Matched exact runtime/build releases; compatible fontique | Update pins together when a newer stable Slint is published. The updater excludes independent fontique bumps: Slint 1.18.1 exposes the fontique-011 API and needs the 0.11.1 dlopen feature configuration. Revisit when the Slint family changes; preserve renderer support and the bundled Chinese font. |
-| Android previews | AGP 9.5.0-alpha10 and KGP 2.5.0-Beta1 | Explicitly requested on 2026-10-14. Keep built-in Kotlin enabled and use Android's documented higher-KGP classpath mechanism. Recheck the latest preview coordinates and Gradle warning gate on each Android dependency pass; do not extend this opt-in to other ecosystems or alter app SDK levels without reviewing runtime behavior. |
-| Ubuntu image | Verified 26.04 digest | Ubuntu 26.10 is stable as of 2026-10-15, but registry requests timed out during the 2026-10-19 review. Adopt 26.10 once the official multi-platform digest can be independently verified; the proposed unverified pin is preserved in the local dependency snapshot. |
+| Slint family | Shared `~1.18.1` runtime/build requirements; Fontique `0.11.1` series | Permit patch updates without independently changing the font API. Slint 1.18.1 still needs the 0.11 dlopen feature configuration, not Fontique 0.12. The preview reports the independent latest release; the mutating updater excludes it until a coordinated Slint migration. Preserve renderer support and the bundled Chinese font. |
+| Android previews | AGP 9.6.0-alpha02 and KGP 2.5.0-Beta2 | Explicitly requested on 2026-10-14. Keep built-in Kotlin enabled and use Android's documented higher-KGP classpath mechanism. Recheck published coordinates and the Gradle warning gate on each Android dependency pass; do not extend this opt-in to other ecosystems or alter app SDK levels without reviewing runtime behavior. |
+| Linux release ABI | Explicit Ubuntu 24.04 artifact builders | Updating a release builder can raise the required system-library baseline. Move it only after reviewing supported distributions; normal moving-alias jobs now explicitly use the current hosted Ubuntu 26.04 GA image. |
 | macOS Skia | Platform-compatible feature set | Upstream Skia has separate Metal and Vulkan macOS prebuilt artifacts. Validate supported combinations separately; do not combine unsupported backends or remove them from other platforms. |
 
 The bincode retirement notice is documented in the [published source](https://docs.rs/crate/bincode/3.0.0/source/src/lib.rs).
@@ -54,7 +60,39 @@ The [Android Gradle plugin compatibility table](https://developer.android.com/bu
 defines the corresponding Gradle requirements. Recheck both when updating; this document does
 not assert that an old exception remains necessary indefinitely.
 
-## Last reviewed: 2026-10-19
+## Last reviewed: 2026-10-29 (source refresh; CI deferred)
+
+- Official `master` remains `eb8b91db`; no upstream merge is required. Existing fork features,
+  cache bytes, optional decoders, GTK removal and 8192 hash sizes are unchanged.
+- Replaced the three `ubuntu-latest` workflow sites with explicit `ubuntu-26.04`. The notice is
+  GitHub's [October 19-November 19 image migration announcement](https://github.com/actions/runner-images/issues/14748),
+  not a compiler warning. Kept the Linux artifact ABI baseline and all quality checks intact.
+- Normal CI Rust setups now select `stable` instead of freezing every job at `1.94.1`;
+  the explicitly named minimum-Rust job remains at the declared minimum. Workspace metadata
+  resolved 943 packages without a declared Rust minimum above `1.94.1`; this is not an MSRV build.
+- Retained ZIP `9.1.3`, lopdf `0.46.0`, usvg `0.49.0`, handsome_logger `0.10.0` and refreshed
+  compatible lockfile packages. Updated standalone logger requirements and adapted the shared
+  logger's `set_write_once` call to `set_single_write`, preserving whole-record writes.
+- Centralized the Slint family in the workspace, removed unnecessary exact patch pins and kept
+  Fontique `0.11.1` aligned with Slint `1.18.1`. Metadata assertions confirmed inherited disabled
+  default features and a single shared Fontique instance with `fontconfig-dlopen` enabled.
+- Python tools now use `ruff>=0.17.3`, `mypy>=2.4.0` and `ty>=0.0.93`. Preview/update recipes
+  refresh Python resolutions as well as Rust dependencies, without activating a bot or CI run.
+- Adopted the published AGP `9.6.0-alpha02` / KGP `2.5.0-Beta2` previews, without changing SDK
+  levels, NDK, permissions or built-in Kotlin. Maven publication is verified; new AGP POM
+  requests also encountered TLS EOF, so successful Gradle resolution is not claimed.
+- Retired the old Docker verification exception: the official Ubuntu `26.10` registry header
+  digest and SHA-256 of the returned OCI index body both matched the selected
+  `sha256:9c3a42b7c0016cbf87ceb71fd72d26c0e73b37e532e2c6071707f124c489c118`.
+  A later repeat request was interrupted; no container build was performed. Active Actions
+  already match current official releases, so their full security/reproducibility SHAs remain.
+- Validation is limited to workflow syntax, Just recipe parsing, dependency previews/metadata,
+  source API review and diff checks. Full `just fix`/`just clip`, builds, tests, Gradle and hosted
+  CI remain deferred under the requested source-update/CI-budget constraint. Publication was
+  subsequently authorized; this maintenance commit uses `[skip ci]` to avoid a new push-triggered
+  CI run. No checks were removed, and no manual dispatch, rerun or CI monitoring was performed.
+
+## Previous review: 2026-10-19
 
 - Official master is still `eb8b91db`; the fork contains every official commit. Kept sevenz-rust2
   `0.24.1`, AGP `9.5.0-alpha10` and setup-java `6.1.0` at its verified release SHA.

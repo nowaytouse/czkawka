@@ -10,7 +10,8 @@ on:
 jobs:
   build-apk:
     name: Build Android APK
-    runs-on: ubuntu-latest
+    # Select the current GA image explicitly during the latest-label migration.
+    runs-on: ubuntu-26.04
     env:
       # NDK releases: https://developer.android.com/ndk/downloads/revision_history
       # Stable NDK r30 LTS; toolchain updates do not change app SDK levels.
@@ -37,6 +38,7 @@ jobs:
 
       - name: Install Android NDK, platforms and Rust targets
         run: |
+          rustup default stable
           rustup target add aarch64-linux-android
           cargo install cargo-apk || true
 

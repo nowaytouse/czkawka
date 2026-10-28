@@ -117,6 +117,17 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Runner migration notice and rolling dependency ranges - 2026-10-29
+
+- Replaced `ubuntu-latest` in Quality, Android and Linux-to-Windows jobs with the current GitHub-hosted GA label `ubuntu-26.04`, addressing the platform migration notice without disabling warnings or checks. Kept Ubuntu 24.04 Linux artifact builders to preserve their existing ABI baseline.
+- Changed normal CI Rust setups to the current `stable` channel, while retaining the explicit Rust 1.94.1 minimum-version regression job. No jobs, matrices or triggers were added.
+- Reviewed existing dependency edits and kept current stable ZIP 9.1.3, lopdf 0.46.0, usvg 0.49.0 and handsome_logger 0.10.0. Updated standalone logger dependencies and migrated `set_write_once(true)` to `set_single_write(true)` without changing the rotating logger's whole-record behavior.
+- Centralized Slint runtime/build requirements in the workspace, allowing reviewed-minor patch releases rather than exact patch freezes. Kept the compatible Fontique 0.11 series instead of adding an ineffective second 0.12 copy. Bincode 2.0.1 remains the documented cache-compatibility exception.
+- Replaced Python quality-tool exact freezes with rolling stable lower bounds (Ruff 0.17.3, mypy 2.4.0 and ty 0.0.93). Extended dependency preview/update recipes to include transitive Rust and Python resolutions and to surface exception versions for review; lockfiles and Action SHAs still provide reproducibility.
+- Advanced the opt-in Android previews to AGP 9.6.0-alpha02 and KGP 2.5.0-Beta2. Retained SDK/NDK levels, runtime permissions and built-in Kotlin. Kept the verified official Ubuntu 26.10 multi-platform Docker digest; no image build or APK acceptance is claimed.
+- Rechecked official master at eb8b91db with no newer commits. Preserved GTK removal, Krokiet-only fork behavior, exact-filename state, file protection, previews/notifications, 8192 parameters, zh-CN fonts and legacy cache encoding.
+- Workflow syntax and dependency metadata/previews were checked, but full quality/build/test/Gradle gates and hosted CI were not run. Publication was subsequently requested; this maintenance commit uses `[skip ci]` to honor the CI budget. No workflow checks were removed, and no manual CI dispatch, rerun or monitoring was performed. Historical run notices remain unchanged; the new runner configuration applies to future runs.
+
 ### Warning visibility and filesystem reliability - 2026-10-19
 
 - Fixed inherited Krokiet batch-rename paths that could replace an existing filename or extension target. Destination checks include dangling symlinks and surface inspection failures; batches are ordered so two selected items cannot silently replace each other's destination. Single-row rename uses the same check and rejects dot names and NUL characters. External concurrent destination changes can still race with the checked rename; no atomic no-replace guarantee is claimed.

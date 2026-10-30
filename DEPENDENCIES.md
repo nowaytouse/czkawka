@@ -1,6 +1,6 @@
 # Rolling dependency maintenance
 
-The `all-features` fork tracks the latest **stable** dependencies. Major upgrades are in scope:
+The fork's sole branch, `master`, tracks the latest **stable** dependencies. Major upgrades are in scope:
 adapt the implementation and tests instead of indefinitely freezing a dependency. Version
 numbers alone are not proof of an upgrade: the manifest, resolved lockfile and enabled feature
 paths must agree. Prereleases require a separate explicit request.
@@ -37,9 +37,9 @@ paths must agree. Prereleases require a separate explicit request.
    supports them; desktop checks do not prove Android, Linux, Windows or live GUI behavior.
 7. Review the complete diff and `git diff --check`. Record updates and exceptions in the
    fork changelog. When publication is authorized, explicitly stage intended files, commit with an `[AI]` title, push
-   `origin/all-features`, pull with `--ff-only`, then fast-forward and push the fork's publication
-   branch `master` to the same reviewed commit. Verify clean tracked/untracked porcelain,
-   equality of both fork branches and zero ahead/behind against their fetched remote refs. Preserve ignored app bundles,
+   only `origin/master`, pull with `--ff-only`, and verify clean tracked/untracked porcelain
+   plus zero ahead/behind against the fetched fork branch. Retired branches are not maintenance
+   targets. Preserve ignored app bundles,
    backups and existing stashes.
 
 These are repository maintenance rules and local commands, not an activated hosted updater.

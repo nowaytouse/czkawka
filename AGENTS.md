@@ -379,7 +379,7 @@ just androidr             # release variant
 
 ## Upstream sync (fork maintenance)
 
-The `all-features` branch periodically merges `upstream/master` (`git remote add upstream https://github.com/qarmin/czkawka.git`).
+The fork's sole development and publication branch, `master`, periodically merges `upstream/master` (`git remote add upstream https://github.com/qarmin/czkawka.git`). All other fork branches were consolidated and retired on 2026-10-30; keep routine maintenance on `master` and preserve the external recovery archive.
 Always preserve the deletion of `czkawka_gui`. Keep fork-only user experience in Krokiet; shared core changes are limited to Krokiet's required scanning capabilities and cache compatibility. Similar Images keeps upstream's constructor defaults plus Krokiet's explicit `with_size_filters` configuration and `hash_size: u16` up to 8192.
 After merging: `just fix`, `just clip`, `cargo test -p krokiet -p czkawka_core`, update `README.md` and the “Fork Modifications” section in `Changelog.md`.
 
@@ -414,7 +414,7 @@ Do not monitor CI, add background monitors, or replace release binaries without 
 - **Non-English translations are AI-generated** – only the English `.ftl` files are hand-edited; all other locales are machine-translated via Crowdin and may contain errors or missing entries.
 - **Cache incompatibility on upgrade** – the broken-files cache format changed (file type no longer stored); existing cache files are silently regenerated on first run after upgrade, causing a slower first scan.
 - **Prehash cache invalidated on upgrade** – the prehash algorithm was updated; all prehash cache entries are invalid after upgrading and will be recomputed.
-- **bincode 2 on fork (`all-features`)** - core cache I/O pins 2.0.1 with the legacy 1.3+ encoding; existing `.bin` cache files should load without regeneration. Published 3.0.0 is a non-compiling retirement notice. A maintained replacement needs byte-level compatibility proof or explicitly versioned cache filenames; see `DEPENDENCIES.md`.
+- **bincode 2 on fork (`master`)** - core cache I/O pins 2.0.1 with the legacy 1.3+ encoding; existing `.bin` cache files should load without regeneration. Published 3.0.0 is a non-compiling retirement notice. A maintained replacement needs byte-level compatibility proof or explicitly versioned cache filenames; see `DEPENDENCIES.md`.
 - **Mac Intel binaries dropped** – upstream no longer provides prebuilt Intel macOS binaries due to CI build times; Intel Mac users must compile from source.
 - **`SelectAllExceptHighestQuality` is SimilarImages-only** – the selection mode (spare the highest-quality copy: biggest pixel count, file size as tiebreaker) is only shown for the Similar Images tab; it has no meaning for other tools. Its visibility toggle is persisted in `BasicSettings.select_show_except_highest_quality`.
 

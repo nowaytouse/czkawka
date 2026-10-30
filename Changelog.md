@@ -117,6 +117,23 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Single-branch consolidation - 2026-10-30
+
+- Consolidated development and publication on `master`. Retired the other nine fork remote branches and eight local branches, including the former `all-features`, feature and backup branches. Updated maintenance instructions and all five workflow branch filters to target only `master`; quality checks, build matrices and manual dispatch remain intact.
+- Audited the six branch tips not already reachable from master before merging their histories. Kept the current code tree with an explicitly history-only merge: their useful work is already integrated through later upstream implementations, while obsolete GTK code, dependency versions and disabled CI experiments must stay retired.
+
+| Retired branch history | Current implementation or retirement reason |
+|------------------------|--------------------------------------------|
+| `10.0.0_flatpak` | Flatpak packaging is integrated through #1769; current metadata, translations and dependencies supersede the old tree. |
+| `3.3.2` | Two old GTK TreeView selection fixes belong to the intentionally removed frontend. |
+| `clock` | Excluded-path traversal and femtovg-wgpu support are integrated through #1808 with later fixes and tests. |
+| `copilot/review-code-and-architecture` | Empty planning commit with no source changes. |
+| `license_and_rcedit` | Icon attribution and rcedit packaging are integrated through #1829. |
+| `port3` | The initial Android experiment is superseded by Cedinia from #1821 and its current Gradle build; obsolete workflow disabling is not restored. |
+
+- Created and verified a complete external Git bundle before retirement, preserving original local and remote branch tips and tag refs. All retired fork/local branch tips remain reachable from master after consolidation. Existing tags, eight named stashes and ignored application bundles are untouched. The official repository is unchanged; local upstream tracking is limited to its master branch.
+- Program sources, assets, dependencies and cache bytes are unchanged from the previously published fork. Validated branch ancestry, workflow syntax and unchanged jobs, documentation and clean fork parity. No build, runtime or hosted-CI acceptance is claimed; publication uses `[skip ci]` under the existing CI-budget constraint and does not monitor CI.
+
 ### Default-branch upstream synchronization - 2026-10-30
 
 - Re-fetched the official and fork refs. Official master is still eb8b91db; `all-features` already contains every upstream commit. The fork's old `master` was 43 commits ahead and 33 behind upstream, and was an ancestor of `all-features` with no unique commits missing from that branch.

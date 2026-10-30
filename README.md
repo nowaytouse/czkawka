@@ -47,11 +47,11 @@ You can read more about the 12.0 release, its new features, and the issues that 
 - English article - https://medium.com/@qarmin/krokiet-czkawka-12-0-6fa09c43c3b9
 - Polish article - https://medium.com/@qarmin/krokiet-czkawka-12-0-c5dad2116793
 
-## Fork-specific features (master and all-features branches)
+## Fork-specific features (master branch)
 
 This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-30 with no newer commits) and adds:
 
-Development takes place on `all-features`; the fork's default `master` publishes the same history by fast-forward. Both branches include every current upstream commit. The previous `master` comparison showing 33 commits behind referred to its old branch tip; those official commits were already integrated into `all-features`.
+`master` is the fork's only development and publication branch. The former `all-features`, feature, experimental and backup branches were consolidated and retired on 2026-10-30. Their commit histories remain reachable from `master`, and a verified local Git bundle preserves the original branch tips for recovery. Current upstream commits and all maintained fork features are included.
 
 ### From upstream (merged regularly)
 
@@ -78,13 +78,15 @@ The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing c
 
 Android build dependencies have an explicit preview opt-in: **AGP 9.6.0-alpha02** and **Kotlin Gradle plugin 2.5.0-Beta2**, checked against published Maven metadata. The Kotlin runtime override keeps Android's documented upgrade mechanism and built-in Kotlin enabled. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. Gradle resolution and APK/device acceptance have not been run for this source refresh.
 
-Quality CI also runs on `all-features`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
+Quality CI runs on `master`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 
 Moving `ubuntu-latest` jobs explicitly select the current GitHub-hosted GA image, **Ubuntu 26.04**, avoiding the migration notice. Linux artifact builders keep their **Ubuntu 24.04** ABI baseline. Normal CI toolchains follow Rust `stable`; the dedicated minimum-Rust regression job stays at `1.94.1`. Docker uses verified digest-pinned **Ubuntu 26.10**. These are separate compatibility and reproducibility contracts, not blanket version freezes.
 
 ### Maintaining the fork
 
 ```bash
+git switch master
+git pull --ff-only origin master
 git fetch upstream
 git merge upstream/master   # preserve the GTK deletion and Krokiet-only features
 just upgrade-check          # review latest stable dependencies and migrate available updates
@@ -93,7 +95,7 @@ just clip
 cargo test --locked --workspace
 ```
 
-After reviewing and committing the intended changes, push `origin/all-features`, fast-forward local `master` from `all-features` with `git merge --ff-only all-features`, and push `origin/master`. Return to `all-features` and verify both fork branches match, neither is behind upstream, and the worktree is clean. Preserve existing edits and backups before switching branches.
+After reviewing and committing the intended changes, push only `origin/master`, pull with `--ff-only`, and verify zero ahead/behind against the fetched fork branch, no upstream lag and a clean worktree. Preserve existing edits, stashes and recovery archives. Do not recreate retired long-lived branches for routine maintenance.
 
 See [AGENTS.md](AGENTS.md) for i18n (`just sync-zh-cn`) and architecture notes.
 

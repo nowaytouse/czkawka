@@ -99,6 +99,7 @@ upgrade:
     cargo upgrade --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo update --ignore-rust-version
+    uv lock --project misc --upgrade --prerelease disallow
     cp misc/pyproject.toml .
     uv lock --upgrade --prerelease disallow
 
@@ -384,7 +385,7 @@ check_compilations:
     git checkout Cargo.toml
     #cargo install --path misc/test_compilation_speed_size
     test_compilation_speed_size misc/test_compilation_speed_size/krokiet.json
-    python3 misc/test_compilation_speed_size/generate_md_and_plots.py
+    uv run --project misc --extra plots python misc/test_compilation_speed_size/generate_md_and_plots.py
 
 tags:
     tags=($(git tag --sort=version:refname | grep -v Nightly)); for ((i=0; i<${#tags[@]}-1; i++)); do from=${tags[$i]}; to=${tags[$i+1]}; echo "$from -> $to : $(git diff --shortstat "$from" "$to")"; done; last=${tags[-1]}; echo "$last -> master : $(git diff --shortstat "$last" master)"

@@ -2,7 +2,7 @@
 """
 Generate tiny test image assets embedded in czkawka_core for runtime feature probing.
 
-Run via: uv run --with pillow --with pillow-heif misc/gen_test_assets.py
+Run via: uv run --project misc --extra test-assets python misc/gen_test_assets.py
 
 Outputs:
   czkawka_core/src/common/test_assets/test_3x3.png        (baseline, always present)
@@ -20,7 +20,7 @@ from pathlib import Path
 try:
     from PIL import Image  # type: ignore[import-not-found]
 except ImportError:
-    sys.exit("pillow not installed - run: uv run --with pillow misc/gen_test_assets.py")
+    sys.exit("pillow not installed - run: uv run --project misc --extra test-assets python misc/gen_test_assets.py")
 
 REPO_ROOT = Path(__file__).parent.parent
 OUT_DIR = REPO_ROOT / "czkawka_core" / "src" / "common" / "test_assets"
@@ -50,7 +50,7 @@ try:
     img.save(heic_path)
     print(f"HEIC: {heic_path.stat().st_size} bytes")
 except ImportError:
-    print("HEIC: SKIPPED (install pillow-heif: uv run --with pillow --with pillow-heif misc/gen_test_assets.py)")
+    print("HEIC: SKIPPED (install the test-assets extra with uv)")
 except Exception as exc:
     print(f"HEIC: FAILED ({exc})")
 

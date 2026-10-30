@@ -117,6 +117,20 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Python dependency completeness and rolling refresh - 2026-10-31
+
+- Audited all 17 tracked Python scripts: 12 general maintenance scripts, four translation helpers and one benchmark plotter. Four import third-party libraries; the others use the standard library or local modules. Documented their purpose and dependency entry points without adding Python runtime requirements to the Rust apps.
+- Raised rolling base requirements to mypy 2.4.1, ty 0.0.95, pandas-stubs 3.1.0.261029, Ollama 0.6.3 and fonttools 4.68.0. Rechecked Ruff 0.17.3, fluent.syntax 0.19.0 and OpenCC 0.1.7 as current stable releases. Preserved the existing manual maintenance tools.
+- Declared previously missing runtime dependencies as optional `plots`, `icons` and `test-assets` extras: pandas 3.1.0, matplotlib 3.11.2, tabulate 0.10.0, CairoSVG 2.9.1, Pillow 13.0.0 and pillow-heif 1.8.1. Updated script and benchmark instructions to use these reviewed requirements through uv.
+- Updated the rolling upgrader to refresh both the misc runtime environment's lock and the generated root quality environment's lock, so optional script callers receive the updates shown by the dependency preview.
+- Fixed the benchmark plotter's string normalization for pandas 3, whose default string dtype no longer equals `object`. A focused check against the actual source statement reproduced padded labels before the fix and passed after switching to the string-dtype predicate, while preserving numeric columns.
+- Made the plotter prefer installed Noto Sans with Matplotlib's bundled DejaVu Sans as the fallback; a clean environment no longer emits hundreds of missing-font diagnostics while producing charts.
+- Removed the Flatpak helper's forced Python 3.11 environment creation and obsolete manual pip dependency list. Its upstream generator now uses an owned temporary download and an isolated uv script environment with upstream PEP 723 metadata and compatible stable dependencies. Dependency or generator failures stop the helper instead of being hidden by successful cleanup; a stubbed failure regression reproduced the old exit-zero result and verifies the original failure status, cleanup and preservation of an existing source file.
+- Refreshed 13 existing Rust lockfile packages and added utf_types, retaining Slint/Fontique compatibility and legacy bincode cache bytes. Verified all six Action pins and existing Android previews remain current; adopted the verified refreshed official Ubuntu 26.10 multi-platform digest. Pre-existing dependency edits were backed up before compatibility review.
+- Verified and installed the complete 45-package Python environment from official wheel files with lockfile hashes and sizes. Strict mypy passed all 17 scripts; temporary-input tests covered real chart/Markdown exports, font fallback, PNG/AVIF/HEIF, CairoSVG and offline maintenance APIs. Locked workspace tests passed 383 cases with zero failures and six existing ignored cases on Rust 1.99.1.
+- Final `just fix` and `just clip` passed without Rust warnings; all-target locked compilation passed for ci_tester and all three standalone benchmark tools. Application Rust/Slint sources, bundled assets and existing app binaries are unchanged.
+- Official master remains eb8b91db with no newer commits. Preserved the sole master branch, Krokiet-only fork behavior, 8192 parameters, protection, previews and cache bytes. No hosted CI, live GUI, APK/device, container build or actual Flatpak generation is claimed; publication uses `[skip ci]` under the existing CI-budget constraint.
+
 ### Single-branch consolidation - 2026-10-30
 
 - Consolidated development and publication on `master`. Retired the other nine fork remote branches and eight local branches, including the former `all-features`, feature and backup branches. Updated maintenance instructions and all five workflow branch filters to target only `master`; quality checks, build matrices and manual dispatch remain intact.

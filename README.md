@@ -49,7 +49,7 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (master branch)
 
-This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-30 with no newer commits) and adds:
+This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-31 with no newer commits) and adds:
 
 `master` is the fork's only development and publication branch. The former `all-features`, feature, experimental and backup branches were consolidated and retired on 2026-10-30. Their commit histories remain reachable from `master`, and a verified local Git bundle preserves the original branch tips for recovery. Current upstream commits and all maintained fork features are included.
 
@@ -77,6 +77,8 @@ This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) 
 The fork keeps exact **bincode 2.0.1** with the legacy wire format so existing cache binaries remain readable; bincode 3.0.0 is a non-compiling retirement notice, not a usable update. Krokiet and Cedinia share **Slint 1.18.1** runtime/build requirements in `[workspace.dependencies]`, permitting compatible patch releases instead of exact pins. Fontique follows Slint's API series, not its independent newest series; new Slint minor/major releases are reviewed by the upgrader. `Cargo.lock` records exact resolved versions for reproducibility. See [Changelog.md](Changelog.md) under *Fork Modifications*.
 
 Android build dependencies have an explicit preview opt-in: **AGP 9.6.0-alpha02** and **Kotlin Gradle plugin 2.5.0-Beta2**, checked against published Maven metadata. The Kotlin runtime override keeps Android's documented upgrade mechanism and built-in Kotlin enabled. Android workflow builds use stable **NDK r30 LTS**; app SDK levels and runtime permissions are unchanged. Gradle resolution and APK/device acceptance have not been run for this source refresh.
+
+The repository includes **17 Python scripts**: 12 directly under `misc/`, four translation helpers and one benchmark plotting script. Four import third-party Python libraries; the other 13 use the standard library or local modules. `misc/pyproject.toml` declares rolling stable requirements for quality and maintenance tools, with optional `plots`, `icons` and `test-assets` extras for pandas/matplotlib/tabulate, CairoSVG and Pillow/HEIF. Run optional tools with `uv run --project misc --extra <name> python <script>`; native Cairo, Inkscape or FFmpeg may still be needed by the selected operation. The external Flatpak generator runs in an isolated `uv` script environment using its own upstream dependency metadata. See [DEPENDENCIES.md](DEPENDENCIES.md) for versions and commands.
 
 Quality CI runs on `master`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 

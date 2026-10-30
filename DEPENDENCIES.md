@@ -14,8 +14,9 @@ paths must agree. Prereleases require a separate explicit request.
    The preview includes major releases, transitive updates, Python tools and current registry
    releases for excluded contract exceptions. Discovery and lock refresh ignore the old Rust
    minimum so an outdated MSRV cannot silently hide a required migration; review the resulting MSRV.
-   Python tool requirements use rolling lower bounds. The updater copies `misc/pyproject.toml`
-   to the generated root project and refreshes its local lock with prereleases disallowed;
+   Python tool requirements use rolling lower bounds. The updater refreshes the `misc` project
+   lock, copies `misc/pyproject.toml` to the generated root quality project and refreshes its
+   lock as well, with prereleases disallowed in both;
    ordinary `just fix` can then sync that reviewed lock without installing updates on every run.
 3. Check release notes and primary package metadata for breaking changes, MSRV changes,
    security notices and retired packages. If a usable latest release needs newer stable Rust,
@@ -61,7 +62,75 @@ The [Android Gradle plugin compatibility table](https://developer.android.com/bu
 defines the corresponding Gradle requirements. Recheck both when updating; this document does
 not assert that an old exception remains necessary indefinitely.
 
-## Last reviewed: 2026-10-29 (source refresh; CI deferred)
+## Last reviewed: 2026-10-31
+
+- Verified the latest stable Python releases against primary PyPI publication metadata. Raised
+  base requirements to mypy 2.4.1, ty 0.0.95, pandas-stubs 3.1.0.261029, Ollama 0.6.3 and
+  fonttools 4.68.0. Ruff 0.17.3, fluent.syntax 0.19.0 and OpenCC 0.1.7 remain current.
+  Requirements stay as rolling lower bounds; optional runtime libraries are declared below.
+- Refreshed compatible Rust lockfile packages, including encoding_rs 0.8.44 and the current
+  wasm-bindgen family. All 940 registry package records declare a Rust minimum no higher than
+  1.94.1; this metadata check is not a minimum-toolchain build. Slint, Fontique and bincode
+  retain their reviewed compatibility contracts.
+- Verified the refreshed official Ubuntu 26.10 multi-platform index digest by matching both
+  the registry header and the SHA-256 of the returned body:
+  `sha256:262df65c0ec6bf8d9dcc87454f4330a05fae4b97825f45854af3b136666584c2`.
+  Android previews and all six active Action release SHAs remain current.
+- Installed and checked all 45 resolved Python packages, including every optional extra, on
+  Python 3.15.2 / macOS ARM64. Download transport stalled, so official wheel files were retrieved
+  separately and checked against every lockfile SHA-256 and size before hash-enforced offline
+  installation. The frozen offline environment check passed; system Python packages and global
+  network settings were not changed.
+- Strict mypy passed all 17 scripts. Temporary-input checks verified the pandas string fix,
+  four real PNG chart exports and Markdown, font fallback without missing-font diagnostics,
+  PNG/AVIF/HEIF roundtrips, CairoSVG rendering, offline Ollama responses, Fluent parsing,
+  OpenCC conversion and reading the bundled Chinese font. Flatpak failure-status and temporary
+  cleanup regressions passed without downloading or running the real generator.
+- Locked workspace tests passed on stable Rust 1.99.1: 383 passed, zero failed, six existing
+  ignored cases. `just fix` and `just clip` passed without Rust warnings, including the
+  platform-compatible native decoder/rendering features and the software-only configuration.
+  All-target locked compilation checks passed for ci_tester and all three standalone benchmark
+  tools. Re-fetched upstream master at eb8b91db with zero upstream lag. Hosted CI,
+  live GUI, APK/device, container builds and actual Flatpak generation were not run.
+
+## Python script dependencies
+
+There are 17 tracked Python scripts: 12 in `misc/`, four in `misc/ai_translate/` and one in
+`misc/test_compilation_speed_size/`. Four scripts import third-party libraries; the other 13
+use only the standard library or local modules. The app itself remains Rust-based.
+
+`misc/pyproject.toml` is the maintained source for the generated root quality-tool project.
+Its eight base dependencies include quality tools, pandas typing stubs and retained manual
+Fluent/OpenCC/font maintenance tools. `pandas-stubs` does not install runtime pandas.
+Three optional extras declare six additional runtime libraries without making image encoders
+or plotting libraries mandatory for routine source checks:
+
+| Extra | Script | Reviewed stable dependencies (2026-10-31) |
+|-------|--------|------------------------------------------|
+| `plots` | `misc/test_compilation_speed_size/generate_md_and_plots.py` | pandas 3.1.0, matplotlib 3.11.2, tabulate 0.10.0 |
+| `icons` | `misc/gen_android_icons.py` | CairoSVG 2.9.1; system Cairo is required, or use the existing Inkscape fallback |
+| `test-assets` | `misc/gen_test_assets.py` | Pillow 13.0.0, pillow-heif 1.8.1; the AV1 probe also uses system FFmpeg |
+
+For example, from the repository root:
+
+```bash
+uv run --project misc --extra plots python misc/test_compilation_speed_size/generate_md_and_plots.py
+uv run --project misc --extra icons python misc/gen_android_icons.py
+uv run --project misc --extra test-assets python misc/gen_test_assets.py
+```
+
+These commands generate output; run them only when intentionally updating charts, icons or
+probe assets. Dependency validation uses synthetic inputs and temporary output directories.
+The translator uses Ollama Python 0.6.3 and requires a separately running local Ollama service;
+upgrading its Python client does not authorize sending translation requests or downloading models.
+
+`misc/flathub.sh` downloads the upstream Flatpak Cargo generator, which now declares its own
+PEP 723 dependencies (`aiohttp`, `PyYAML`, `tomlkit`). Run it through isolated
+`uv run --no-project --upgrade --prerelease disallow --script`, rather than replacing the
+project environment with Python 3.11 and manually installing the obsolete dependency list.
+The reviewed compatible stable versions are aiohttp 3.14.5, PyYAML 6.0.3 and tomlkit 0.15.2.
+
+## Previous review: 2026-10-29 (source refresh; CI deferred)
 
 - Official `master` remains `eb8b91db`; no upstream merge is required. Existing fork features,
   cache bytes, optional decoders, GTK removal and 8192 hash sizes are unchanged.

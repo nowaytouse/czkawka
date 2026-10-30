@@ -1,4 +1,4 @@
-# sudo apt install python3-matplotlib python3-pandas python3-tabulate
+# Run with the plots extra from misc/pyproject.toml.
 from typing import Any
 
 import pandas as pd
@@ -9,14 +9,15 @@ import os
 from pandas import Series
 
 df = pd.read_csv("compilation_results.txt", sep="|", engine="python")
-df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+df = df.apply(lambda x: x.str.strip() if pd.api.types.is_string_dtype(x.dtype) else x)
 
 df["Output File Size (bytes)"] = pd.to_numeric(df["Output File Size(in bytes)"], errors="coerce")
 df["Target Folder Size (bytes)"] = pd.to_numeric(df["Target Folder Size(in bytes)"], errors="coerce")
 df["Compilation Time (seconds)"] = pd.to_numeric(df["Compilation Time(seconds)"], errors="coerce")
 df["Rebuild Time (seconds)"] = pd.to_numeric(df["Rebuild Time(seconds)"], errors="coerce")
 
-matplotlib.rcParams["font.family"] = "Noto Sans"
+matplotlib.rcParams["font.family"] = "sans-serif"
+matplotlib.rcParams["font.sans-serif"] = ["Noto Sans", "DejaVu Sans"]
 FONT_SIZE = 13
 matplotlib.rcParams.update(
     {

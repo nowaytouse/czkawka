@@ -1,8 +1,9 @@
 #!/bin/bash
+set -euo pipefail
+
 rm -rf flatpak
-uv venv -p 3.11
-uv pip install aiohttp toml tomlkit # Or sudo apt install python3-aiohttp python3-toml python3-tomlkit
-wget https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
+generator_dir=$(mktemp -d "${TMPDIR:-/tmp}/czkawka-flatpak-generator.XXXXXX")
+trap 'rm -rf "$generator_dir"' EXIT
+wget -O "$generator_dir/flatpak-cargo-generator.py" https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/cargo/flatpak-cargo-generator.py
 mkdir flatpak
-uv run python3 flatpak-cargo-generator.py ./Cargo.lock -o flatpak/cargo-sources.json
-rm flatpak-cargo-generator.py
+uv run --no-project --upgrade --prerelease disallow --script "$generator_dir/flatpak-cargo-generator.py" ./Cargo.lock -o flatpak/cargo-sources.json

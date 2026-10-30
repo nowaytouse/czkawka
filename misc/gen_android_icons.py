@@ -19,12 +19,12 @@ The existing ic_launcher_background.xml and mipmap-anydpi-v26/ic_launcher.xml
 are NOT modified (they already reference the correct resource names).
 
 Requires one of:
-  cairosvg   - pip install cairosvg
+  cairosvg   - uv sync --project misc --extra icons (also requires system Cairo)
   inkscape   - system package / https://inkscape.org
 
 Usage:
-  python misc/gen_android_icons.py
-  python misc/gen_android_icons.py path/to/custom.svg
+  uv run --project misc --extra icons python misc/gen_android_icons.py
+  uv run --project misc --extra icons python misc/gen_android_icons.py path/to/custom.svg
 """
 
 import subprocess
@@ -114,7 +114,7 @@ def main() -> None:
         print("renderer: cairosvg")
     except ImportError:
         render = render_inkscape
-        print("renderer: inkscape  (cairosvg not found - install with: pip install cairosvg)")
+        print("renderer: inkscape  (cairosvg not found - install the icons extra with uv)")
 
     print(f"source  : {svg}")
     print()

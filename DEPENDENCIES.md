@@ -37,8 +37,9 @@ paths must agree. Prereleases require a separate explicit request.
    supports them; desktop checks do not prove Android, Linux, Windows or live GUI behavior.
 7. Review the complete diff and `git diff --check`. Record updates and exceptions in the
    fork changelog. When publication is authorized, explicitly stage intended files, commit with an `[AI]` title, push
-   `origin/all-features`, pull with `--ff-only`, and verify clean tracked/untracked porcelain
-   plus zero ahead/behind against the fetched fork branch. Preserve ignored app bundles,
+   `origin/all-features`, pull with `--ff-only`, then fast-forward and push the fork's publication
+   branch `master` to the same reviewed commit. Verify clean tracked/untracked porcelain,
+   equality of both fork branches and zero ahead/behind against their fetched remote refs. Preserve ignored app bundles,
    backups and existing stashes.
 
 These are repository maintenance rules and local commands, not an activated hosted updater.

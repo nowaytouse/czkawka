@@ -117,6 +117,14 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Default-branch upstream synchronization - 2026-10-30
+
+- Re-fetched the official and fork refs. Official master is still eb8b91db; `all-features` already contains every upstream commit. The fork's old `master` was 43 commits ahead and 33 behind upstream, and was an ancestor of `all-features` with no unique commits missing from that branch.
+- Fast-forwarded the fork's default `master` to the maintained `all-features` history, preserving every existing master commit and the integrated upstream updates. Both published branches now share the same tip; no upstream merge or history rewrite was needed. Documented this publication step for future maintenance.
+- Preserved GTK removal, Krokiet-only features, 8192 hash sizes, independent Exact File Names state, file protection, preview guards, zh-CN fonts and legacy cache encoding. This change only updates documentation and branch publication.
+- Saved the three pre-existing, uncommitted Cargo/container dependency edits in the named local stash `pre-master-sync dependency edits 2026-10-30`; they are preserved separately and are not part of this publication. Existing stashes, app bundles and backups remain untouched.
+- Checked ancestry, documentation diffs and fork branch parity. No new build, test, dependency refresh or runtime acceptance is claimed. Publication uses `[skip ci]` under the existing CI-budget constraint; no hosted CI dispatch, rerun or monitoring was performed.
+
 ### Runner migration notice and rolling dependency ranges - 2026-10-29
 
 - Replaced `ubuntu-latest` in Quality, Android and Linux-to-Windows jobs with the current GitHub-hosted GA label `ubuntu-26.04`, addressing the platform migration notice without disabling warnings or checks. Kept Ubuntu 24.04 Linux artifact builders to preserve their existing ABI baseline.

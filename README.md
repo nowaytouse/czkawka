@@ -47,9 +47,11 @@ You can read more about the 12.0 release, its new features, and the issues that 
 - English article - https://medium.com/@qarmin/krokiet-czkawka-12-0-6fa09c43c3b9
 - Polish article - https://medium.com/@qarmin/krokiet-czkawka-12-0-c5dad2116793
 
-## Fork-specific features (all-features branch)
+## Fork-specific features (master and all-features branches)
 
-This branch tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-29 with no newer commits) and adds:
+This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (last merged: `eb8b91db`, release `12.0.2`; rechecked on 2026-10-30 with no newer commits) and adds:
+
+Development takes place on `all-features`; the fork's default `master` publishes the same history by fast-forward. Both branches include every current upstream commit. The previous `master` comparison showing 33 commits behind referred to its old branch tip; those official commits were already integrated into `all-features`.
 
 ### From upstream (merged regularly)
 
@@ -90,6 +92,8 @@ just fix
 just clip
 cargo test --locked --workspace
 ```
+
+After reviewing and committing the intended changes, push `origin/all-features`, fast-forward local `master` from `all-features` with `git merge --ff-only all-features`, and push `origin/master`. Return to `all-features` and verify both fork branches match, neither is behind upstream, and the worktree is clean. Preserve existing edits and backups before switching branches.
 
 See [AGENTS.md](AGENTS.md) for i18n (`just sync-zh-cn`) and architecture notes.
 

@@ -400,6 +400,13 @@ it again on each pass. Keep Slint runtime/build versions synchronized and fontiq
 Preserve cache bytes, optional decoders, Krokiet-only features, GTK deletion and hash sizes up to
 8192. Do not disable features to make an upgrade compile.
 
+Python maintenance uses `misc/pyproject.toml` with `requires-python = ">=3.15"`, no upper
+bound and no exact interpreter patch pin. Keep Ruff/mypy targeting the minimum supported
+version. Run scripts through `uv run --project misc` (with the appropriate extra) so fresh
+clones and standalone maintenance commands do not fall back to an older system Python.
+Check each new Python minor version before claiming runtime compatibility; the Rust apps
+remain independent of a Python runtime.
+
 After changes, run `just fix`, `just clip`, locked workspace tests and checks for changed standalone
 tools. Update `README.md` and `Changelog.md`, stage intended files explicitly, use an `[AI]` commit
 title, push only the fork, pull with `--ff-only`, and verify remote equality and clean porcelain.

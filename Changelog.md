@@ -117,6 +117,16 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Python 3.15+ maintenance baseline - 2026-10-31
+
+- Made Python 3.15+ a maintained fork feature for all 17 maintenance scripts. Raised `requires-python` from 3.13 to `>=3.15` without an upper bound or exact patch pin; Ruff and mypy explicitly target the 3.15 baseline. The generated root quality project inherits these settings.
+- Routed version updates, license generation, translations and all 11 dead-code checks through the maintained misc uv environment. Fresh clones no longer depend on an existing generated root project or accidentally select an older system `python3`. Optional plotting, icon and test-asset commands use the same environment and their existing extras.
+- The isolated upstream Flatpak generator now explicitly requests Python `>=3.15` while retaining its own dependency metadata, original failure status and temporary-file cleanup. Stable-only dependency resolution is also the misc project's default, matching the rolling updater.
+- Python remains a maintenance dependency, with no new runtime dependency for Krokiet, Cedinia or the CLI. Newer Python minors are admitted by the version range and require their own compatibility checks before being described as tested.
+- Verified CPython 3.15.2: all 17 scripts compile with warnings treated as errors and pass strict mypy; all 45 optional/base packages sync from the refreshed frozen lock without a package-version change. Temporary-input runtime checks passed for translation/Unicode helpers, cyclic license metadata, charts/Markdown, PNG/AVIF/HEIF and SVG rendering. uv rejects an explicit Python 3.14 interpreter before creating an environment. Stubbed regressions cover all 11 check callers, failure aggregation and Flatpak interpreter selection/cleanup.
+- `just fix`, `just clip` and locked workspace tests passed without Rust warnings: 383 passed, zero failed, six existing ignored cases. Krokiet zh-CN translation and character checks passed. No hosted CI, future Python minor, live GUI, APK/device or actual Flatpak build is claimed; publication retains `[skip ci]`.
+- A fresh upstream fetch found one new commit, `74c24a13`, covering Slint, cache and application changes across 57 files. Recorded the pending integration separately; this Python maintenance update keeps the existing upstream base and fork application behavior.
+
 ### Python dependency completeness and rolling refresh - 2026-10-31
 
 - Audited all 17 tracked Python scripts: 12 general maintenance scripts, four translation helpers and one benchmark plotter. Four import third-party libraries; the others use the standard library or local modules. Documented their purpose and dependency entry points without adding Python runtime requirements to the Rust apps.

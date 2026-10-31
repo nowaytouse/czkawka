@@ -164,7 +164,7 @@ unused_features:
 
 # Bump version in all crates, UI files and release metadata, e.g. `just change-version 12.0.1`
 change-version version:
-    uv run misc/change_version.py {{version}}
+    uv run --project misc misc/change_version.py {{version}}
 
 ##################### LICENSES #####################
 
@@ -172,7 +172,7 @@ change-version version:
 # Requires: cargo install cargo-license
 gen_cedinia_licenses:
     cargo metadata --format-version 1 \
-        | python3 misc/gen_cedinia_licenses.py > cedinia/THIRD_PARTY_LICENSES.txt
+        | uv run --project misc python misc/gen_cedinia_licenses.py > cedinia/THIRD_PARTY_LICENSES.txt
     @echo "Generated cedinia/THIRD_PARTY_LICENSES.txt ($(wc -l < cedinia/THIRD_PARTY_LICENSES.txt) lines)"
 
 ##################### ANDROID #####################
@@ -399,7 +399,7 @@ install:
 prepare_translations_deps:
     @command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
     @command -v ollama >/dev/null 2>&1 || curl -fsSL https://ollama.com/install.sh | sh
-    uv sync
+    uv sync --project misc
     # qwen2.5:7b - fast, but quite bad quality
     # qwen2.5:32b - very slow, still not good quality
     # zongwei/gemma3-translator:4b - not so fast, but looks quite good
@@ -407,21 +407,21 @@ prepare_translations_deps:
     export OLLAMA_VULKAN=1; export HSA_OVERRIDE_GFX_VERSION=10.3.0; ollama pull translategemma:12b
 
 translate:
-    uv run misc/ai_translate/translate.py czkawka_core/i18n
-    uv run misc/ai_translate/translate.py krokiet/i18n
-    uv run misc/ai_translate/translate.py cedinia/i18n
+    uv run --project misc misc/ai_translate/translate.py czkawka_core/i18n
+    uv run --project misc misc/ai_translate/translate.py krokiet/i18n
+    uv run --project misc misc/ai_translate/translate.py cedinia/i18n
 # Fork-only: maintain Simplified Chinese for Krokiet
 sync-zh-cn:
-    uv run python misc/fill_zh_cn_missing.py
-    uv run misc/ai_translate/validate_translations.py krokiet/i18n --languages zh-CN
-    uv run misc/ai_translate/validate_translations.py czkawka_core/i18n --languages zh-CN
+    uv run --project misc python misc/fill_zh_cn_missing.py
+    uv run --project misc misc/ai_translate/validate_translations.py krokiet/i18n --languages zh-CN
+    uv run --project misc misc/ai_translate/validate_translations.py czkawka_core/i18n --languages zh-CN
 
 sync-fork-i18n: sync-zh-cn
 
 validate_translations *args: # Available --fix argument, which removes invalid translations
-    uv run misc/ai_translate/validate_translations.py czkawka_core/i18n {{args}}
-    uv run misc/ai_translate/validate_translations.py krokiet/i18n {{args}}
-    uv run misc/ai_translate/validate_translations.py cedinia/i18n {{args}}
+    uv run --project misc misc/ai_translate/validate_translations.py czkawka_core/i18n {{args}}
+    uv run --project misc misc/ai_translate/validate_translations.py krokiet/i18n {{args}}
+    uv run --project misc misc/ai_translate/validate_translations.py cedinia/i18n {{args}}
 
 # Crowdin allows to import zip file with structured translations
 pack_translations:

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
 cmds=(
-    "python3 misc/delete_unused_krokiet_slint_imports.py krokiet"
-    "python3 misc/delete_unused_krokiet_slint_imports.py cedinia"
-    "python3 misc/find_unused_fluent_translations.py krokiet"
-    "python3 misc/find_unused_fluent_translations.py cedinia"
-    "python3 misc/find_unused_fluent_translations.py czkawka_core"
-    "python3 misc/find_unused_slint_translations.py krokiet"
-    "python3 misc/find_unused_slint_translations.py cedinia"
-    "python3 misc/find_unused_callbacks.py krokiet"
-    "python3 misc/find_unused_callbacks.py cedinia cedinia/ui/globals/app_state.slint"
-    "python3 misc/find_unused_settings_properties.py krokiet"
-    "python3 misc/find_unused_settings_properties.py cedinia"
+    "uv run --project misc python misc/delete_unused_krokiet_slint_imports.py krokiet"
+    "uv run --project misc python misc/delete_unused_krokiet_slint_imports.py cedinia"
+    "uv run --project misc python misc/find_unused_fluent_translations.py krokiet"
+    "uv run --project misc python misc/find_unused_fluent_translations.py cedinia"
+    "uv run --project misc python misc/find_unused_fluent_translations.py czkawka_core"
+    "uv run --project misc python misc/find_unused_slint_translations.py krokiet"
+    "uv run --project misc python misc/find_unused_slint_translations.py cedinia"
+    "uv run --project misc python misc/find_unused_callbacks.py krokiet"
+    "uv run --project misc python misc/find_unused_callbacks.py cedinia cedinia/ui/globals/app_state.slint"
+    "uv run --project misc python misc/find_unused_settings_properties.py krokiet"
+    "uv run --project misc python misc/find_unused_settings_properties.py cedinia"
 )
 
 failed=""

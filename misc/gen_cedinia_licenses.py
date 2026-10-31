@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate THIRD_PARTY_LICENSES.txt for Cedinia from `cargo metadata` JSON output.
-Usage: cargo metadata --format-version 1 | python3 misc/gen_cedinia_licenses.py
+Usage: cargo metadata --format-version 1 | uv run --project misc python misc/gen_cedinia_licenses.py
 """
 
 import json

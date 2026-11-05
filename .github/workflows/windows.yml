@@ -177,4 +177,4 @@ jobs:
       # Additional features are non-testable due really complicated setup of environment on Windows
       - name: Test
         run: |
-          cargo test -p czkawka_core -p krokiet
+          cargo test --no-fail-fast -p czkawka_core -p krokiet

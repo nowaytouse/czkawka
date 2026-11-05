@@ -170,9 +170,13 @@ fn exact_filename_respects_media_extensions_and_reference_folders() {
     let groups = finder.get_files_with_identical_name_referenced();
     assert_eq!(groups.len(), 1);
     let (original, matches) = groups.values().next().unwrap();
-    assert_eq!(original.path, reference_folder.join("movie.mp4").canonicalize().unwrap());
+    let normalized = |path: &std::path::Path| {
+        let path = dunce::canonicalize(path).unwrap();
+        if cfg!(windows) { crate::common::normalize_windows_path(path) } else { path }
+    };
+    assert_eq!(normalized(&original.path), normalized(&reference_folder.join("movie.mp4")));
     assert_eq!(matches.len(), 1);
-    assert_eq!(matches[0].path, other_folder.join("movie.mp4").canonicalize().unwrap());
+    assert_eq!(normalized(&matches[0].path), normalized(&other_folder.join("movie.mp4")));
     assert_eq!(fs::read(original.path.clone()).unwrap(), b"media");
     assert_eq!(fs::read(matches[0].path.clone()).unwrap(), b"media");
 }

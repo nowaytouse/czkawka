@@ -343,7 +343,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install basic libraries
-        run: sudo apt update || true; sudo apt install libheif-dev libraw-dev libavif-dev libdav1d-dev libasound2-dev xvfb imagemagick libgl1-mesa-dri mesa-vulkan-drivers libxkbcommon-x11-0 -y
+        run: sudo apt update || true; sudo apt install libheif-dev libheif-plugin-libde265 libraw-dev libavif-dev libdav1d-dev libasound2-dev xvfb imagemagick libgl1-mesa-dri mesa-vulkan-drivers libxkbcommon-x11-0 -y
 
       - name: Setup rust version
         run: rustup default stable

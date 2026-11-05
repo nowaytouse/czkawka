@@ -95,11 +95,11 @@ fn connect_test_image_file(app: &MainWindow) {
                     let file_name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
                     let ext = path.extension().unwrap_or_default().to_string_lossy().to_lowercase();
                     let decoder = if RAW_IMAGE_EXTENSIONS.contains(&ext.as_str()) {
-                        if cfg!(feature = "libraw") { "LibRAW" } else { "rawler" }
+                        "rawler"
                     } else if HEIC_EXTENSIONS.contains(&ext.as_str()) {
-                        "libheif"
+                        "imgalifier-heif"
                     } else if ext == "avif" {
-                        if cfg!(feature = "libavif") { "libavif" } else { "image-rs" }
+                        "imgalifier-avif"
                     } else {
                         "image-rs"
                     };

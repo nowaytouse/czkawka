@@ -6,6 +6,7 @@ use image::{DynamicImage, ImageBuffer, Rgba};
 use image_hasher::{FilterType, HashAlg};
 use tempfile::TempDir;
 
+use crate::common::image::register_image_decoding_hooks;
 use crate::common::tool_data::CommonData;
 use crate::common::traits::Search;
 use crate::tools::similar_images::{GeometricInvariance, SimilarImages, SimilarImagesParameters};
@@ -84,7 +85,7 @@ fn test_similar_images() {
 fn test_similar_images_exclude_same_size() {
     let test_path = get_test_resources_path();
 
-    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, true, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, true, false, GeometricInvariance::Off);
 
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
@@ -112,7 +113,7 @@ fn test_similar_images_empty_directory() {
     let temp_dir = TempDir::new().unwrap();
     let path = temp_dir.path();
 
-    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
 
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![path.to_path_buf()]);
@@ -209,7 +210,7 @@ fn test_similar_images_hide_hard_links() {
     }
 
     {
-        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let mut finder = SimilarImages::new(params);
         finder.set_hide_hard_links(true);
         finder.set_included_paths(vec![path.to_path_buf()]);
@@ -225,7 +226,7 @@ fn test_similar_images_hide_hard_links() {
     }
 
     {
-        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let mut finder = SimilarImages::new(params);
         finder.set_hide_hard_links(false);
         finder.set_included_paths(vec![path.to_path_buf()]);
@@ -268,7 +269,7 @@ fn test_similar_images_reference_mode_deletes_only_non_reference() {
         difference: 0,
     };
 
-    let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_delete_method(DeleteMethod::Delete);
     finder.set_move_to_trash(false);
@@ -282,19 +283,18 @@ fn test_similar_images_reference_mode_deletes_only_non_reference() {
     assert!(!duplicate.exists(), "Non-reference duplicate must be deleted (#1643)");
 }
 
-#[cfg(feature = "libavif")]
 fn get_heif_images_path() -> PathBuf {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test_resources").join("heif_images");
     assert!(path.exists(), "HEIF test resources not found at \"{}\"", path.to_string_lossy());
     path
 }
 
-#[cfg(feature = "libavif")]
 #[test]
 fn test_similar_images_avif_files_are_found() {
+    register_image_decoding_hooks();
     let test_path = get_heif_images_path();
 
-    let params = SimilarImagesParameters::new(30, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(30, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
     finder.set_recursive_search(false);
@@ -307,12 +307,12 @@ fn test_similar_images_avif_files_are_found() {
     assert_eq!(info.initial_found_files, 3, "Should find all 3 AVIF test files");
 }
 
-#[cfg(feature = "libavif")]
 #[test]
 fn test_similar_images_avif_striped_pattern_are_all_similar_under_gradient_hash() {
+    register_image_decoding_hooks();
     let test_path = get_heif_images_path();
 
-    let params = SimilarImagesParameters::new(0, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+    let params = SimilarImagesParameters::new(0, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
     let mut finder = SimilarImages::new(params);
     finder.set_included_paths(vec![test_path]);
     finder.set_recursive_search(false);

@@ -21,6 +21,12 @@ GitHub - never omit it, even for small or automatic changes.
 
 ---
 
+## Changelog
+
+Never edit `Changelog.md` automatically. It is maintained by hand by the author; do not add, update or "complete" entries unless explicitly asked.
+
+---
+
 ## Rust Style
 
 Applies to every Rust crate in the workspace (`czkawka_core`, `czkawka_cli`, `krokiet`,
@@ -125,7 +131,7 @@ Two properties are non-negotiable across every sub-project:
 2. **Minimal non-Rust dependencies** – every additional C/C++ library (or any other non-Rust
    language) makes cross-compilation harder, narrows the set of supported targets, and increases
    build complexity for contributors. Prefer pure-Rust crates. If a native library is truly
-   necessary (e.g. `libheif`, `libraw`), gate it behind an optional Cargo feature so the default
+   necessary (e.g. a codec library), gate it behind an optional Cargo feature so the default
    build stays fully Rust.
 
 ---
@@ -366,6 +372,7 @@ just runr krokiet         # fast_release run
 just fix                  # format + clippy + Python checks
 just upgrade-check        # preview latest stable dependencies, including major and pinned releases
 just upgrade              # update dependencies; compatibility review and quality gates still required
+just screens              # screenshots of every Krokiet screen in the dark and light theme -> tmp/screens
 just translate            # AI-translate all projects
 just validate_translations [--fix]
 just sync-zh-cn           # fork: fill and validate Krokiet zh-CN gaps

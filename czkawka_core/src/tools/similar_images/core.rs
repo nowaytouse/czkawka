@@ -1604,14 +1604,14 @@ mod tests {
         assert_eq!(exclude_same.similar_vectors[0].iter().map(|entry| entry.size).collect::<Vec<_>>(), [100, 200]);
 
         let mut only_same = SimilarImages::new(
-            SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(true, None),
+            SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(true, None),
         );
         only_same.similar_vectors = vec![vec![entry(100, "a"), entry(100, "b"), entry(200, "c"), entry(300, "d"), entry(300, "e")]];
         only_same.exclude_items_with_same_size();
         assert_eq!(only_same.similar_vectors.iter().map(|group| group[0].size).collect::<Vec<_>>(), [100, 300]);
 
         let mut ratio = SimilarImages::new(
-            SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(false, Some(1.5)),
+            SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off).with_size_filters(false, Some(1.5)),
         );
         ratio.similar_vectors = vec![vec![entry(100, "a"), entry(150, "b")], vec![entry(100, "c"), entry(151, "d")]];
         ratio.exclude_items_with_same_size();
@@ -1649,7 +1649,7 @@ mod connect_results_tests {
 
     #[test]
     fn test_connect_results_real_case() {
-        let params = SimilarImagesParameters::new(10, 8_u8, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
+        let params = SimilarImagesParameters::new(10, 8_u16, HashAlg::Gradient, FilterType::Lanczos3, false, false, GeometricInvariance::Off);
         let _finder = SimilarImages::new(params);
 
         let hash1: ImHash = vec![59, 41, 53, 27, 19, 143, 228, 228];

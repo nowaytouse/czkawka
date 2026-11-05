@@ -322,8 +322,11 @@ pub enum IntDataVideoOptimizer {
     RectTop,
     RectRight,
     RectBottom,
+    DurationCentiseconds,
+    BitratePart1,
+    BitratePart2,
 }
-pub const MAX_INT_DATA_VIDEO_OPTIMIZER: usize = IntDataVideoOptimizer::RectBottom as usize + 1;
+pub const MAX_INT_DATA_VIDEO_OPTIMIZER: usize = IntDataVideoOptimizer::BitratePart2 as usize + 1;
 
 #[repr(u8)]
 #[derive(Debug, Eq, PartialEq, TryFromPrimitive)]
@@ -334,6 +337,8 @@ pub enum StrDataVideoOptimizer {
     Codec,
     Dimensions,
     NewDimensions,
+    Length,
+    Bitrate,
     ModificationDate,
     PreviewPath,
 }
@@ -454,8 +459,10 @@ impl ActiveTab {
                 StrDataVideoOptimizer::Size => SortIdx::IntIdxPair(IntDataVideoOptimizer::SizePart1 as i32, IntDataVideoOptimizer::SizePart2 as i32),
                 StrDataVideoOptimizer::Dimensions => SortIdx::IntIdx(IntDataVideoOptimizer::PixelCount as i32),
                 StrDataVideoOptimizer::NewDimensions => SortIdx::IntIdx(IntDataVideoOptimizer::DiffInPixels as i32),
+                StrDataVideoOptimizer::Length => SortIdx::IntIdx(IntDataVideoOptimizer::DurationCentiseconds as i32),
+                StrDataVideoOptimizer::Bitrate => SortIdx::IntIdxPair(IntDataVideoOptimizer::BitratePart1 as i32, IntDataVideoOptimizer::BitratePart2 as i32),
             },
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
 
@@ -476,7 +483,7 @@ impl ActiveTab {
             Self::BadNames => StrDataBadNames::Path as usize,
             Self::ExifRemover => StrDataExifRemover::Path as usize,
             Self::VideoOptimizer => StrDataVideoOptimizer::Path as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
 
@@ -496,14 +503,14 @@ impl ActiveTab {
             Self::BadNames => StrDataBadNames::Name as usize,
             Self::ExifRemover => StrDataExifRemover::Name as usize,
             Self::VideoOptimizer => StrDataVideoOptimizer::Name as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
 
     pub(crate) fn get_str_proper_extension(self) -> usize {
         match self {
             Self::BadExtensions => StrDataBadExtensions::ProperExtension as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get proper extension from this tab"),
         }
     }
@@ -523,7 +530,7 @@ impl ActiveTab {
             Self::BadNames => IntDataBadNames::ModificationDatePart1 as usize,
             Self::ExifRemover => IntDataExifRemover::ModificationDatePart1 as usize,
             Self::VideoOptimizer => IntDataVideoOptimizer::ModificationDatePart1 as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
     pub(crate) fn get_int_size_opt_idx(self) -> Option<usize> {
@@ -540,7 +547,7 @@ impl ActiveTab {
             Self::BadNames => IntDataBadNames::SizePart1 as usize,
             Self::ExifRemover => IntDataExifRemover::SizePart1 as usize,
             Self::VideoOptimizer => IntDataVideoOptimizer::SizePart1 as usize,
-            Self::Settings | Self::About | Self::EmptyFolders | Self::InvalidSymlinks => return None,
+            Self::Settings | Self::About | Self::DiskUsage | Self::EmptyFolders | Self::InvalidSymlinks => return None,
         };
         Some(res)
     }
@@ -550,7 +557,7 @@ impl ActiveTab {
     pub(crate) fn get_int_width_idx(self) -> usize {
         match self {
             Self::SimilarImages => IntDataSimilarImages::Width as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get height from this tab"),
         }
     }
@@ -558,7 +565,7 @@ impl ActiveTab {
     pub(crate) fn get_int_height_idx(self) -> usize {
         match self {
             Self::SimilarImages => IntDataSimilarImages::Height as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get height from this tab"),
         }
     }
@@ -566,7 +573,7 @@ impl ActiveTab {
     pub(crate) fn get_int_pixel_count_idx(self) -> usize {
         match self {
             Self::SimilarImages => IntDataSimilarImages::PixelCount as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get total pixel count from this tab"),
         }
     }
@@ -575,7 +582,7 @@ impl ActiveTab {
         match self {
             Self::SimilarVideos => StrDataSimilarVideos::Codec as usize,
             Self::VideoOptimizer => StrDataVideoOptimizer::Codec as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get video codec from this tab"),
         }
     }
@@ -583,7 +590,7 @@ impl ActiveTab {
     pub(crate) fn get_exif_tag_names_idx(self) -> usize {
         match self {
             Self::ExifRemover => StrDataExifRemover::ExifTags as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get exif tag names from this tab"),
         }
     }
@@ -591,7 +598,7 @@ impl ActiveTab {
     pub(crate) fn get_exif_tag_groups_idx(self) -> usize {
         match self {
             Self::ExifRemover => StrDataExifRemover::ExifGroupsNames as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get exif tag groups from this tab"),
         }
     }
@@ -599,7 +606,7 @@ impl ActiveTab {
     pub(crate) fn get_exif_tag_u16_idx(self) -> usize {
         match self {
             Self::ExifRemover => StrDataExifRemover::ExifTagsU16 as usize,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
             _ => panic!("Unable to get exif tag u16 from this tab"),
         }
     }
@@ -617,7 +624,7 @@ impl ActiveTab {
             | Self::ExifRemover
             | Self::VideoOptimizer => false,
             Self::SimilarImages | Self::DuplicateFiles | Self::ExactFilenames | Self::SimilarVideos | Self::SimilarMusic => true,
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
     pub(crate) fn get_tool_model(self, app: &MainWindow) -> ModelRc<SingleMainListModel> {
@@ -637,7 +644,7 @@ impl ActiveTab {
             Self::BadNames => app.get_bad_names_model(),
             Self::ExifRemover => app.get_exif_remover_model(),
             Self::VideoOptimizer => app.get_video_optimizer_model(),
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
 
@@ -658,7 +665,7 @@ impl ActiveTab {
             Self::BadNames => app.set_bad_names_model(model),
             Self::ExifRemover => app.set_exif_remover_model(model),
             Self::VideoOptimizer => app.set_video_optimizer_model(model),
-            Self::Settings | Self::About => panic!("Button should be disabled"),
+            Self::Settings | Self::About | Self::DiskUsage => panic!("Button should be disabled"),
         }
     }
 
@@ -678,7 +685,7 @@ impl ActiveTab {
             ToolType::TemporaryFiles => Self::TemporaryFiles,
             ToolType::ExifRemover => Self::ExifRemover,
             ToolType::VideoOptimizer => Self::VideoOptimizer,
-            ToolType::None => panic!("CLI tool parsing never produces ToolType::None"),
+            ToolType::DiskUsage | ToolType::None => panic!("CLI tool parsing never produces {tool:?}"),
         }
     }
 }

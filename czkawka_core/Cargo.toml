@@ -86,6 +86,8 @@ infer = "0.22"
 
 # Optional native decoder with a libheif >= 1.17 ABI floor.
 libheif-rs = { version = "3", optional = true, default-features = false, features = ["v1_17", "image"] }
+imgalifier-heif = { version = "0.1.0", features = ["image"] }
+imgalifier-avif = { version = "0.1.0", features = ["image"] }
 
 # EXIF data cleaning
 little_exif = "0.6.23"
@@ -129,6 +131,10 @@ tempfile = "3.27"
 
 [[bench]]
 name = "hash_calculation_benchmark"
+harness = false
+
+[[bench]]
+name = "disk_usage_benchmark"
 harness = false
 
 #[[bench]]

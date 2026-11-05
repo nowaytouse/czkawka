@@ -94,7 +94,7 @@ Yes. Nightly builds compiled from the latest master branch commits are published
 
 ### Q: What are the system requirements?
 
-- **Linux**: Ubuntu 22.04 or newer (glibc 2.35+).
+- **Linux**: Standard binaries target glibc 2.17 or newer; native-codec builds may require newer system libraries.
 - **Windows**: Windows 10 or newer. Krokiet binaries are self-contained.
 - **macOS**: Krokiet binaries target Apple Silicon (ARM64); Intel users can compile from source.
 
@@ -151,14 +151,12 @@ The release assets stack a few naming components, e.g. `<os>_<app>[_<features>][
 - `cli` (`czkawka_cli`) - command-line version of the app
 - `cedinia` - experimental Android app
 - `arm` / `arm64`, `x86_64` - CPU architecture. Most Windows/Linux machines use `x86_64`, while on Mac the `arm` (Apple Silicon) version is becoming the most common choice
-- `heif`, `raw`, `avif` - additional image-format features that require extra libraries installed on the OS (libheif / libraw / libavif)
-- `skia_opengl`, `skia_vulkan`, `femtovg_wgpu`, `all_backends` - alternative Krokiet rendering backends; different builds may fix some problems like blurry fonts or graphics crashes. `all_backends` bundles all of them (plus launcher scripts) in one package
+- `vello`, `femtovg_wgpu`, `all_backends` - alternative Krokiet rendering backends; different builds may fix some problems like blurry fonts or graphics crashes. `all_backends` bundles all of them (plus launcher scripts) in one package
 - `apk` / `aab` - Cedinia Android package formats - just use `apk`; `aab` is used only for testing purposes
-- (Windows only) `on_linux` / `on_windows` - which host the `.exe` was cross-compiled on
 
 ### Q: Which one should I pick?
 
-Pick `krokiet` for your architecture with the **default** backend - it is built to be the most compatible everywhere. Only reach for a `skia_opengl` / `skia_vulkan` / `femtovg_wgpu` / `all_backends` build if the default one shows blurry text, fails to render, or crashes on your GPU. Choose a `heif` / `raw` / `avif` build only if you need those image formats (and install the matching system libraries). On Windows, if you are unsure between `on_linux` and `on_windows`, start with `windows_krokiet_on_linux`.
+Pick `krokiet` for your architecture with the **default** backend - it is built to be the most compatible everywhere. Only reach for a `vello` / `femtovg_wgpu` / `all_backends` build if the default one shows blurry text, fails to render, or crashes on your GPU. On Windows, start with `windows_krokiet`.
 
 ### Q: On Linux Krokiet shows nothing or crashes with a rendering error
 
@@ -170,7 +168,7 @@ SLINT_BACKEND=software krokiet
 
 On systems without a GPU (VMs, headless servers), this is often the only option.
 
-The default `linux_krokiet_*` binary only ships the femtovg and software renderers. If you want to try Skia/OpenGL/Vulkan/wgpu backends too, download the **`linux_krokiet_all_backends_*`** build - it is packaged as a **ZIP that contains the binary plus small bash launcher scripts**, one per renderer, that just set the right `SLINT_BACKEND` and start the app. So instead of exporting the variable yourself you can simply run, for example, `./krokiet_winit_skia_opengl.sh`, `./krokiet_winit_skia_vulkan.sh`, `./krokiet_winit_software.sh`, `./krokiet_femtovg_wgpu.sh`, or `./krokiet_winit_femtovg.sh` until one renders correctly.
+The default `linux_krokiet_*` binary ships the femtovg and software renderers. The `linux_krokiet_all_backends_*` ZIP also includes launchers for the Vello and femtovg-wgpu renderers.
 
 ---
 
@@ -195,7 +193,6 @@ This is usually a GPU driver or rendering backend issue. Try, in order:
 | Linux | `~/.config/krokiet/` | `~/.cache/czkawka/` |
 | macOS | `~/Library/Application Support/pl.Qarmin.Krokiet/` | `~/Library/Caches/pl.Qarmin.Czkawka/` |
 | Windows | `%APPDATA%\Qarmin\Krokiet\config\` | `%LOCALAPPDATA%\Qarmin\Czkawka\cache\` |
-| Flatpak | `~/.var/app/com.github.qarmin.czkawka/config/czkawka/` | `~/.var/app/com.github.qarmin.czkawka/cache/czkawka/` |
 
 The cache is shared by the CLI, Krokiet, and Cedinia through `czkawka_core`.
 
@@ -296,12 +293,11 @@ Check these settings:
 
 ### Q: What image formats does Similar Images support?
 
-Supported in all builds: JPEG, PNG, BMP, TIFF, WebP, TGA, plus the less common FF (Farbfeld), QOI, EXR, and JXL. (These are the extensions the Similar Images tool actually enumerates.)
+Supported: JPEG, PNG, BMP, TIFF, WebP, TGA, plus the less common FF (Farbfeld), QOI, EXR, and JXL. (These are the extensions the Similar Images tool actually enumerates.)
 
-Formats requiring optional features:
-- **HEIC/HEIF**: needs a build with the `heif` feature (requires the `libheif` system library on Linux/macOS).
-- **AVIF**: needs a build with the `libavif` feature - compile with `--features libavif` or use a binary variant whose name includes `avif`.
-- **RAW** (CR2, NEF, ARW, etc.): basic RAW support is **always built in** via the pure-Rust `rawler` library, but it does not cover every format and not always fully. The optional `libraw` feature adds the `libraw` backend - the industry-standard library - which supports a larger set of RAW formats more completely. So RAW works without any special build; use a `libraw` build only if your camera's format is missing or mis-decoded.
+Also built in (pure-Rust decoders, no extra libraries):
+- **HEIC/HEIF** and **AVIF**: decoded by `imgalifier-heif` and `imgalifier-avif`.
+- **RAW** (CR2, NEF, ARW, etc.): RAW support is **always built in** via the pure-Rust `rawler` library, no extra library or special build is needed. Rawler reads the EXIF orientation of the file itself. Cameras that rawler does not know yet are reported as an error.
 
 ### Q: Can Similar Images find duplicates across different image formats (e.g., JPEG vs WebP vs PNG)?
 
@@ -331,14 +327,6 @@ The settings control the perceptual hashing step in Similar Images:
 - **Hash size**: 8, 16, 32, or 64 bits per dimension. Larger values produce longer, more precise fingerprints that reduce false positives but may miss re-encoded versions.
 
 Practical guidance: for finding re-encoded/resized copies of the same image, start with Mean hash + size 16 and a "max difference" of 8-10. For stricter matching (fewer false positives), use Gradient/Double Gradient with size 32 and lower the max difference to 4-5.
-
-### Q: HEIC images are not found
-
-Ensure you are using a build that includes the `heif` feature. The plain `linux_krokiet_all_backends_x86_64` binary does **not** include HEIF/AVIF support. Use a `heif_raw_avif` variant (e.g. `linux_krokiet_heif_raw_avif_x86_64`) or compile with the appropriate feature flags:
-
-```bash
-cargo run --bin krokiet --features "winit_femtovg,winit_software,heif,libavif,libraw"
-```
 
 ---
 
@@ -425,17 +413,13 @@ Common causes:
 
 On the same filesystem, Krokiet performs a rename (which is instant). If the source and destination are on different filesystems (e.g., moving from one drive to another), a full copy-then-delete is performed, which is expected to be slow. This is not a bug.
 
-### Q: Flatpak version moves deleted files to a different Trash folder than the system uses
-
-This is a known behavior of the Flatpak sandbox. Files moved to trash inside a Flatpak container go to `~/.Trash-<uid>/` rather than `~/.local/share/Trash/`. This cannot be configured and is a limitation of the Flatpak sandbox, not of Czkawka itself.
-
 ### Q: How does Hardlink work? What does it actually do to my files?
 
-Hardlink replaces selected duplicate files with hard links pointing to one retained copy. After hardlinking, all files share the same inode - they appear as separate filenames but consume disk space only once. **Note**: hardlinking across different filesystems or partitions is not possible. Such a pair is not silently skipped - the operation fails for it and an error is reported (e.g. "Failed to hardlink ...: Invalid cross-device link"); the original file is left untouched, so nothing is lost.
+Hardlink replaces the checked duplicate files with hard links pointing to one retained file: the reference file if the group has one, otherwise the first checked file of the group (so check at least two files per group). After hardlinking, all files share the same inode - they appear as separate filenames but consume disk space only once. **Note**: hardlinking across different filesystems or partitions is not possible. Such a pair is not silently skipped - the operation fails for it and an error is reported (e.g. "Failed to hardlink ...: Invalid cross-device link"); the original file is left untouched, so nothing is lost.
 
 ### Q: When hardlinking multiple groups at once, do files from different groups get linked together?
 
-No. Each group is processed independently. Within group A, the unselected file becomes the "original" and selected files become hard links to it. Within group B the same happens independently. Files from different groups are never linked together.
+No. Each group is processed independently. Within group A, the retained file becomes the "original" and the other checked files become hard links to it. Within group B the same happens independently. Files from different groups are never linked together.
 
 ---
 
@@ -443,10 +427,10 @@ No. Each group is processed independently. Within group A, the unselected file b
 
 ### Q: "Select Custom" does not work / selects nothing
 
-The "Select Custom" dialog selects files based on a text pattern matched against the file name, path, or a regex. Common mistakes:
-- The pattern must match a substring of the full path. Use `*` as a wildcard.
+The "Select Custom" dialog checks files by the values of columns (full path, file name, path, size, dates). Text columns use `*` wildcard patterns, not regular expressions. Common mistakes:
+- A pattern without `*` must match the whole value; without a `*` at the beginning or at the end it is anchored there. Use `*` as a wildcard, e.g. `*backup*`.
 - On Windows, use forward slashes or escaped backslashes in patterns; backslash in patterns can behave unexpectedly.
-- The "Don't select all files in a group" checkbox: if checked, at least one file in each group is always left unselected (a safety measure to avoid deleting all copies). Uncheck it if you want to select all matches regardless.
+- The "Select all items except one, in each group" checkbox (on by default, only in tools with groups): at least one file in each group is left unchecked. It is switched off automatically when reference folders were used. Uncheck it if you want to check all matches regardless.
 
 ### Q: How do I select all files except those in a specific folder?
 
@@ -457,26 +441,17 @@ Or set the folder you want to keep as a **Reference Folder** - reference folder 
 
 ### Q: If I click "Select All" and then delete, will all copies of a file be deleted including the last one?
 
-No. The automatic selection modes ("Select All Except Oldest", "Select All Except Newest", etc.) always leave at least one file in each group unselected. The plain "Select All" button selects every checked row, but each group's header row (the first entry) is always left unselected by the automatic modes. If you manually check every row yourself, you can select all files in a group - but even then, the delete operation will warn you before proceeding.
+The modes that pick one file or all except one ("One oldest", "All except newest", etc.) always leave at least one file in each group unchecked. "Select all" and the invert modes can check every file of a group, but the delete and trash popups then report how many groups have all their files checked.
 
 When using the CLI with `-D AEN` / `-D AEO` etc., the delete mode is described by its name: "All Except Newest" always keeps exactly one file per group.
 
 ### Q: Can I select files by extension using "Select Custom"?
 
-Yes. In the "Regex Path + Name" field, enter a regex that matches the extension. For example, to select all `.mp3` files:
-
-```
-.*mp3
-```
-
-Or for `.flac` files:
-```
-.*\.flac$
-```
+Yes. Enable the file name (or full path) column and enter a wildcard pattern, for example `*.mp3` or `*.flac`. Patterns are not regular expressions.
 
 ### Q: "Select Custom" on Windows - the "Path" filter selects nothing
 
-On Windows, use a plain path prefix without a trailing backslash or wildcard. For example, enter `C:\Users\username\Desktop` (not `C:\Users\username\Desktop\*`). The filter matches any file whose path contains the entered string as a substring.
+A pattern without `*` must match the whole value. Use a trailing wildcard, for example `C:\Users\username\Desktop*`, to match everything inside that folder.
 
 ## Bad Extensions Tool
 
@@ -529,7 +504,7 @@ Not currently. Drag and drop to add directories is not implemented, because Slin
 
 ---
 
-## Snap & Flatpak Packages
+## Snap Package
 
 ### Q: The Snap package is outdated / has permission problems
 
@@ -765,11 +740,11 @@ Not officially. `czkawka_core` is platform-independent and can be compiled for A
 
 ### Q: Can I save scan results to review later without re-scanning?
 
-You can export results to files using the "Save" button in the GUI or the `-f` / `-C` / `-p` flags in the CLI. These files can be reviewed externally. However, you cannot load them back into the GUI to resume where you left off - the application must re-run the scan to display results interactively.
+You can export results to files using the "Save" button in the GUI (it asks for a folder and always writes three files: `.txt`, `_pretty.json` and `_compact.json`) or the `-f` / `-C` / `-p` flags in the CLI. These files can be reviewed externally. However, you cannot load them back into the GUI to resume where you left off - the application must re-run the scan to display results interactively.
 
 ### Q: Can I export results as JSON for use in my own scripts?
 
-Yes. Use `-C <filename>` for compact JSON or `-p <filename>` for pretty-printed JSON in the CLI. In the GUI, enable "Save also as JSON" in settings and use the Save button. The JSON format contains file paths, sizes, modification dates, and hashes (for duplicate files).
+Yes. Use `-C <filename>` for compact JSON or `-p <filename>` for pretty-printed JSON in the CLI. In the GUI, the Save button always writes JSON files next to the text file (the "Save also as JSON" setting concerns only the cache). The JSON format contains file paths, sizes, modification dates, and hashes (for duplicate files).
 
 ---
 

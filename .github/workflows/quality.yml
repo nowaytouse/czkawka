@@ -2,9 +2,9 @@ name: 🧹 Quality
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, all-features ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, all-features ]
   workflow_dispatch:
 
 permissions:

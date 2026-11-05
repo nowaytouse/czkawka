@@ -4,10 +4,19 @@ use std::path::Path;
 
 use fast_image_resize::{FilterType as FirFilterType, ResizeAlg, ResizeOptions as FirResizeOptions, Resizer};
 use image::{DynamicImage, ImageReader};
+// The pure-Rust AVIF decoder is replaced by libheif when the heif feature is enabled.
+#[cfg(feature = "heif")]
+use imgalifier_avif as _;
 use little_exif::exif_tag::ExifTag;
 use little_exif::ifd::ExifTagGroup;
 use little_exif::metadata::Metadata;
 use log::{error, trace};
+#[cfg(not(feature = "libraw"))]
+use rawler::decoders::{Decoder, RawDecodeParams};
+#[cfg(not(feature = "libraw"))]
+use rawler::imgop::develop::RawDevelop;
+#[cfg(not(feature = "libraw"))]
+use rawler::rawsource::RawSource;
 
 use crate::common::consts::{HEIC_EXTENSIONS, IMAGE_RS_EXTENSIONS, RAW_IMAGE_EXTENSIONS};
 use crate::common::create_crash_message;
@@ -19,6 +28,10 @@ const MAXIMUM_IMAGE_FILE_SIZE: u64 = 500 * 1024 * 1024;
 pub fn register_image_decoding_hooks() {
     #[cfg(feature = "heif")]
     libheif_rs::integration::image::register_all_decoding_hooks();
+    #[cfg(not(feature = "heif"))]
+    imgalifier_heif::register_decoding_hooks();
+    #[cfg(not(feature = "heif"))]
+    imgalifier_avif::register_decoding_hooks();
     jxl_oxide::integration::register_image_decoding_hook();
 }
 
@@ -28,8 +41,7 @@ pub(crate) enum ImageType {
     Raw,
 }
 
-/// Decodes an image from raw bytes using the same pipeline as `get_dynamic_image_from_path`.
-/// No EXIF rotation is applied (no path available); call-sites that need rotation handle it separately.
+/// Decodes image bytes; rawler applies RAW orientation, while normal images are returned without EXIF rotation.
 pub(crate) fn get_dynamic_image_from_bytes(bytes: &[u8], image_type: ImageType) -> Result<DynamicImage, String> {
     match image_type {
         ImageType::Normal => ImageReader::new(std::io::Cursor::new(bytes))
@@ -87,11 +99,7 @@ pub fn get_dynamic_image_from_path(path: &str, opts: Option<ImgResizeOptions>) -
                 let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
                 get_dynamic_image_from_bytes(&bytes, ImageType::Normal).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))?
             }
-            ImageType::Raw => {
-                // rawler (not(feature = "libraw")) needs a path; libraw reads bytes internally.
-                // Both cases are handled inside get_raw_image.
-                get_raw_image(path).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))?
-            }
+            ImageType::Raw => get_raw_image(path).map_err(|e| flc!("core_image_open_failed", path = path, reason = e))?,
         };
 
         if img.width() == 0 || img.height() == 0 {
@@ -114,22 +122,17 @@ pub fn get_dynamic_image_from_path(path: &str, opts: Option<ImgResizeOptions>) -
     if let Ok(res) = res {
         match res {
             Ok((img, w, h)) => {
-                let rotation = get_rotation_from_exif(path).unwrap_or({
-                    // TODO - library doesn't properly read some files
-                    // Also, even light problems, causes completely failing to read tags from file(e.g. invalid tag type)
-                    //warn!("Failed to read EXIF rotation from {path}: {e}");
-                    None
-                });
-                let img_rotated = match rotation {
-                    Some(ExifOrientation::Normal) | None => img,
-                    Some(ExifOrientation::MirrorHorizontal) => img.fliph(),
-                    Some(ExifOrientation::Rotate180) => img.rotate180(),
-                    Some(ExifOrientation::MirrorVertical) => img.flipv(),
-                    Some(ExifOrientation::MirrorHorizontalAndRotate270CW) => img.fliph().rotate270(),
-                    Some(ExifOrientation::Rotate90CW) => img.rotate90(),
-                    Some(ExifOrientation::MirrorHorizontalAndRotate90CW) => img.fliph().rotate90(),
-                    Some(ExifOrientation::Rotate270CW) => img.rotate270(),
+                let rotation = match image_type {
+                    // rawler applies the orientation from the metadata of the raw file itself
+                    ImageType::Raw if !cfg!(feature = "libraw") => None,
+                    ImageType::Raw | ImageType::Normal => get_rotation_from_exif(path).unwrap_or({
+                        // TODO - library doesn't properly read some files
+                        // Also, even light problems, causes completely failing to read tags from file(e.g. invalid tag type)
+                        //warn!("Failed to read EXIF rotation from {path}: {e}");
+                        None
+                    }),
                 };
+                let img_rotated = apply_exif_orientation(img, rotation);
 
                 Ok(LoadedImage {
                     image: img_rotated,
@@ -140,7 +143,7 @@ pub fn get_dynamic_image_from_path(path: &str, opts: Option<ImgResizeOptions>) -
             Err(e) => Err(flc!("core_image_open_failed", path = path, reason = e)),
         }
     } else {
-        let message = create_crash_message("Image-rs or libraw-rs or jxl-oxide", path, "https://github.com/image-rs/image/issues");
+        let message = create_crash_message("Image-rs or rawler or jxl-oxide", path, "https://github.com/image-rs/image/issues");
         error!("{message}");
         Err(message)
     }
@@ -188,26 +191,19 @@ fn resize_image(img: DynamicImage, opts: ImgResizeOptions) -> DynamicImage {
 }
 
 #[cfg(feature = "libraw")]
-pub(crate) fn get_raw_image_from_bytes(buf: &[u8]) -> Result<DynamicImage, String> {
-    let processor = libraw::Processor::new();
-    let processed = processor.process_8bit(buf).map_err(|e| format!("Error processing RAW image: {e}"))?;
-
-    let width = processed.width();
-    let height = processed.height();
-
+pub(crate) fn get_raw_image_from_bytes(bytes: &[u8]) -> Result<DynamicImage, String> {
+    let processed = libraw::Processor::new().process_8bit(bytes).map_err(|e| format!("Error processing RAW image: {e}"))?;
+    let (width, height) = (processed.width(), processed.height());
     let data = processed.to_vec();
     let data_len = data.len();
-
-    let buffer = image::ImageBuffer::from_raw(width, height, data).ok_or(format!(
-        "Cannot create ImageBuffer from raw image with width: {width} and height: {height} and data length: {data_len}",
-    ))?;
-
+    let buffer = image::ImageBuffer::from_raw(width, height, data)
+        .ok_or_else(|| format!("Cannot create ImageBuffer from raw image with width: {width} and height: {height} and data length: {data_len}"))?;
     Ok(DynamicImage::ImageRgb8(buffer))
 }
 
 #[cfg(not(feature = "libraw"))]
-pub(crate) fn get_raw_image_from_bytes(_bytes: &[u8]) -> Result<DynamicImage, String> {
-    Err("RAW decoding from bytes requires the libraw feature".to_string())
+pub(crate) fn get_raw_image_from_bytes(bytes: &[u8]) -> Result<DynamicImage, String> {
+    decode_raw_source(&RawSource::new_from_slice(bytes))
 }
 
 #[cfg(feature = "libraw")]
@@ -217,47 +213,42 @@ pub(crate) fn get_raw_image<P: AsRef<Path>>(path: P) -> Result<DynamicImage, Str
 }
 
 #[cfg(not(feature = "libraw"))]
-pub(crate) fn get_raw_image<P: AsRef<Path> + std::fmt::Debug>(path: P) -> Result<DynamicImage, String> {
-    use rawler::decoders::RawDecodeParams;
-    use rawler::imgop::develop::RawDevelop;
-    use rawler::rawsource::RawSource;
+pub(crate) fn get_raw_image<P: AsRef<Path>>(path: P) -> Result<DynamicImage, String> {
+    let raw_source = RawSource::new(path.as_ref()).map_err(|err| format!("Failed to create RawSource from path {}: {err}", path.as_ref().to_string_lossy()))?;
+    decode_raw_source(&raw_source)
+}
 
+#[cfg(not(feature = "libraw"))]
+fn decode_raw_source(raw_source: &RawSource) -> Result<DynamicImage, String> {
     let mut timer = crate::helpers::debug_timer::Timer::new("Rawler");
 
-    let raw_source = RawSource::new(path.as_ref()).map_err(|err| format!("Failed to create RawSource from path {}: {err}", path.as_ref().to_string_lossy()))?;
-
-    timer.checkpoint("Created RawSource");
-
-    let decoder = rawler::get_decoder(&raw_source).map_err(|e| e.to_string())?;
-
+    let decoder = rawler::get_decoder(raw_source).map_err(|e| e.to_string())?;
     timer.checkpoint("Got decoder");
 
     let params = RawDecodeParams::default();
+    let image = match decoder.full_image(raw_source, &params).ok().flatten() {
+        Some(embedded_image) => embedded_image,
+        None => develop_raw_image(decoder.as_ref(), raw_source, &params)?,
+    };
+    timer.checkpoint("Decoded image");
 
-    if let Some(extracted_dynamic_image) = decoder.full_image(&raw_source, &params).ok().flatten() {
-        timer.checkpoint("Decoded full image");
-
-        trace!("{}", timer.report("Everything", false));
-
-        return Ok(extracted_dynamic_image);
-    }
-
-    let raw_image = decoder.raw_image(&raw_source, &params, false).map_err(|e| e.to_string())?;
-
-    timer.checkpoint("Decoded raw image");
-
-    let developer = RawDevelop::default();
-    let developed_image = developer.develop_intermediate(&raw_image).map_err(|e| e.to_string())?;
-
-    timer.checkpoint("Developed raw image");
-
-    let dynamic_image = developed_image.to_dynamic_image().ok_or("Failed to convert image to DynamicImage".to_string())?;
-
-    timer.checkpoint("Converted to DynamicImage");
+    let orientation = decoder
+        .raw_metadata(raw_source, &params)
+        .ok()
+        .and_then(|metadata| metadata.exif.orientation)
+        .and_then(ExifOrientation::from_exif_value);
+    let rotated = apply_exif_orientation(image, orientation);
 
     trace!("{}", timer.report("Everything", false));
 
-    Ok(dynamic_image)
+    Ok(rotated)
+}
+
+#[cfg(not(feature = "libraw"))]
+fn develop_raw_image(decoder: &dyn Decoder, raw_source: &RawSource, params: &RawDecodeParams) -> Result<DynamicImage, String> {
+    let raw_image = decoder.raw_image(raw_source, params, false).map_err(|e| e.to_string())?;
+    let developed_image = RawDevelop::default().develop_intermediate(&raw_image).map_err(|e| e.to_string())?;
+    developed_image.to_dynamic_image().ok_or_else(|| "Failed to convert image to DynamicImage".to_string())
 }
 
 pub fn check_if_can_display_image(path: &str) -> bool {
@@ -265,11 +256,7 @@ pub fn check_if_can_display_image(path: &str) -> bool {
         return false;
     };
     let extension_str = extension.to_string_lossy().to_lowercase();
-    #[cfg(feature = "heif")]
     let allowed_extensions = &[IMAGE_RS_EXTENSIONS, RAW_IMAGE_EXTENSIONS, HEIC_EXTENSIONS].concat();
-
-    #[cfg(not(feature = "heif"))]
-    let allowed_extensions = &[IMAGE_RS_EXTENSIONS, RAW_IMAGE_EXTENSIONS].concat();
 
     allowed_extensions.iter().any(|ext| &extension_str == ext)
 }
@@ -286,11 +273,40 @@ pub enum ExifOrientation {
     Rotate270CW,
 }
 
+impl ExifOrientation {
+    pub(crate) fn from_exif_value(value: u16) -> Option<Self> {
+        match value {
+            1 => Some(Self::Normal),
+            2 => Some(Self::MirrorHorizontal),
+            3 => Some(Self::Rotate180),
+            4 => Some(Self::MirrorVertical),
+            5 => Some(Self::MirrorHorizontalAndRotate270CW),
+            6 => Some(Self::Rotate90CW),
+            7 => Some(Self::MirrorHorizontalAndRotate90CW),
+            8 => Some(Self::Rotate270CW),
+            _ => None,
+        }
+    }
+}
+
+pub(crate) fn apply_exif_orientation(image: DynamicImage, orientation: Option<ExifOrientation>) -> DynamicImage {
+    match orientation {
+        Some(ExifOrientation::Normal) | None => image,
+        Some(ExifOrientation::MirrorHorizontal) => image.fliph(),
+        Some(ExifOrientation::Rotate180) => image.rotate180(),
+        Some(ExifOrientation::MirrorVertical) => image.flipv(),
+        Some(ExifOrientation::MirrorHorizontalAndRotate270CW) => image.fliph().rotate270(),
+        Some(ExifOrientation::Rotate90CW) => image.rotate90(),
+        Some(ExifOrientation::MirrorHorizontalAndRotate90CW) => image.fliph().rotate90(),
+        Some(ExifOrientation::Rotate270CW) => image.rotate270(),
+    }
+}
+
 pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientation>, std::io::Error> {
     if let Some(extension) = Path::new(path).extension()
         && HEIC_EXTENSIONS.contains(&extension.to_string_lossy().to_lowercase().as_str())
     {
-        return Ok(None); // libheif already applies orientation
+        return Ok(None); // the HEIF decoder already applies orientation
     }
 
     let res = panic::catch_unwind(|| {
@@ -305,17 +321,7 @@ pub(crate) fn get_rotation_from_exif(path: &str) -> Result<Option<ExifOrientatio
         if let Some(ExifTag::Orientation(values)) = metadata.get_tag_by_hex(0x0112, Some(ExifTagGroup::GENERIC)).next()
             && let Some(&value) = values.first()
         {
-            return Ok(match value {
-                1 => Some(ExifOrientation::Normal),
-                2 => Some(ExifOrientation::MirrorHorizontal),
-                3 => Some(ExifOrientation::Rotate180),
-                4 => Some(ExifOrientation::MirrorVertical),
-                5 => Some(ExifOrientation::MirrorHorizontalAndRotate270CW),
-                6 => Some(ExifOrientation::Rotate90CW),
-                7 => Some(ExifOrientation::MirrorHorizontalAndRotate90CW),
-                8 => Some(ExifOrientation::Rotate270CW),
-                _ => None,
-            });
+            return Ok(ExifOrientation::from_exif_value(value));
         }
         Ok(None)
     });
@@ -362,12 +368,84 @@ mod tests {
     }
 
     #[test]
+    fn test_exif_orientation_values() {
+        assert_eq!(ExifOrientation::from_exif_value(1), Some(ExifOrientation::Normal));
+        assert_eq!(ExifOrientation::from_exif_value(6), Some(ExifOrientation::Rotate90CW));
+        assert_eq!(ExifOrientation::from_exif_value(8), Some(ExifOrientation::Rotate270CW));
+        assert_eq!(ExifOrientation::from_exif_value(0), None);
+        assert_eq!(ExifOrientation::from_exif_value(9), None);
+    }
+
+    #[test]
+    fn test_apply_exif_orientation_swaps_dimensions_only_for_quarter_turns() {
+        let image = DynamicImage::new_rgb8(4, 2);
+        for (orientation, expected) in [
+            (None, (4, 2)),
+            (Some(ExifOrientation::Normal), (4, 2)),
+            (Some(ExifOrientation::MirrorHorizontal), (4, 2)),
+            (Some(ExifOrientation::Rotate180), (4, 2)),
+            (Some(ExifOrientation::MirrorVertical), (4, 2)),
+            (Some(ExifOrientation::Rotate90CW), (2, 4)),
+            (Some(ExifOrientation::Rotate270CW), (2, 4)),
+            (Some(ExifOrientation::MirrorHorizontalAndRotate90CW), (2, 4)),
+            (Some(ExifOrientation::MirrorHorizontalAndRotate270CW), (2, 4)),
+        ] {
+            let rotated = apply_exif_orientation(image.clone(), orientation);
+            assert_eq!((rotated.width(), rotated.height()), expected, "{orientation:?}");
+        }
+    }
+
+    #[test]
+    fn test_apply_exif_orientation_moves_pixels() {
+        let mut image = image::RgbImage::new(2, 1);
+        image.put_pixel(0, 0, image::Rgb([255, 0, 0]));
+        image.put_pixel(1, 0, image::Rgb([0, 0, 255]));
+        let image = DynamicImage::ImageRgb8(image);
+
+        let mirrored = apply_exif_orientation(image.clone(), Some(ExifOrientation::MirrorHorizontal)).to_rgb8();
+        assert_eq!(mirrored.get_pixel(0, 0).0, [0, 0, 255]);
+        assert_eq!(mirrored.get_pixel(1, 0).0, [255, 0, 0]);
+
+        let rotated = apply_exif_orientation(image, Some(ExifOrientation::Rotate90CW)).to_rgb8();
+        assert_eq!(rotated.get_pixel(0, 0).0, [255, 0, 0]);
+        assert_eq!(rotated.get_pixel(0, 1).0, [0, 0, 255]);
+    }
+
+    #[test]
+    fn test_avif_decodes_fixture() {
+        register_image_decoding_hooks();
+        let image = get_dynamic_image_from_bytes(include_bytes!("test_assets/test_3x3.avif"), ImageType::Normal).unwrap();
+        assert_eq!((image.width(), image.height()), (3, 3));
+    }
+
+    #[cfg(feature = "heif")]
+    #[test]
+    fn test_native_heif_decodes_fixture() {
+        register_image_decoding_hooks();
+        let image = get_dynamic_image_from_bytes(include_bytes!("test_assets/test_3x3.heic"), ImageType::Normal).unwrap();
+        assert_eq!((image.width(), image.height()), (3, 3));
+    }
+
+    #[cfg(feature = "libraw")]
+    #[test]
+    fn test_native_raw_decodes_fixture() {
+        let image = get_dynamic_image_from_bytes(include_bytes!("test_assets/test_raw.dng"), ImageType::Raw).unwrap();
+        assert!(image.width() > 0 && image.height() > 0);
+    }
+
+    #[test]
+    fn test_raw_decoding_of_invalid_data_returns_error() {
+        get_raw_image_from_bytes(b"not a raw image").unwrap_err();
+    }
+
+    #[test]
     fn test_check_if_can_display_image() {
         assert!(check_if_can_display_image("test.jpg"));
         assert!(check_if_can_display_image("test.png"));
         assert!(check_if_can_display_image("test.webp"));
         assert!(check_if_can_display_image("test.jxl"));
         assert!(check_if_can_display_image("test.cr2"));
+        assert!(check_if_can_display_image("test.dng"));
         assert!(check_if_can_display_image("test.JPG"));
 
         assert!(!check_if_can_display_image("test.txt"));

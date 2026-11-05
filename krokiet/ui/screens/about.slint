@@ -4,6 +4,7 @@ import { Translations } from "../globals/translations.slint";
 import { FontSizes } from "../globals/fonts.slint";
 import { GuiState } from "../globals/gui_state.slint";
 import { ColorPalette } from "../globals/color_palette.slint";
+import { PopupBackdrop } from "../components/popup_backdrop.slint";
 
 // One row in the feature table: label | build | runtime
 component FeatureRow {
@@ -56,6 +57,7 @@ export component About inherits VerticalLayout {
         width: root.width - 80px;
         height: root.height - 80px;
         close-policy: PopupClosePolicy.no-auto-close;
+        PopupBackdrop { }
 
         Rectangle {
             background: ColorPalette.popup_background;

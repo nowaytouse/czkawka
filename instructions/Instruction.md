@@ -25,7 +25,7 @@ Czkawka consists of several independent frontends sharing a common core library.
   - Glob patterns matched against full file and directory paths (e.g. `*/tmp*`, `*/.git`). More flexible than excluded paths but slightly slower.
 
 - **Configuration vs Cache**
-  - Configuration files are frontend-specific. Configuration is not shared between GTK, Krokiet, and CLI.
+  - Configuration files are frontend-specific. Configuration is not shared between Krokiet and CLI.
   - Cache files are shared across all frontends. They contain computed data (hashes, thumbnails, analysis results) placed in a shared cache directory so all frontends can reuse computed results.
 
 ---
@@ -41,17 +41,19 @@ Czkawka consists of several independent frontends sharing a common core library.
 
 Cache contains computed results (hashes, thumbnails, parsed metadata) and is shared to avoid recomputation.
 
-Notable files:
-- `cache_similar_image_SIZE_HASH_FILTER.bin/.json` - image hashes
-- `cache_duplicates_HASH.txt` - duplicate file hashes
-- `cache_similar_videos.bin/.json` - video signatures
-- `cache_broken_files.txt` - broken file check results
+Notable files (`<ver>` is the cache format version, for example `120`; a version change makes the old file unused):
+- `cache_duplicates_<HashType>_<ver>.bin` and `cache_duplicates_<HashType>_prehash_<ver>.bin` - duplicate full hashes and prehashes
+- `cache_similar_images_<hash_size>_<hash_alg>_<filter>_<invariance>_<ver>.bin` - image hashes (parameters are part of the name)
+- `cache_similar_videos_<ver>__skip_<s>__dur_<d>__cd_<c>__wc_<n>.bin` and `cache_similar_videos_audio_<ver>.bin` - video signatures
+- `cache_same_music_tags_<ver>.bin` and `cache_same_music_fingerprints_<ver>.bin` - music tags and fingerprints
+- `cache_broken_files_<ver>.bin`, `cache_exif_remover_<ver>.bin`, `cache_video_transcode_<ver>.bin`, `cache_video_crop_<ver>_...bin` - results of the other tools
+- `cleaning_timestamps.json` - when each cache file was last cleaned of outdated entries
 
 JSON-format cache files can be manually edited (useful when moving a collection to a different disk or machine). To generate them, enable "Save also as JSON" in settings. By default `.bin` files are loaded; if missing, the `.json` fallback is used.
 
-**Default paths (GTK and CLI use "Czkawka" for both config and cache; Krokiet uses "Krokiet" for config but "Czkawka" for cache):**
+**Default paths (CLI uses "Czkawka" for both config and cache; Krokiet uses "Krokiet" for config but "Czkawka" for cache):**
 
-| OS | GTK/CLI Config | Krokiet Config | Cache (all frontends) |
+| OS | CLI Config | Krokiet Config | Cache (all frontends) |
 |----|----------------|----------------|-----------------------|
 | Linux | `~/.config/czkawka/` | `~/.config/krokiet/` | `~/.cache/czkawka/` |
 | macOS | `~/Library/Application Support/pl.Qarmin.Czkawka/` | `~/Library/Application Support/pl.Qarmin.Krokiet/` | `~/Library/Caches/pl.Qarmin.Czkawka/` |

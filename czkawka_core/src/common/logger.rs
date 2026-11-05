@@ -97,12 +97,6 @@ pub fn format_version_string(app: &str) -> String {
     let info = os_info::get();
 
     let mut features: Vec<&str> = Vec::new();
-    #[cfg(feature = "heif")]
-    features.push("heif");
-    #[cfg(feature = "libavif")]
-    features.push("libavif");
-    #[cfg(feature = "libraw")]
-    features.push("libraw");
 
     let mut app_cpu_version = "Baseline";
     let mut os_cpu_version = "Baseline";

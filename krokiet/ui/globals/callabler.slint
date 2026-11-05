@@ -3,6 +3,8 @@ import { Palette } from "std-widgets.slint";
 import { Settings } from "settings.slint";
 
 export global Callabler {
+    callback prepare_help();
+
     // Bottom panel operations
     callback remove_item_paths(bool, int);
     callback added_manual_paths(bool, string);
@@ -90,6 +92,7 @@ export global Callabler {
     callback row_toggle_protected(int);
     callback clear_all_protected_files();
     callback filter_protected_files_after_scan(ActiveTab);
+    callback tool_visibility_toggled(int, bool);
 
     callback theme_changed();
     theme_changed => {

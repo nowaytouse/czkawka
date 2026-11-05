@@ -52,7 +52,6 @@ echo "Detected distro: $DISTRO"
 echo ""
 echo "The following packages will be installed:"
 echo "  Base:     $BASE"
-echo "  Optional: $OPTIONAL"
 echo ""
 read -r -p "Do you want to continue? [Y/n] " answer
 if [[ "$answer" =~ ^[Nn]$ ]]; then
@@ -63,8 +62,6 @@ fi
 $UPDATE_CMD
 
 $INSTALL_CMD $BASE
-
-$INSTALL_CMD $OPTIONAL || echo "Some optional packages unavailable on this distro version - skipping."
 
 echo ""
 echo "Successfully installed all dependencies."

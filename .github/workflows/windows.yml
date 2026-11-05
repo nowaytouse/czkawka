@@ -141,8 +141,8 @@ jobs:
           Get-ChildItem windows_krokiet_on_windows_*.exe | ForEach-Object { ./rcedit-x64.exe $_.Name --set-icon krokiet/icons/krokiet_logo_flag.ico }
 
       - name: Package krokiet with launchers
-        shell: bash
-        run: bash misc/pack_all_backends.sh windows_krokiet_on_windows_all_backends.exe windows_krokiet_on_windows_all_backends.zip windows
+        shell: pwsh
+        run: ./misc/pack_all_backends.ps1 -Binary windows_krokiet_on_windows_all_backends.exe -OutputZip windows_krokiet_on_windows_all_backends.zip
 
       - name: Upload artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

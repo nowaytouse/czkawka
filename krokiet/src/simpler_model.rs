@@ -11,7 +11,7 @@ pub struct SimplerSingleMainListModel {
     pub focused_row: bool,
     pub protected: bool,
     pub val_int: Vec<i32>,
-    pub val_str: Vec<String>,
+    pub val_str: Vec<SharedString>,
 }
 
 impl SimplerSingleMainListModel {
@@ -38,7 +38,7 @@ impl From<&SingleMainListModel> for SimplerSingleMainListModel {
             focused_row: model.focused_row,
             protected: model.protected,
             val_int: model.val_int.iter().collect(),
-            val_str: model.val_str.iter().map(|e| e.to_string()).collect(),
+            val_str: model.val_str.iter().collect(),
         }
     }
 }
@@ -51,7 +51,7 @@ impl From<SimplerSingleMainListModel> for SingleMainListModel {
             focused_row: val.focused_row,
             protected: val.protected,
             val_int: ModelRc::new(VecModel::from(val.val_int)),
-            val_str: ModelRc::new(VecModel::from(val.val_str.into_iter().map(|s| s.into()).collect::<Vec<SharedString>>())),
+            val_str: ModelRc::new(VecModel::from(val.val_str)),
         }
     }
 }

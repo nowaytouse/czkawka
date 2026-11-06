@@ -64,6 +64,17 @@ not assert that an old exception remains necessary indefinitely.
 
 ## Last reviewed: 2026-11-06
 
+- Merged upstream follow-up commits `dae637a1`, `bf4ceda4` and `74f4ca94` after the dependency
+  refresh below. They do not change Cargo/Python requirements or Action pins. Preserved the
+  Python 3.15+ baseline, latest reviewed requirements, four Python regressions and all Exact
+  File Names selection/removal/export safeguards. The new shared-string row pipeline retains
+  protected-row state, reference headers, independent tool models and 8192 hash parameters.
+- Post-merge validation passed: `just fix`, `just clip`, four Python regressions, strict typing
+  for all 18 Python sources, zh-CN validation and locked workspace tests (480 passed, zero
+  failed, six existing ignored cases). New row conversion/8192 checks and disk-usage arc and
+  stale-render cases passed. Fedora update handling passed seven isolated command-stub cases;
+  no package-manager or privilege changes were performed. Live GUI/GPU encoder/device
+  acceptance and hosted CI remain unrun; the merge uses `[skip ci]`.
 - Rechecked all 14 direct Python requirements against primary PyPI metadata for current stable,
   non-yanked releases and Python 3.15 compatibility. Updated Ruff to 0.17.4, ty to 0.0.98 and
   pandas to 3.1.1. The other 11 direct requirements remain current. The refreshed all-extras
@@ -85,8 +96,8 @@ not assert that an old exception remains necessary indefinitely.
   and [action-gh-release 3.0.4](https://github.com/softprops/action-gh-release/releases/tag/v3.0.4).
   The other four active Actions, existing Android previews, NDK r30 and Ubuntu 26.10 digest
   remain current. No Gradle wrapper is tracked; the inspected installed Gradle 9.8.2 is current.
-- Re-fetched upstream at `74f4ca94`, three commits beyond the merged `cc5cc718` base. This
-  dependency and Exact File Names maintenance change does not merge those application updates.
+- Re-fetched and merged upstream through `74f4ca94`; the former three-commit lag beyond
+  `cc5cc718` is resolved by the integration follow-up.
 - Validation on CPython 3.15.2 passed for the 17 maintenance scripts with warnings as errors,
   strict mypy for all 18 Python source files in both base-only and all-extras environments, optional image/plot/API operations,
   actual temporary chart exports and the screenshot helper's dark/light configuration step.

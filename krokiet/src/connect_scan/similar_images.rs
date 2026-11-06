@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use std::thread;
 
 use czkawka_core::common::consts::DEFAULT_THREAD_SIZE;
@@ -9,10 +8,12 @@ use czkawka_core::tools::similar_images;
 use czkawka_core::tools::similar_images::core::get_string_from_similarity;
 use czkawka_core::tools::similar_images::{ImagesEntry, SimilarImages, SimilarImagesParameters};
 use rayon::prelude::*;
-use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
+use slint::{ComponentHandle, SharedString, Weak};
 
 use crate::common::{MAX_INT_DATA_SIMILAR_IMAGES, MAX_STR_DATA_SIMILAR_IMAGES, split_u64_into_i32s};
-use crate::connect_scan::{MessagesData, ScanData, get_dt_timestamp_string, get_text_messages, insert_data_to_model, reset_selection_at_end, set_common_settings};
+use crate::connect_scan::{
+    MessagesData, PlainRow, RowContent, ScanData, get_dt_timestamp_string, get_text_messages, grouped_rows, reset_selection_at_end, rows_into_model, set_common_settings,
+};
 use crate::{ActiveTab, GuiState, MainWindow, flk};
 
 pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
@@ -74,40 +75,27 @@ pub(crate) fn scan_similar_images(a: Weak<MainWindow>, sd: ScanData) {
 
             let messages_data = MessagesData { critical, messages };
 
+            let rows = grouped_rows(vector, |fe| prepare_data_model_similar_images(fe, hash_size));
             a.upgrade_in_event_loop(move |app| {
-                write_similar_images_results(&app, vector, messages_data, info, sd, stopped_search, hash_size, items_found, groups);
+                write_similar_images_results(&app, rows, messages_data, info, sd, stopped_search, hash_size, items_found, groups);
             })
         })
         .expect("Cannot start thread - not much we can do here");
 }
 fn write_similar_images_results(
     app: &MainWindow,
-    vector: Vec<(Option<ImagesEntry>, Vec<ImagesEntry>)>,
+    rows: Vec<PlainRow>,
     messages_data: MessagesData,
     info: similar_images::Info,
     sd: ScanData,
     stopped_search: bool,
-    hash_size: u16,
+    _hash_size: u16,
     items_found: usize,
     groups: usize,
 ) {
     let scanning_time_str = format_time(info.scanning_time);
 
-    let items = Rc::new(VecModel::default());
-    for (ref_fe, vec_fe) in vector {
-        if let Some(ref_fe) = ref_fe {
-            let (data_model_str, data_model_int) = prepare_data_model_similar_images(ref_fe, hash_size);
-            insert_data_to_model(&items, data_model_str, data_model_int, Some(true));
-        } else {
-            insert_data_to_model(&items, ModelRc::new(VecModel::default()), ModelRc::new(VecModel::default()), Some(false));
-        }
-
-        for fe in vec_fe {
-            let (data_model_str, data_model_int) = prepare_data_model_similar_images(fe, hash_size);
-            insert_data_to_model(&items, data_model_str, data_model_int, None);
-        }
-    }
-    app.set_similar_images_model(items.into());
+    app.set_similar_images_model(rows_into_model(rows));
     if let Some(critical) = messages_data.critical {
         app.invoke_scan_ended(critical.into());
     } else {
@@ -123,7 +111,7 @@ fn write_similar_images_results(
     app.global::<GuiState>().set_info_text(messages_data.messages.into());
     reset_selection_at_end(app, ActiveTab::SimilarImages);
 }
-fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelRc<SharedString>, ModelRc<i32>) {
+fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> RowContent {
     let (directory, file) = split_path(fe.get_path());
     let data_model_str_arr: [SharedString; MAX_STR_DATA_SIMILAR_IMAGES] = [
         get_string_from_similarity(fe.difference, hash_size).into(),
@@ -133,7 +121,7 @@ fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelR
         directory.into(),
         get_dt_timestamp_string(fe.get_modified_date()).into(),
     ];
-    let data_model_str = VecModel::from_slice(&data_model_str_arr);
+    let data_model_str = data_model_str_arr.to_vec();
     let modification_split = split_u64_into_i32s(fe.get_modified_date());
     let size_split = split_u64_into_i32s(fe.size);
     let data_model_int_arr: [i32; MAX_INT_DATA_SIMILAR_IMAGES] = [
@@ -146,7 +134,7 @@ fn prepare_data_model_similar_images(fe: ImagesEntry, hash_size: u16) -> (ModelR
         (fe.width as u64 * fe.height as u64) as i32, // Limited to 2000MP, but using u64, because in cache it can exceed i32
         fe.difference as i32,
     ];
-    let data_model_int = VecModel::from_slice(&data_model_int_arr);
+    let data_model_int = data_model_int_arr.to_vec();
     (data_model_str, data_model_int)
 }
 
@@ -176,12 +164,29 @@ fn format_size_exact(size: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::format_size_exact;
+    use super::{ImagesEntry, MAX_INT_DATA_SIMILAR_IMAGES, MAX_STR_DATA_SIMILAR_IMAGES, format_size_exact, prepare_data_model_similar_images};
 
     #[test]
     fn exact_size_formatting_preserves_remainder() {
         assert_eq!(format_size_exact(999), "999 B");
         assert_eq!(format_size_exact(1_001), "1.001 KB");
         assert_eq!(format_size_exact(1_000_001), "1.000001 MB");
+    }
+
+    #[test]
+    fn prepared_rows_keep_large_hash_sizes_and_exact_file_sizes() {
+        let entry = ImagesEntry {
+            path: std::env::temp_dir().join("krokiet-row-large-hash.png"),
+            size: 1_001,
+            width: 1,
+            height: 1,
+            modified_date: 0,
+            hashes: Vec::new(),
+            difference: 0,
+        };
+        let (strings, numbers) = prepare_data_model_similar_images(entry, 8192);
+        assert_eq!(strings.len(), MAX_STR_DATA_SIMILAR_IMAGES);
+        assert_eq!(numbers.len(), MAX_INT_DATA_SIMILAR_IMAGES);
+        assert_eq!(strings[1].as_str(), "1.001 KB");
     }
 }

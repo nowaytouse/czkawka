@@ -272,7 +272,10 @@ fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usi
     let file_name = &data.val_str[name_idx];
     let new_extension = &data.val_str[ext_idx];
 
-    let file_stem = std::path::Path::new(&file_name).file_stem().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
+    let file_stem = std::path::Path::new(file_name.as_str())
+        .file_stem()
+        .map(|e| e.to_string_lossy().to_string())
+        .unwrap_or_default();
     let new_full_path = format!("{folder}{MAIN_SEPARATOR}{file_stem}.{new_extension}");
     let old_full_path = format!("{folder}{MAIN_SEPARATOR}{file_name}");
 
@@ -410,7 +413,7 @@ mod tests {
         fs::create_dir(&dir).unwrap();
         fs::write(dir.join("source.bad"), b"source bytes").unwrap();
         let mut data = SimplerSingleMainListModel::from(&get_model_vec(1)[0]);
-        data.val_str = vec![dir.to_str().unwrap().to_owned(), "source.bad".into(), "source.jpg".into(), "jpg".into()];
+        data.val_str = vec![dir.to_str().unwrap().into(), "source.bad".into(), "source.jpg".into(), "jpg".into()];
         (dir, data)
     }
 

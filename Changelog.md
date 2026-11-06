@@ -117,6 +117,15 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Upstream follow-up with fork preservation - 2026-11-06
+
+- Merged all three pending upstream commits: Fedora dependency-update exit handling (`dae637a1`, #2098), hardware encoder probe frame sizes (`bf4ceda4`, #2132), and Slint scan-row/disk-usage selection changes (`74f4ca94`, #2131). This preserves both upstream and fork history without rewriting commits.
+- Resolved the scan-controller, Duplicate Files and Similar Images conflicts by adopting worker-side row preparation and bulk GUI publication while retaining the independent Exact File Names route, forced case-sensitive name scan, separate results, completion messages and selection reset. Reference headers and deferred protected-row marking retain their existing behavior.
+- Initialized the fork's protected-row field in the new row converter and verified protection survives shared-string round trips. Kept Similar Images hash sizes through 8192, size filters and exact-byte display; added a row-preparation regression for the 8192 configuration. Adapted two rename string conversions without changing collision/protection checks or Exact File Names orphan cleanup.
+- Corrected two integration defects in the new disk-usage selection overlay: reset hides stale outlines even after an empty/failed scan, and inner/outer SVG arcs calculate their large-arc flags independently near a semicircle. A focused generated-SVG regression covers the latter boundary.
+- Retained the complete dependency/Python 3.15+ refresh, 18 Python source files, four Python regressions, Exact File Names reliability fixes, non-UTF-8 path guards, legacy cache bytes, bundled Chinese font and GTK retirement from the preceding fork commit. No dependency versions or Action pins were rolled back.
+- Post-merge `just fix`, `just clip` and locked workspace tests passed without Rust warnings: 480 passed, zero failed, six existing ignored cases. Four Python regressions, strict typing for 18 Python sources, zh-CN validation and seven isolated Fedora update-exit cases passed. Row conversion, extended hash-size/exact-byte display, arc geometry and Treemap/Sunburst cancellation checks passed. Updated the architecture guide for worker-side shared strings and UI-thread model publication. No hosted CI, live GUI/GPU encoder or device acceptance is claimed; publication retains `[skip ci]`.
+
 ### Dependency refresh and Exact File Names reliability - 2026-11-06
 
 - Rechecked all 17 tracked Python scripts, their four third-party importers and the screenshot helper's embedded Python. Python 3.15+ remains the fork baseline with no upper bound. Updated current stable requirements to Ruff 0.17.4, ty 0.0.98 and pandas 3.1.1; refreshed both local Python locks and the complete optional environment. Scoped missing-import rules to optional image/plot modules so base-only and fully installed strict checks agree while installed library types remain checked.

@@ -179,10 +179,17 @@ generic delete/save popups.
        → create and configure tool struct
        → tool.search(stop_flag, progress_sender)
        → store tool in shared_models.lock()
-       → populate Slint VecModel<SingleMainListModel>
-       → app.upgrade_in_event_loop(|app| app.set_<tool>_model(model))
-4. UI re-renders with new model
+       → prepare thread-safe SimplerSingleMainListModel rows with SharedString columns
+4. UI event-loop callback: rows_into_model(rows) creates the Slint model
+       → publish it through the captured tool's model setter
+5. UI re-renders with the new model
 ```
+
+Exact File Names shares the duplicate scan worker but forces a case-sensitive name scan,
+stores its results separately and publishes through its own captured `ActiveTab`.
+Keep Slint `ModelRc` construction on the UI thread. Scan-row conversion initializes
+`protected` to false; deferred post-scan marking applies the saved protection state in place.
+Both simplified-model conversions must preserve `protected` on subsequent operations.
 
 ---
 
@@ -195,6 +202,7 @@ export struct SingleMainListModel {
     header_row: bool,        // group header
     filled_header_row: bool, // header with formatted summary
     focused_row: bool,      // UI highlight
+    protected: bool,        // disabled checkbox and guarded filesystem actions
     val_str: [string],       // text columns
     val_int: [int],          // numeric columns (raw values for sorting)
 }
@@ -264,7 +272,7 @@ Cross-thread updates use `weak.upgrade_in_event_loop(|app| { … })`.
 
 | Crate | Purpose |
 |-------|---------|
-| `slint` 1.15 | UI framework (GPL-3.0) |
+| `slint` 1.18.1 | UI framework (GPL-3.0) |
 | `czkawka_core` | Scanning engine |
 | `i18n-embed` + `rust-embed` | Fluent translations |
 | `crossbeam-channel` | Progress + result channels |

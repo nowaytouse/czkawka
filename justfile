@@ -298,7 +298,13 @@ upgrade-check:
     cargo upgrade --dry-run --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --dry-run --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --dry-run --manifest-path e2e/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo update --dry-run --ignore-rust-version
+    cargo update --dry-run --manifest-path ci_tester/Cargo.toml --ignore-rust-version
+    cargo update --dry-run --manifest-path misc/test_image_perf/Cargo.toml --ignore-rust-version
+    cargo update --dry-run --manifest-path misc/test_read_perf/Cargo.toml --ignore-rust-version
+    cargo update --dry-run --manifest-path misc/test_compilation_speed_size/Cargo.toml --ignore-rust-version
+    cargo update --dry-run --manifest-path e2e/Cargo.toml --ignore-rust-version
     uv lock --project misc --upgrade --dry-run --prerelease disallow
 
 # Updates files; review compatibility and run the required gates before committing.
@@ -308,7 +314,13 @@ upgrade:
     cargo upgrade --manifest-path misc/test_image_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_read_perf/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo upgrade --manifest-path misc/test_compilation_speed_size/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
+    cargo upgrade --manifest-path e2e/Cargo.toml --incompatible allow --pinned allow --ignore-rust-version
     cargo update --ignore-rust-version
+    cargo update --manifest-path ci_tester/Cargo.toml --ignore-rust-version
+    cargo update --manifest-path misc/test_image_perf/Cargo.toml --ignore-rust-version
+    cargo update --manifest-path misc/test_read_perf/Cargo.toml --ignore-rust-version
+    cargo update --manifest-path misc/test_compilation_speed_size/Cargo.toml --ignore-rust-version
+    cargo update --manifest-path e2e/Cargo.toml --ignore-rust-version
     uv lock --project misc --upgrade --prerelease disallow
     cp misc/pyproject.toml .
     uv lock --upgrade --prerelease disallow
@@ -338,6 +350,7 @@ fix:
 
     uv run ruff format --line-length 120 --no-cache
     uv run mypy misc --strict
+    uv run --project misc python -m unittest discover -s misc/ai_translate -p 'test_*.py'
 
     bash misc/run_checks.sh
 

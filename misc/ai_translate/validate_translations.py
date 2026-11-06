@@ -48,6 +48,29 @@ def count_placeholders(text: str) -> Dict[str, int]:
     return counts
 
 
+def find_literal_newlines(text: str) -> List[re.Match[str]]:
+    """Find literal newline escapes outside delimited absolute Windows paths."""
+    path_start = r"(?:[A-Za-z]:[\\/]|\\\\)"
+    next_path = rf"""\\n(?=["'`]?{path_start})"""
+    path_pattern = re.compile(
+        rf"""(?P<quote>["'`])(?P<quoted>{path_start}(?:(?!{next_path})[^\r\n])*?)(?P=quote)"""
+        rf"""|(?:(?<![\w\\/])|(?<=\\n))(?P<bare>{path_start}(?:(?!{next_path})[^\s<>:"'`|,;()\[\]{{}}])*)"""
+    )
+    path_spans = []
+    for path_match in path_pattern.finditer(text):
+        group = "quoted" if path_match.group("quoted") is not None else "bare"
+        windows_path = pathlib.PureWindowsPath(path_match.group(group))
+        # Python 3.15 considers a bare UNC server absolute even without a share/root.
+        if windows_path.is_absolute() and windows_path.root:
+            path_spans.append(path_match.span(group))
+
+    return [
+        match
+        for match in re.finditer(r"\\n", text)
+        if not any(start <= match.start() and match.end() <= end for start, end in path_spans)
+    ]
+
+
 def validate_translation(base_value: str, translated_value: str, key: str) -> List[str]:
     errors = []
 
@@ -91,7 +114,7 @@ def validate_translation(base_value: str, translated_value: str, key: str) -> Li
 
     # Detect literal \n (two chars: backslash + n) inserted by AI translators.
     # Fluent does not interpret \n as a newline; it renders as the two raw characters.
-    if r"\n" in translated_value:
+    if find_literal_newlines(translated_value):
         errors.append(
             f"  {Colors.RED}Literal \\n sequence:{Colors.RESET} translation contains '\\n' which Fluent renders as raw text, not a newline"
         )
@@ -164,7 +187,7 @@ def fix_language_file(lang_file: pathlib.Path, keys_to_remove: Set[str]) -> int:
 
 
 def fix_literal_newlines_in_language_file(lang_file: pathlib.Path, keys_to_fix: Set[str]) -> int:
-    """Replace literal \\n sequences in the given keys with a space."""
+    """Replace literal \\n outside Windows path literals in the given keys with a space."""
     content = lang_file.read_text(encoding="utf-8")
     lines = content.split("\n")
     result_lines: List[str] = []
@@ -183,7 +206,11 @@ def fix_literal_newlines_in_language_file(lang_file: pathlib.Path, keys_to_fix: 
                 block.append(lines[j])
                 j += 1
 
-            new_block = [bl.replace(r"\n", " ") for bl in block]
+            new_block = []
+            for block_line in block:
+                for match in reversed(find_literal_newlines(block_line)):
+                    block_line = block_line[: match.start()] + " " + block_line[match.end() :]
+                new_block.append(block_line)
             if new_block != block:
                 modified_count += 1
             result_lines.extend(new_block)
@@ -337,7 +364,7 @@ def validate_i18n_folder(
     base_entries = parse_ftl_file(en_file)
     print(f"Found {len(base_entries)} entries in base file\n")
 
-    source_newline_keys = [k for k, v in base_entries.items() if r"\n" in v]
+    source_newline_keys = [k for k, v in base_entries.items() if find_literal_newlines(v)]
     if source_newline_keys:
         print(
             f"{Colors.RED}ERROR: English source contains literal \\n in keys: {', '.join(source_newline_keys)}{Colors.RESET}"

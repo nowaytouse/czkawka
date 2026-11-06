@@ -3,9 +3,9 @@ name = "test"
 version = "1.0.0"
 requires-python = ">=3.15"
 dependencies = [
-    "ruff>=0.17.3",
+    "ruff>=0.17.4",
     "mypy>=2.4.1",
-    "ty>=0.0.95",
+    "ty>=0.0.98",
     "pandas-stubs>=3.1.0.261029",
     "fluent.syntax>=0.19.0",
     "ollama>=0.6.3",
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-plots = ["pandas>=3.1.0", "matplotlib>=3.11.2", "tabulate>=0.10.0"]
+plots = ["pandas>=3.1.1", "matplotlib>=3.11.2", "tabulate>=0.10.0"]
 icons = ["CairoSVG>=2.9.1"]
 test-assets = ["Pillow>=13.0.0", "pillow-heif>=1.8.1"]
 
@@ -23,6 +23,11 @@ target-version = "py315"
 
 [tool.mypy]
 python_version = "3.15"
+
+# Optional extras may be absent from the base quality environment.
+[[tool.mypy.overrides]]
+module = ["PIL", "pillow_heif", "matplotlib", "matplotlib.pyplot"]
+ignore_missing_imports = true
 
 [tool.uv]
 prerelease = "disallow"

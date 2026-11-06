@@ -2,7 +2,7 @@
 from typing import Any
 
 import pandas as pd
-import matplotlib.pyplot as plt  # type: ignore[import-not-found]
+import matplotlib.pyplot as plt
 import matplotlib
 import os
 

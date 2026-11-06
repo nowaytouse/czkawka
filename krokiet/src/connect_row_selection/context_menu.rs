@@ -6,7 +6,7 @@ use super::clipboard::set_clipboard;
 use super::reset_selection;
 use crate::connect_directories_changes::add_excluded_paths;
 use crate::connect_row_selection::checker::set_number_of_enabled_items;
-use crate::model_operations::remove_single_items_in_groups;
+use crate::model_operations::replace_results_after_removal;
 use crate::{Callabler, GuiState, MainWindow, Settings, SingleMainListModel};
 
 pub(crate) fn connect_context_menu_actions(app: &MainWindow) {
@@ -39,9 +39,7 @@ fn connect_remove_from_results(app: &MainWindow) {
         }
 
         let new_items: Vec<SingleMainListModel> = model.iter().enumerate().filter_map(|(i, r)| if i == idx { None } else { Some(r) }).collect();
-        let cleaned = remove_single_items_in_groups(new_items, active_tab.get_is_header_mode());
-        active_tab.set_tool_model(&app, ModelRc::new(VecModel::from(cleaned)));
-        reset_selection(&app, active_tab, true);
+        replace_results_after_removal(&app, active_tab, new_items);
     });
 }
 
@@ -92,9 +90,7 @@ fn remove_all_from_folder_impl(app: &MainWindow, idx: usize, recursive: bool) {
             }
         })
         .collect();
-    let cleaned = remove_single_items_in_groups(new_items, active_tab.get_is_header_mode());
-    active_tab.set_tool_model(app, ModelRc::new(VecModel::from(cleaned)));
-    reset_selection(app, active_tab, true);
+    replace_results_after_removal(app, active_tab, new_items);
 }
 
 fn connect_select_all_from_folder(app: &MainWindow) {
@@ -260,9 +256,7 @@ fn connect_exclude_parent_folder(app: &MainWindow) {
                 }
             })
             .collect();
-        let cleaned = remove_single_items_in_groups(new_items, active_tab.get_is_header_mode());
-        active_tab.set_tool_model(&app, ModelRc::new(VecModel::from(cleaned)));
-        reset_selection(&app, active_tab, true);
+        replace_results_after_removal(&app, active_tab, new_items);
     });
 }
 
@@ -299,9 +293,7 @@ fn connect_exclude_item(app: &MainWindow) {
 
         // Remove the specific item from results.
         let new_items: Vec<SingleMainListModel> = model.iter().enumerate().filter_map(|(i, r)| if i == idx { None } else { Some(r) }).collect();
-        let cleaned = remove_single_items_in_groups(new_items, active_tab.get_is_header_mode());
-        active_tab.set_tool_model(&app, ModelRc::new(VecModel::from(cleaned)));
-        reset_selection(&app, active_tab, true);
+        replace_results_after_removal(&app, active_tab, new_items);
     });
 }
 

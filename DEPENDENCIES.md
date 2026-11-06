@@ -62,7 +62,62 @@ The [Android Gradle plugin compatibility table](https://developer.android.com/bu
 defines the corresponding Gradle requirements. Recheck both when updating; this document does
 not assert that an old exception remains necessary indefinitely.
 
-## Last reviewed: 2026-10-31
+## Last reviewed: 2026-11-06
+
+- Rechecked all 14 direct Python requirements against primary PyPI metadata for current stable,
+  non-yanked releases and Python 3.15 compatibility. Updated Ruff to 0.17.4, ty to 0.0.98 and
+  pandas to 3.1.1. The other 11 direct requirements remain current. The refreshed all-extras
+  environment contains 44 installed packages, including updated pydantic and python-dateutil.
+- Retained `requires-python = ">=3.15"`, Ruff `py315`, mypy `3.15` and stable-only uv resolution.
+  The screenshot helper's embedded Python now selects this project too; its isolated home
+  preparation also avoids an unbound theme variable under Bash `set -u`.
+- Updated ZIP to 9.4.1, lopdf to 0.47.0, sevenz-rust2 to 0.24.2, toml to 1.2,
+  log to 0.4.35, trash to 5.3.0 and ashpd to 0.14.0, together with resolved transitive packages.
+  All five standalone Cargo projects were reviewed, including the upstream X11 e2e helper;
+  the rolling preview/updater now includes its manifest and refreshes transitive lockfile
+  packages for every standalone project. Its graphical tests require Linux/X11.
+- Rechecked 93 distinct direct registry dependency names against the primary Cargo sparse index.
+  Published Slint/slint-build remain 1.18.1; slint-build still requires Fontique 0.11.1, so the
+  independent 0.12 requirement is not used. bincode 3.0.0 still deliberately fails compilation;
+  retain the reviewed 2.0.1 cache-byte contract. Declared Rust minima are metadata evidence,
+  separate from compilation on the minimum toolchain.
+- Updated the verified full Action pins to [setup-java 6.2.0](https://github.com/actions/setup-java/releases/tag/v6.2.0)
+  and [action-gh-release 3.0.4](https://github.com/softprops/action-gh-release/releases/tag/v3.0.4).
+  The other four active Actions, existing Android previews, NDK r30 and Ubuntu 26.10 digest
+  remain current. No Gradle wrapper is tracked; the inspected installed Gradle 9.8.2 is current.
+- Re-fetched upstream at `74f4ca94`, three commits beyond the merged `cc5cc718` base. This
+  dependency and Exact File Names maintenance change does not merge those application updates.
+- Validation on CPython 3.15.2 passed for the 17 maintenance scripts with warnings as errors,
+  strict mypy for all 18 Python source files in both base-only and all-extras environments, optional image/plot/API operations,
+  actual temporary chart exports and the screenshot helper's dark/light configuration step.
+  An intentionally invalid Pillow assignment still fails with installed library types.
+  Both refreshed Python locks resolve the same 44 packages plus the virtual project record.
+- Fixed literal-newline detection and automatic repair mistaking absolute Windows path examples
+  for escaped line breaks. English-source checks, translation checks and repair share the same
+  path-aware matcher. Four persistent standard-library unittests cover path preservation,
+  adjacent/chained paths, genuine escapes, repair idempotence and source rejection; `just fix`
+  runs them without adding a test dependency.
+- `just fix` passed without Rust warnings. The updated ashpd portal path passed a locked
+  `x86_64-unknown-linux-gnu` core check with `xdg_portal_trash`. Full all-feature metadata
+  contains 972 packages with no declared Rust minimum above 1.94.1; this does not establish
+  compilation with Rust 1.94.1. Workflow lint passed after supplying the installed linter's
+  missing [official Ubuntu 26.04 runner label](https://github.com/actions/runner-images#available-images)
+  through a temporary external label-table configuration, with no diagnostics disabled.
+- Final `just fix` (including the four Python regressions), `just clip` and locked workspace
+  tests passed on stable Rust 1.99.1: 473 passed, zero failed, six existing ignored cases.
+  All 18 Python source files compile under CPython 3.15.2 with warnings as errors. All five
+  standalone projects passed locked all-target checks; the X11 e2e helper was checked for
+  `x86_64-unknown-linux-gnu` without execution. Krokiet zh-CN translation and character checks
+  passed. Linux retains the real non-UTF-8 filesystem fixture; the new path-only test also
+  checks invalid parent components on macOS without requiring APFS to create invalid names.
+- Linux core test-source compilation also passed with installed Zig 0.17.1 as the explicit
+  GNU/Linux x86-64 C compiler/archiver, after the default attempt reported missing cross-GCC.
+  The generated C object was verified as ELF64 x86-64. Only task-scoped compiler wrappers were
+  used; no global tool configuration or installation changed. This is compilation evidence,
+  not Linux test execution. Hosted CI, live GUI, APK/device, actual screenshots, container builds
+  and real Flatpak generation were not run; later Python minor releases remain untested.
+
+## Previous review: 2026-10-31
 
 - Python 3.15+ follow-up: declared `>=3.15`, aligned Ruff/mypy and routed maintenance callers
   through the misc project. A later upstream fetch found one new commit, `74c24a13`, after the
@@ -99,9 +154,12 @@ not assert that an old exception remains necessary indefinitely.
 
 ## Python script dependencies
 
-There are 17 tracked Python scripts: 12 in `misc/`, four in `misc/ai_translate/` and one in
-`misc/test_compilation_speed_size/`. Four scripts import third-party libraries; the other 13
-use only the standard library or local modules. The app itself remains Rust-based.
+There are 18 Python source files: 17 maintenance scripts (12 in `misc/`, four translation
+helpers and one benchmark plotter) plus one standard-library validator regression test module.
+Four maintenance scripts import third-party libraries; the remaining 14 sources use only the
+standard library or local modules. The app itself remains Rust-based.
+In addition, `misc/screens.sh` embeds one standard-library Python JSON configuration step;
+it also runs through the maintained Python 3.15+ uv project.
 
 `misc/pyproject.toml` is the maintained source for the generated root quality-tool project.
 The fork's maintenance baseline is **Python 3.15+** (`requires-python = ">=3.15"`), with no
@@ -132,9 +190,9 @@ Fluent/OpenCC/font maintenance tools. `pandas-stubs` does not install runtime pa
 Three optional extras declare six additional runtime libraries without making image encoders
 or plotting libraries mandatory for routine source checks:
 
-| Extra | Script | Reviewed stable dependencies (2026-10-31) |
+| Extra | Script | Reviewed stable dependencies (2026-11-06) |
 |-------|--------|------------------------------------------|
-| `plots` | `misc/test_compilation_speed_size/generate_md_and_plots.py` | pandas 3.1.0, matplotlib 3.11.2, tabulate 0.10.0 |
+| `plots` | `misc/test_compilation_speed_size/generate_md_and_plots.py` | pandas 3.1.1, matplotlib 3.11.2, tabulate 0.10.0 |
 | `icons` | `misc/gen_android_icons.py` | CairoSVG 2.9.1; system Cairo is required, or use the existing Inkscape fallback |
 | `test-assets` | `misc/gen_test_assets.py` | Pillow 13.0.0, pillow-heif 1.8.1; the AV1 probe also uses system FFmpeg |
 

@@ -8,13 +8,11 @@ use czkawka_core::helpers::delayed_sender::DelayedSender;
 use czkawka_core::helpers::messages::{MessageLimit, Messages};
 use log::{debug, error};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use slint::{ComponentHandle, ModelRc, VecModel, Weak};
+use slint::{ComponentHandle, Weak};
 
-use crate::connect_row_selection::checker::set_number_of_enabled_items;
-use crate::connect_row_selection::reset_selection;
 use crate::model_operations::ProcessingResult;
 use crate::simpler_model::{SimplerSingleMainListModel, ToSlintModel};
-use crate::{ActiveTab, GuiState, MainWindow, SingleMainListModel, flk, model_operations};
+use crate::{ActiveTab, GuiState, MainWindow, flk};
 // This is quite ugly workaround for Slint strange limitation, where model cannot be passed to another thread
 // This was needed by me, because I wanted to process deletion without blocking main gui thread, with additional sending progress about entire operation.
 // After trying different solutions, looks that the simplest and quite not really efficient solution is to convert slint model, to simpler model, which can be passed to another thread.
@@ -96,11 +94,6 @@ pub enum ProcessFunction {
 impl ModelProcessor {
     pub fn new(active_tab: ActiveTab) -> Self {
         Self { active_tab }
-    }
-
-    pub(crate) fn remove_single_items_in_groups(&self, items: Vec<SingleMainListModel>) -> Vec<SingleMainListModel> {
-        let have_header = self.active_tab.get_is_header_mode();
-        model_operations::remove_single_items_in_groups(items, have_header)
     }
 
     pub(crate) fn remove_processed_items_from_model(results: ProcessingResult) -> (Vec<SimplerSingleMainListModel>, Vec<String>, usize) {
@@ -349,21 +342,11 @@ impl ModelProcessor {
 
         weak_app
             .upgrade_in_event_loop(move |app| {
-                let mut new_model_after_removing_useless_items = self.remove_single_items_in_groups(new_simple_model.to_vec_model());
-                // Selection cache was invalidated, so we need to reset it
-                for e in &mut new_model_after_removing_useless_items {
-                    e.focused_row = false;
-                }
-                let checked_items = new_model_after_removing_useless_items.iter().filter(|e| e.checked).count();
-                self.active_tab.set_tool_model(&app, ModelRc::new(VecModel::from(new_model_after_removing_useless_items)));
+                crate::model_operations::replace_results_after_removal(&app, self.active_tab, new_simple_model.to_vec_model());
 
                 app.global::<GuiState>()
                     .set_info_text(Messages::new_from_errors(errors.clone()).create_messages_text(MessageLimit::NoLimit).into());
 
-                app.global::<GuiState>().set_preview_visible(false);
-
-                reset_selection(&app, self.active_tab, true);
-                set_number_of_enabled_items(&app, self.active_tab, checked_items as u64);
                 stop_flag.store(false, Ordering::Relaxed);
                 app.invoke_processing_ended(message_type.get_summary_message(items_processed, errors_len, items_queued_to_process).into());
             })

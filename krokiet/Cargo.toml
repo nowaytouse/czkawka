@@ -16,7 +16,7 @@ open = "5.4"
 crossbeam-channel = "0.5"
 rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }
 home = "0.5"
-log = "0.4.34"
+log = "0.4.35"
 serde = "1.0"
 serde_json = "1.0"
 humansize = "2.1"

@@ -104,7 +104,9 @@ impl DuplicateFinder {
         name
     }
 
-    fn calculate_name_stats(&mut self) {
+    pub(super) fn calculate_name_stats(&mut self) {
+        self.information.number_of_duplicated_files_by_name = 0;
+        self.information.number_of_groups_by_name = 0;
         if self.common_data.use_reference_folders {
             for (_fe, vector) in self.files_with_identical_names_referenced.values() {
                 self.information.number_of_duplicated_files_by_name += vector.len();

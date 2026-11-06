@@ -1,4 +1,5 @@
 pub mod core;
+mod name_results;
 #[cfg(test)]
 mod tests;
 pub mod traits;

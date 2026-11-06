@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Screenshots of every screen of Krokiet in the dark and the light theme, saved to tmp/screens/<theme>/NN_name.png,
-# so a change in the UI can be checked without opening the application. Needs xvfb, xdotool, imagemagick and python3.
+# so a change in the UI can be checked without opening the application. Needs xvfb, xdotool, imagemagick and uv (Python 3.15+).
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -13,7 +13,7 @@ HEIGHT=${SCREENS_HEIGHT:-900}
 DISPLAY_NUMBER=${SCREENS_DISPLAY:-95}
 export DISPLAY=:$DISPLAY_NUMBER
 
-for tool in Xvfb xdotool import python3 convert; do
+for tool in Xvfb xdotool import uv convert; do
     command -v "$tool" >/dev/null || { echo "missing tool: $tool" >&2; exit 1; }
 done
 [ -x "$BIN" ] || { echo "no binary at $BIN, build krokiet first" >&2; exit 1; }
@@ -78,14 +78,15 @@ start_app() {
 
 # The first start creates the default configuration, which is then given the theme and the fixture directory
 prepare_home() {
-    local theme=$1 home=$WORK/home_$theme
-    if [ ! -d "$home/.config/krokiet" ]; then
-        mkdir -p "$home"
-        start_app "$home"
+    local theme=$1
+    local screenshot_home=$WORK/home_$theme
+    if [ ! -d "$screenshot_home/.config/krokiet" ]; then
+        mkdir -p "$screenshot_home"
+        start_app "$screenshot_home"
         stop_all
         start_display
     fi
-    python3 - "$home/.config/krokiet" "$theme" "$FIXTURE" <<'PY'
+    uv run --project "$ROOT/misc" python - "$screenshot_home/.config/krokiet" "$theme" "$FIXTURE" <<'PY'
 import json, sys
 config, theme, fixture = sys.argv[1:]
 with open(f"{config}/config_general.json") as file:
@@ -101,7 +102,7 @@ preset["excluded_paths"] = []
 with open(f"{config}/config_preset_0.json", "w") as file:
     json.dump(preset, file, indent=2)
 PY
-    HOME_DIR=$home
+    HOME_DIR=$screenshot_home
 }
 
 click() { xdotool mousemove "$1" "$2" click "${3:-1}"; sleep "${4:-1}"; }

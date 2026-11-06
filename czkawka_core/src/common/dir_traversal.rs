@@ -1066,7 +1066,30 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(target_family = "unix")]
+    #[cfg(any(unix, windows))]
+    #[test]
+    fn test_utf8_guard_rejects_invalid_filename_and_parent() {
+        #[cfg(unix)]
+        let invalid = {
+            use std::os::unix::ffi::OsStringExt;
+            std::ffi::OsString::from_vec(b"invalid_\xFF_name".to_vec())
+        };
+        #[cfg(windows)]
+        let invalid = {
+            use std::os::windows::ffi::OsStringExt;
+            std::ffi::OsString::from_wide(&[0xD800])
+        };
+        let base = std::env::temp_dir().join("czkawka-utf8-guard");
+        let mut warnings = Vec::new();
+        assert!(has_valid_utf8_path(&base.join("valid.txt"), &mut warnings));
+        assert!(warnings.is_empty());
+        assert!(!has_valid_utf8_path(&base.join(&invalid), &mut warnings));
+        assert!(!has_valid_utf8_path(&base.join(&invalid).join("valid.txt"), &mut warnings));
+        assert_eq!(warnings.len(), 2);
+    }
+
+    // APFS rejects non-UTF-8 names before traversal; keep the real-file fixture on Linux.
+    #[cfg(target_os = "linux")]
     #[test]
     fn test_traversal_skips_non_utf8_path() -> io::Result<()> {
         use std::ffi::OsStr;

@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 try:
-    from PIL import Image  # type: ignore[import-not-found]
+    from PIL import Image
 except ImportError:
     sys.exit("pillow not installed - run: uv run --project misc --extra test-assets python misc/gen_test_assets.py")
 
@@ -43,7 +43,7 @@ except Exception as exc:
 
 # HEIC (HEVC) - requires pillow-heif (bundles x265 encoder)
 try:
-    from pillow_heif import register_heif_opener  # type: ignore[import-not-found]
+    from pillow_heif import register_heif_opener
 
     register_heif_opener()
     heic_path = OUT_DIR / "test_3x3.heic"

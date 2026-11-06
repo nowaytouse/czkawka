@@ -2,9 +2,10 @@ pub mod model_processor;
 
 use slint::{ComponentHandle, Model, ModelRc};
 
-use crate::connect_row_selection::checker::get_number_of_enabled_items;
+use crate::connect_row_selection::checker::{get_number_of_enabled_items, set_number_of_enabled_items};
+use crate::connect_row_selection::reset_selection;
 use crate::simpler_model::SimplerSingleMainListModel;
-use crate::{GuiState, MainWindow, SingleMainListModel};
+use crate::{ActiveTab, Callabler, GuiState, LoadImagePreviewRequest, MainWindow, SingleMainListModel};
 
 pub type ProcessingResult = Vec<(usize, SimplerSingleMainListModel, Option<Result<(), String>>)>;
 
@@ -88,6 +89,23 @@ pub(crate) fn remove_single_items_in_groups(mut items: Vec<SingleMainListModel>,
     }
 
     items
+}
+
+fn prepare_results_after_removal(items: Vec<SingleMainListModel>, have_header: bool) -> (Vec<SingleMainListModel>, u64) {
+    let mut items = remove_single_items_in_groups(items, have_header);
+    for item in &mut items {
+        item.focused_row = false;
+    }
+    let checked = items.iter().filter(|item| item.checked).count() as u64;
+    (items, checked)
+}
+
+pub(crate) fn replace_results_after_removal(app: &MainWindow, active_tab: ActiveTab, items: Vec<SingleMainListModel>) {
+    let (items, checked) = prepare_results_after_removal(items, active_tab.get_is_header_mode());
+    active_tab.set_tool_model(app, ModelRc::new(slint::VecModel::from(items)));
+    reset_selection(app, active_tab, true);
+    set_number_of_enabled_items(app, active_tab, checked);
+    app.global::<Callabler>().invoke_load_image_preview(LoadImagePreviewRequest::default());
 }
 
 pub struct CheckedItemsInfo {
@@ -183,7 +201,73 @@ mod tests {
     use slint::VecModel;
 
     use super::*;
+    use crate::simpler_model::ToSlintModel;
     use crate::test_common::get_model_vec;
+
+    #[test]
+    fn filename_removal_prunes_orphans_and_preserves_unaffected_protected_groups() {
+        let mut rows = get_model_vec(6);
+        rows[0].header_row = true;
+        rows[3].header_row = true;
+        rows[1].checked = true;
+        rows[4].protected = true;
+        rows[5].checked = true;
+        rows[5].focused_row = true;
+        let unaffected = rows[3..].to_vec();
+        rows.remove(1);
+
+        let (rows, checked) = prepare_results_after_removal(rows, true);
+        assert_eq!(rows.len(), 3);
+        assert_eq!(rows[0], unaffected[0]);
+        assert!(rows[1].protected);
+        assert!(rows[2].checked);
+        assert!(!rows[2].focused_row);
+        assert_eq!(checked, 1);
+    }
+
+    #[test]
+    fn filename_removal_keeps_reference_group_with_one_match_and_empty_removals_are_zero() {
+        let mut rows = get_model_vec(3);
+        rows[0].header_row = true;
+        rows[0].filled_header_row = true;
+        rows[2].checked = true;
+        rows[2].focused_row = true;
+        rows.remove(1);
+
+        let (rows, checked) = prepare_results_after_removal(rows, true);
+        assert_eq!(rows.len(), 2);
+        assert!(rows[0].filled_header_row);
+        assert!(rows[1].checked);
+        assert!(!rows[1].focused_row);
+        assert_eq!(checked, 1);
+        let (rows, checked) = prepare_results_after_removal(Vec::new(), true);
+        assert!(rows.is_empty());
+        assert_eq!(checked, 0);
+    }
+
+    #[test]
+    fn failed_filename_action_keeps_its_row_group_and_checked_count() {
+        let mut rows = get_model_vec(3);
+        rows[0].header_row = true;
+        rows[1].checked = true;
+        rows[1].focused_row = true;
+        let results = rows
+            .iter()
+            .enumerate()
+            .map(|(idx, row)| {
+                let result = (idx == 1).then(|| Err("Synthetic filesystem failure".to_string()));
+                (idx, SimplerSingleMainListModel::from(row), result)
+            })
+            .collect();
+        let (rows, errors, processed) = model_processor::ModelProcessor::remove_processed_items_from_model(results);
+        let (rows, checked) = prepare_results_after_removal(rows.to_vec_model(), true);
+        assert_eq!(processed, 0);
+        assert_eq!(errors, ["Synthetic filesystem failure"]);
+        assert_eq!(rows.len(), 3);
+        assert_eq!(checked, 1);
+        assert!(rows[1].checked);
+        assert!(!rows[1].focused_row);
+    }
 
     #[test]
     fn remove_single_items_elements() {

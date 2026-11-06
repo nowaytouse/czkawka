@@ -149,6 +149,8 @@ Running `just fix` must pass before any merge request. It runs, in order:
    "never use em/en dash" style rule above.
 2. `uv run ruff format --line-length 120` – Python code formatting.
 3. `uv run mypy misc --strict` – static type checking for all scripts in `misc/`.
+   The standard-library translation-validator regression suite also runs via
+   `uv run --project misc python -m unittest discover -s misc/ai_translate -p 'test_*.py'`.
 4. `bash misc/run_checks.sh` – project-specific checks:
    - `delete_unused_krokiet_slint_imports.py` for krokiet and cedinia
    - `find_unused_fluent_translations.py` for all four projects

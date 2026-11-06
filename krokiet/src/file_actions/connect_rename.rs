@@ -11,6 +11,7 @@ use slint::{ComponentHandle, Model, ModelRc, SharedString, VecModel, Weak};
 use crate::common::StrDataBadNames;
 use crate::file_protection::connect::is_file_protected;
 use crate::model_operations::model_processor::{MessageType, ModelProcessor, ProcessFunction};
+use crate::model_operations::replace_results_after_removal;
 use crate::simpler_model::{SimplerSingleMainListModel, ToSimplerVec};
 use crate::{ActiveTab, Callabler, GuiState, MainWindow, RenameFileRequest};
 
@@ -41,7 +42,7 @@ pub(crate) fn connect_rename(app: &MainWindow, progress_sender: Sender<ProgressD
 
 // Issue #162: arbitrary per-row rename to a user-supplied name.
 // Unlike `rename_files` (a batch confirm over checked items in BadExtensions/BadNames),
-// this renames a single row to any name and updates the row in place - the file stays in its group.
+// filename groups drop renamed matches; other tools keep the updated row in its existing group.
 fn connect_rename_single_file(app: &MainWindow) {
     let a = app.as_weak();
     app.global::<Callabler>().on_rename_single_file(move |request| {
@@ -101,11 +102,15 @@ fn connect_rename_single_file(app: &MainWindow) {
         }
         info!("Renamed {old_full_path:?} to {new_full_path:?}");
 
-        // Update the Name cell in place - keeps the file in its duplicate/similar group.
-        let new_val_str: Vec<SharedString> = row.val_str.iter().enumerate().map(|(i, s)| if i == name_idx { new_name.into() } else { s }).collect();
-        let mut row = row;
-        row.val_str = ModelRc::new(VecModel::from(new_val_str));
-        model.set_row_data(idx as usize, row);
+        if active_tab == ActiveTab::ExactFilenames {
+            let rows = model.iter().enumerate().filter_map(|(i, row)| (i != idx as usize).then_some(row)).collect();
+            replace_results_after_removal(&app, active_tab, rows);
+        } else {
+            let new_val_str: Vec<SharedString> = row.val_str.iter().enumerate().map(|(i, s)| if i == name_idx { new_name.into() } else { s }).collect();
+            let mut row = row;
+            row.val_str = ModelRc::new(VecModel::from(new_val_str));
+            model.set_row_data(idx as usize, row);
+        }
 
         app.global::<GuiState>()
             .set_info_text(crate::flk!("rust_renamed_file", old_name = old_name, new_name = new_name.to_string()).into());

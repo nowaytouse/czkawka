@@ -1,4 +1,6 @@
 pub(crate) mod custom_select;
+#[cfg(test)]
+mod tests_exact_filenames;
 
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
@@ -280,40 +282,21 @@ fn select_by_property(model: &ModelRc<SingleMainListModel>, active_tab: ActiveTa
 
     let mut old_data = model.iter().collect::<Vec<_>>();
     let headers_idx = find_header_idx_and_deselect_all(&mut old_data);
-    if select_max {
-        for i in 0..(headers_idx.len() - 1) {
-            let mut max_item = (0, 0);
-            let mut max_item_idx = 1;
-            #[expect(clippy::needless_range_loop)]
-            for j in (headers_idx[i] + 1)..headers_idx[i + 1] {
-                let item = extract_comparable_field(&old_data[j], property, active_tab);
-                if item > max_item {
-                    max_item = item;
-                    max_item_idx = j;
-                }
+    for group in headers_idx.windows(2) {
+        let start = group[0] + 1;
+        let end = group[1];
+        assert!(start < end, "Property selection requires a nonempty group");
+        let mut extreme_idx = start;
+        let mut extreme_value = extract_comparable_field(&old_data[start], property, active_tab);
+        for (idx, row) in old_data.iter().enumerate().take(end).skip(start + 1) {
+            let value = extract_comparable_field(row, property, active_tab);
+            if select_max && value > extreme_value || !select_max && value < extreme_value {
+                extreme_value = value;
+                extreme_idx = idx;
             }
-            if !old_data[max_item_idx].checked {
-                checked_items += 1;
-            }
-            old_data[max_item_idx].checked = true;
         }
-    } else {
-        for i in 0..(headers_idx.len() - 1) {
-            let mut min_item = (u64::MAX, u64::MAX);
-            let mut min_item_idx = 1;
-            #[expect(clippy::needless_range_loop)]
-            for j in (headers_idx[i] + 1)..headers_idx[i + 1] {
-                let item = extract_comparable_field(&old_data[j], property, active_tab);
-                if item < min_item {
-                    min_item = item;
-                    min_item_idx = j;
-                }
-            }
-            if !old_data[min_item_idx].checked {
-                checked_items += 1;
-            }
-            old_data[min_item_idx].checked = true;
-        }
+        old_data[extreme_idx].checked = true;
+        checked_items += 1;
     }
 
     (checked_items, 0, ModelRc::new(VecModel::from(old_data)))

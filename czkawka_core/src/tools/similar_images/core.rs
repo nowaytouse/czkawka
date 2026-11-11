@@ -4,7 +4,6 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::{mem, panic};
 
-use bk_tree::BKTree;
 use crossbeam_channel::Sender;
 use fun_time::fun_time;
 use image::GenericImageView;
@@ -13,6 +12,7 @@ use indexmap::{IndexMap, IndexSet};
 use log::{debug, error};
 use rayon::prelude::*;
 
+use crate::common::bk_tree::BKTree;
 use crate::common::cache::{CACHE_IMAGE_VERSION, load_and_split_cache_generalized_by_path, save_and_connect_cache_generalized_by_path};
 use crate::common::dir_traversal::{DirTraversalBuilder, DirTraversalResult, inode, take_1_per_inode};
 use crate::common::image::get_dynamic_image_from_path;
@@ -948,13 +948,13 @@ mod tests {
     use std::path::PathBuf;
     use std::sync::Arc;
 
-    use bk_tree::BKTree;
     use image::imageops::FilterType;
     use image_hasher::HashAlg;
     use indexmap::IndexMap;
     use rand::RngExt;
 
     use super::*;
+    use crate::common::bk_tree::BKTree;
     use crate::common::tool_data::CommonData;
     use crate::tools::similar_images::{GeometricInvariance, Hamming, ImHash, ImagesEntry, SimilarImages, SimilarImagesParameters};
 
@@ -1592,7 +1592,7 @@ mod tests {
 
         let mut exclude_same = SimilarImages::new(SimilarImagesParameters::new(
             10,
-            8_u8,
+            8_u16,
             HashAlg::Gradient,
             FilterType::Lanczos3,
             true,
@@ -1617,6 +1617,48 @@ mod tests {
         ratio.exclude_items_with_same_size();
         assert_eq!(ratio.similar_vectors.len(), 1);
         assert_eq!(ratio.similar_vectors[0].iter().map(|entry| entry.size).collect::<Vec<_>>(), [100, 150]);
+    }
+
+    // Expected values were produced with the original bk-tree crate, so they guard against grouping regressions
+    #[test]
+    fn test_grouping_of_clustered_hashes_matches_reference_values() {
+        use rand::SeedableRng;
+        use rand::rngs::StdRng;
+
+        let cases = [
+            (8usize, 3u32, 1u64, (796usize, 2265usize, 2747u64)),
+            (8, 8, 2, (893, 2781, 9490)),
+            (32, 5, 3, (768, 2199, 4534)),
+            (32, 20, 4, (847, 2671, 23509)),
+            (128, 10, 5, (772, 2309, 9717)),
+        ];
+        for (byte_size, tolerance, seed, expected) in cases {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let mut parameters = get_default_parameters();
+            parameters.max_difference = tolerance;
+            let mut similar_images = SimilarImages::new(parameters);
+            let mut file_number = 0;
+            while file_number < 4000 {
+                let base: Vec<u8> = (0..byte_size).map(|_| rng.random_range(0..4u8) * 0x55).collect();
+                for _ in 0..rng.random_range(1..6) {
+                    let mut hash = base.clone();
+                    for _ in 0..rng.random_range(0..(tolerance as usize + 2)) {
+                        let bit = rng.random_range(0..byte_size * 8);
+                        if let Some(byte) = hash.get_mut(bit / 8) {
+                            *byte ^= 1 << (bit % 8);
+                        }
+                    }
+                    let entry = create_random_file_entry(hash, &format!("file_{file_number:05}.txt"));
+                    add_hashes(&mut similar_images.image_hashes, vec![entry]);
+                    file_number += 1;
+                }
+            }
+            similar_images.find_similar_hashes(&Arc::default(), None);
+            let groups = similar_images.get_similar_images();
+            let files_count: usize = groups.iter().map(Vec::len).sum();
+            let difference_sum: u64 = groups.iter().flatten().map(|entry| u64::from(entry.difference)).sum();
+            assert_eq!((groups.len(), files_count, difference_sum), expected, "byte_size={byte_size} tolerance={tolerance}");
+        }
     }
 
     fn add_hashes(hashmap: &mut IndexMap<ImHash, Vec<ImagesEntry>>, file_entries: Vec<ImagesEntry>) {

@@ -11,10 +11,22 @@ pub struct Workspace {
 
 impl Workspace {
     pub fn new() -> Result<Self, String> {
-        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
-        let root = std::env::temp_dir().join(format!("czkawka_e2e_{}_{id}", std::process::id()));
-        fs::create_dir_all(&root).map_err(|e| format!("cannot create {}: {e}", root.display()))?;
-        Ok(Self { root })
+        for _ in 0..100 {
+            let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+            let root = std::env::temp_dir().join(format!("czkawka_e2e_{}_{id}", std::process::id()));
+            let mut builder = fs::DirBuilder::new();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::DirBuilderExt;
+                builder.mode(0o700);
+            }
+            match builder.create(&root) {
+                Ok(()) => return Ok(Self { root }),
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(e) => return Err(format!("cannot create {}: {e}", root.display())),
+            }
+        }
+        Err("cannot create a unique workspace after 100 attempts".to_string())
     }
 
     /// Fake HOME, so the app never touches real settings
@@ -40,11 +52,38 @@ impl Workspace {
     }
 
     pub fn write_file(&self, relative: &str, content: &[u8]) -> Result<PathBuf, String> {
+        if relative.is_empty() || !std::path::Path::new(relative).components().all(|c| matches!(c, std::path::Component::Normal(_))) {
+            return Err("fixture path must be relative and stay within the workspace".to_string());
+        }
         let path = self.data_dir().join(relative);
         let parent = path.parent().ok_or("file has no parent")?;
         fs::create_dir_all(parent).map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
         fs::write(&path, content).map_err(|e| format!("cannot write {}: {e}", path.display()))?;
         Ok(path)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn workspaces_are_distinct_and_private() {
+        let first = Workspace::new().unwrap();
+        let second = Workspace::new().unwrap();
+        assert_ne!(first.root, second.root);
+        assert!(first.write_file("../outside", b"unsafe").is_err());
+        assert!(first.write_file("/absolute", b"unsafe").is_err());
+        assert!(first.write_file("nested/fixture", b"synthetic").is_ok());
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(fs::metadata(&first.root).unwrap().permissions().mode() & 0o077, 0);
+        }
+        let root = first.root.clone();
+        drop(first);
+        assert!(!root.exists());
+        assert!(second.root.exists());
     }
 }
 

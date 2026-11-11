@@ -1,5 +1,12 @@
 # Czkawka – Codebase Guide
 
+## Local index and QA
+
+- Keep checkout index receipts under `${XDG_STATE_HOME:-~/.local/state}/project-indexes/<checkout-basename>/latest.json` as private metadata.
+- Before relying on a receipt, verify its full Git HEAD and UTC timestamp against the current checkout; rebuild or refresh stale receipts.
+- Use synthetic test data and isolated temporary paths for QA; do not use personal files, caches, or settings.
+
+
 ## Language
 
 All code, comments, commit messages, and documentation must be written in **English**.
@@ -18,6 +25,12 @@ assistant: both the title and the body/description must start with `[AI] `, e.g.
 `[AI] Add duplicate detection for symlinked folders` and body starting with
 `[AI] This MR adds ...`. This must stay visible to reviewers at a glance in both GitLab and
 GitHub - never omit it, even for small or automatic changes.
+
+---
+
+## Branches
+
+Always start a new branch from the latest `origin/master` (`git fetch origin` first, then `git switch -c <name> origin/master`). Never stack a branch on top of another unmerged PR/MR branch: chains of dependent MRs are hard to manage and cause conflicts. If a change really depends on an unmerged one, say so and ask instead of building on top of it.
 
 ---
 
@@ -374,7 +387,7 @@ just runr krokiet         # fast_release run
 just fix                  # format + clippy + Python checks
 just upgrade-check        # preview latest stable dependencies, including major and pinned releases
 just upgrade              # update dependencies; compatibility review and quality gates still required
-just screens              # screenshots of every Krokiet screen in the dark and light theme -> tmp/screens
+just screens              # screenshots in a private temporary directory printed at completion
 just translate            # AI-translate all projects
 just validate_translations [--fix]
 just sync-zh-cn           # fork: fill and validate Krokiet zh-CN gaps

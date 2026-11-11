@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Screenshots of every screen of Krokiet in the dark and the light theme, saved to tmp/screens/<theme>/NN_name.png,
+# Screenshots of every screen of Krokiet in the dark and the light theme, saved to a private temporary directory,
 # so a change in the UI can be checked without opening the application. Needs xvfb, xdotool, imagemagick and uv (Python 3.15+).
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 BIN=${BIN:-$ROOT/target/debug/krokiet}
-OUT=$ROOT/tmp/screens
-WORK=$ROOT/tmp/screens_work
-FIXTURE=$WORK/fixture
+umask 077
 WIDTH=${SCREENS_WIDTH:-1100}
 HEIGHT=${SCREENS_HEIGHT:-900}
 DISPLAY_NUMBER=${SCREENS_DISPLAY:-95}
@@ -18,8 +16,12 @@ for tool in Xvfb xdotool import uv convert; do
 done
 [ -x "$BIN" ] || { echo "no binary at $BIN, build krokiet first" >&2; exit 1; }
 
+WORK=$(mktemp -d "${TMPDIR:-/tmp}/czkawka-screens.XXXXXXXX")
+OUT=$WORK/screens
+FIXTURE=$WORK/fixture
+
 # Names of the tools in the order of the list on the left; every row is 25 px high
-TOOLS=(duplicate_files empty_folders big_files empty_files temporary_files similar_images similar_videos music_duplicates
+TOOLS=(duplicate_files exact_filenames empty_folders big_files empty_files temporary_files similar_images similar_videos music_duplicates
     invalid_symlinks broken_files bad_extensions bad_names exif_remover video_optimizer disk_usage)
 FIRST_TOOL_Y=108
 TOOL_ROW_HEIGHT=25
@@ -52,6 +54,11 @@ start_display() {
     Xvfb "$DISPLAY" -screen 0 "${WIDTH}x${HEIGHT}x24" >/dev/null 2>&1 &
     XVFB_PID=$!
     sleep 1
+    if ! kill -0 "$XVFB_PID" 2>/dev/null; then
+        wait "$XVFB_PID" || true
+        echo "Xvfb failed to start on $DISPLAY" >&2
+        exit 1
+    fi
 }
 
 stop_all() {
@@ -64,8 +71,11 @@ stop_all() {
 trap stop_all EXIT
 
 start_app() {
-    HOME=$1 SLINT_BACKEND=winit-software "$BIN" >"$WORK/krokiet.log" 2>&1 &
+    env -u KROKIET_AUDIO_STOP_FILE HOME="$1" XDG_CONFIG_HOME="$1/.config" XDG_CACHE_HOME="$1/.cache" \
+        CZKAWKA_CONFIG_PATH="$1/.config/krokiet" CZKAWKA_CACHE_PATH="$1/.cache/czkawka" \
+        SLINT_BACKEND=winit-software "$BIN" >"$WORK/krokiet.log" 2>&1 &
     APP_PID=$!
+    WINDOW=""
     for _ in $(seq 1 40); do
         WINDOW=$(xdotool search --onlyvisible --class krokiet 2>/dev/null | head -1 || true)
         [ -n "$WINDOW" ] && break
@@ -114,7 +124,6 @@ capture_theme() {
     THEME=$1
     INDEX=1
     mkdir -p "$OUT/$THEME"
-    rm -f "$OUT/$THEME"/*.png
     start_display
     prepare_home "$THEME"
     start_app "$HOME_DIR"
@@ -122,7 +131,7 @@ capture_theme() {
     local index=0
     for tool in "${TOOLS[@]}"; do
         click 100 $((FIRST_TOOL_Y + TOOL_ROW_HEIGHT * index)) 1 0.7
-        scan_current_tool $([ "$tool" = disk_usage ] && echo 4 || echo 2)
+        scan_current_tool "$([ "$tool" = disk_usage ] && echo 4 || echo 2)"
         shot "$tool"
         index=$((index + 1))
     done
@@ -137,7 +146,7 @@ capture_theme() {
 
 # The disk usage tool is already open and scanned: its views, the nested borders, the menu and the settings window
 capture_disk_usage_views() {
-    click 100 $((FIRST_TOOL_Y + TOOL_ROW_HEIGHT * 14)) 1 1
+    click 100 $((FIRST_TOOL_Y + TOOL_ROW_HEIGHT * (${#TOOLS[@]} - 1))) 1 1
     click 251 31 1 1.5
     shot disk_usage_rings
     click 179 31 1 1.5

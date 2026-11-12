@@ -252,7 +252,7 @@ fn run_app_inner(
         weak: window.as_weak(),
         scan_gen: Arc::clone(&scan_gen),
         thumb_tx,
-        thumb_cancel: Arc::clone(&thumb_cancel),
+        thumb_cancel,
     };
     let (scan_tx_inner, stop_flag) = start_worker(handler);
     let scan_tx = Rc::new(scan_tx_inner);
@@ -280,7 +280,7 @@ fn run_app_inner(
     );
     wire_permission(&window);
     wire_notification_settings(&window);
-    wire_selection(&window, delete_tx, Rc::clone(&delete_stop));
+    wire_selection(&window, delete_tx, delete_stop);
     wire_directories(&window, included_dirs.clone(), excluded_dirs.clone(), referenced_dirs.clone());
     wire_collect_test(&window);
     wire_open_path(&window);

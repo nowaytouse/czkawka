@@ -184,7 +184,7 @@ fn main() {
 
     connect_delete_button(&app, progress_sender.clone(), stop_flag.clone());
     connect_trash_button(&app, progress_sender.clone(), stop_flag.clone());
-    connect_scan_button(&app, progress_sender.clone(), stop_flag.clone(), Arc::clone(&shared_models), Arc::clone(&audio_player));
+    connect_scan_button(&app, progress_sender.clone(), stop_flag.clone(), Arc::clone(&shared_models), audio_player);
     connect_disk_usage(&app, Arc::clone(&shared_models));
     connect_stop_button(&app, stop_flag.clone());
     connect_open_items(&app);
@@ -212,7 +212,7 @@ fn main() {
     connect_tab_changed(&app, task_sender.clone());
     create_calculate_task_size(task_receiver);
     connect_clean_cache(&app, task_sender);
-    connect_show_confirmation(&app, Arc::clone(&shared_models));
+    connect_show_confirmation(&app, shared_models);
 
     clear_outdated_video_thumbnails(&app);
 

@@ -117,6 +117,11 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### 12.0.2 security maintenance / 安全维护 - 2026-11-13
+
+- Pinned the upstream `little_exif` fix that removes `quick-xml 0.37.5` from the dependency graph. This addresses [RUSTSEC-2026-0194](https://rustsec.org/advisories/RUSTSEC-2026-0194.html) and [RUSTSEC-2026-0195](https://rustsec.org/advisories/RUSTSEC-2026-0195.html). The [dependency guide](DEPENDENCIES.md#reviewed-exceptions) records when to return to a published release.
+- 采用 `little_exif` 的上游安全修复，移除依赖图中的 `quick-xml 0.37.5`，解除上述两项 RustSec 安全公告。待包含修复的正式版本通过审计和合成 EXIF 测试后，恢复使用注册表版本。
+
 ### Upstream follow-up with fork preservation - 2026-11-06
 
 - Merged all three pending upstream commits: Fedora dependency-update exit handling (`dae637a1`, #2098), hardware encoder probe frame sizes (`bf4ceda4`, #2132), and Slint scan-row/disk-usage selection changes (`74f4ca94`, #2131). This preserves both upstream and fork history without rewriting commits.

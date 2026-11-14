@@ -39,9 +39,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default stable
-          rustup component add rustfmt
-          rustup component add clippy
+          rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Disable optimizations
         run: |

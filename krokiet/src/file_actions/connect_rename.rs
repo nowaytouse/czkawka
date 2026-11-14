@@ -72,8 +72,8 @@ fn connect_rename_single_file(app: &MainWindow) {
             report_failure(&app, crate::flk!("rust_rename_single_invalid_name"));
             return;
         }
-        let folder = row.val_str.iter().nth(path_idx).map(|s| s.to_string()).unwrap_or_default();
-        let old_name = row.val_str.iter().nth(name_idx).map(|s| s.to_string()).unwrap_or_default();
+        let folder = row.val_str.iter().nth(path_idx).map_or_default(|s| s.to_string());
+        let old_name = row.val_str.iter().nth(name_idx).map_or_default(|s| s.to_string());
         if new_name == old_name.as_str() {
             warn!("Single rename skipped (row {idx}): new name equals current name {old_name:?}");
             report_failure(&app, crate::flk!("rust_rename_single_same_name"));
@@ -139,8 +139,8 @@ fn connect_rename_single_file(app: &MainWindow) {
         if row.header_row {
             return false;
         }
-        let folder = row.val_str.iter().nth(path_idx).map(|s| s.to_string()).unwrap_or_default();
-        let old_name = row.val_str.iter().nth(name_idx).map(|s| s.to_string()).unwrap_or_default();
+        let folder = row.val_str.iter().nth(path_idx).map_or_default(|s| s.to_string());
+        let old_name = row.val_str.iter().nth(name_idx).map_or_default(|s| s.to_string());
         if new_name == old_name.as_str() {
             return false;
         }
@@ -272,10 +272,7 @@ fn rename_single_extension_item(data: &SimplerSingleMainListModel, path_idx: usi
     let file_name = &data.val_str[name_idx];
     let new_extension = &data.val_str[ext_idx];
 
-    let file_stem = std::path::Path::new(file_name.as_str())
-        .file_stem()
-        .map(|e| e.to_string_lossy().to_string())
-        .unwrap_or_default();
+    let file_stem = std::path::Path::new(file_name.as_str()).file_stem().map_or_default(|e| e.to_string_lossy().to_string());
     let new_full_path = format!("{folder}{MAIN_SEPARATOR}{file_stem}.{new_extension}");
     let old_full_path = format!("{folder}{MAIN_SEPARATOR}{file_name}");
 

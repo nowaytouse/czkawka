@@ -356,8 +356,8 @@ fn wire_compare_compute_diff(app: &MainWindow) {
         let ri = state.get_compare_right_idx() as usize;
         let images = state.get_compare_images();
 
-        let left_path = images.row_data(li).map(|d| d.path.to_string()).unwrap_or_default();
-        let right_path = images.row_data(ri).map(|d| d.path.to_string()).unwrap_or_default();
+        let left_path = images.row_data(li).map_or_default(|d| d.path.to_string());
+        let right_path = images.row_data(ri).map_or_default(|d| d.path.to_string());
         if left_path.is_empty() || right_path.is_empty() {
             return;
         }
@@ -430,8 +430,8 @@ fn open_group(app: &MainWindow, group_idx: usize) {
     let total = compare_data.len() as i32;
     let left_idx = 0i32;
     let right_idx = (total - 1).min(1);
-    let left_path = compare_data.first().map(|s| s.path.to_string()).unwrap_or_default();
-    let right_path = compare_data.get(right_idx as usize).map(|s| s.path.to_string()).unwrap_or_default();
+    let left_path = compare_data.first().map_or_default(|s| s.path.to_string());
+    let right_path = compare_data.get(right_idx as usize).map_or_default(|s| s.path.to_string());
 
     state.set_compare_current_group_idx(group_idx as i32);
     state.set_compare_images(ModelRc::new(VecModel::from(compare_data)));

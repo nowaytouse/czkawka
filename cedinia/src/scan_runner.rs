@@ -442,5 +442,5 @@ pub(crate) fn file_name(p: &std::path::Path) -> String {
 }
 
 pub(crate) fn parent_str(p: &std::path::Path) -> String {
-    p.parent().map(|x| x.to_string_lossy().to_string()).unwrap_or_default()
+    p.parent().map_or_default(|x| x.to_string_lossy().to_string())
 }

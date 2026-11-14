@@ -92,7 +92,7 @@ fn connect_test_image_file(app: &MainWindow) {
                     return;
                 }
                 Some(path) => {
-                    let file_name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+                    let file_name = path.file_name().map_or_default(|n| n.to_string_lossy().to_string());
                     let ext = path.extension().unwrap_or_default().to_string_lossy().to_lowercase();
                     let decoder = if RAW_IMAGE_EXTENSIONS.contains(&ext.as_str()) {
                         "rawler"

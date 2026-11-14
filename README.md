@@ -88,7 +88,7 @@ The repository includes **17 Python maintenance scripts and one standard-library
 
 Quality CI runs on `master`, uses the committed lockfile, checks default and software-only feature configurations, and runs workspace regression tests. Only downloaded Cargo sources are cached, not compiled build directories.
 
-Moving `ubuntu-latest` jobs explicitly select the current GitHub-hosted GA image, **Ubuntu 26.04**, avoiding the migration notice. Linux native-decoder artifact builders keep their **Ubuntu 24.04** ABI baseline. Normal CI toolchains follow Rust `stable`; the dedicated minimum-Rust regression job stays at `1.94.1`. Docker uses verified digest-pinned **Ubuntu 26.10**. These are separate compatibility and reproducibility contracts, not blanket version freezes.
+Moving `ubuntu-latest` jobs explicitly select the current GitHub-hosted GA image, **Ubuntu 26.04**, avoiding the migration notice. Linux native-decoder artifact builders keep their **Ubuntu 24.04** ABI baseline. Development, CI builds and the Docker build environment follow rolling Rust `nightly`. The minimum-version regression job explicitly uses Rust `1.100.0`. Docker uses verified digest-pinned **Ubuntu 26.10**. These are separate compatibility and reproducibility contracts, not blanket version freezes.
 
 ### Maintaining the fork
 

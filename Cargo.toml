@@ -15,6 +15,9 @@ exclude = [
 ]
 resolver = "3"
 
+[workspace.package]
+rust-version = "1.100"
+
 [workspace.dependencies]
 # Upgrade the UI family together; patch releases are not frozen to a single build.
 slint = { version = "~1.18.1", default-features = false }

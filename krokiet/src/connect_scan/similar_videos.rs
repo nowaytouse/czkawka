@@ -113,14 +113,14 @@ fn write_similar_videos_results(
 fn prepare_data_model_similar_videos(fe: VideosEntry) -> RowContent {
     let (directory, file) = split_path(fe.get_path());
     let bitrate = format_bitrate_opt(fe.bitrate);
-    let fps = fe.fps.map(|e| format!("{e:.2}")).unwrap_or_default();
+    let fps = fe.fps.map_or_default(|e| format!("{e:.2}"));
     let codec = fe.codec.clone().unwrap_or_default();
     let dimensions = if let (Some(w), Some(h)) = (fe.width, fe.height) {
         format!("{w}x{h}")
     } else {
         "".to_string()
     };
-    let preview_path = fe.thumbnail_path.as_ref().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
+    let preview_path = fe.thumbnail_path.as_ref().map_or_default(|e| e.to_string_lossy().to_string());
     let duration = format_duration_opt(fe.duration);
     let data_model_str_arr: [SharedString; MAX_STR_DATA_SIMILAR_VIDEOS] = [
         format_size(fe.size, BINARY).into(),

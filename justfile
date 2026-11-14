@@ -355,12 +355,9 @@ fix:
 
     bash misc/run_checks.sh
 
-    cargo +nightly fmt
+    cargo fmt
     just _clippy_all_features
-    cargo +nightly fmt
-    # stable rustfmt warns that the nightly-only import options in .rustfmt.toml aren't
-    # available on this channel - harmless noise on every run, so it's silenced here.
-    cargo fmt 2>/dev/null
+    cargo fmt
 
 [group('fix')]
 fixn:

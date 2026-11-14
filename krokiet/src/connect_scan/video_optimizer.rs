@@ -152,7 +152,7 @@ fn prepare_data_model_video_optimizer_transcode(fe: VideoTranscodeEntry) -> RowC
         format_duration_opt(Some(fe.duration)).into(),
         format_bitrate_opt(fe.bitrate).into(),
         get_dt_timestamp_string(fe.modified_date).into(),
-        fe.thumbnail_path.as_ref().map(|e| e.to_string_lossy().to_string()).unwrap_or_default().into(),
+        fe.thumbnail_path.as_ref().map_or_default(|e| e.to_string_lossy().to_string()).into(),
     ];
     let data_model_str = data_model_str_arr.to_vec();
     let modification_split = split_u64_into_i32s(fe.modified_date);
@@ -217,7 +217,7 @@ fn prepare_data_model_video_optimizer_crop(fe: VideoCropEntry) -> Option<RowCont
         format_duration_opt(Some(fe.duration)).into(),
         format_bitrate_opt(fe.bitrate).into(),
         get_dt_timestamp_string(fe.modified_date).into(),
-        fe.thumbnail_path.as_ref().map(|e| e.to_string_lossy().to_string()).unwrap_or_default().into(),
+        fe.thumbnail_path.as_ref().map_or_default(|e| e.to_string_lossy().to_string()).into(),
     ];
     let data_model_str = data_model_str_arr.to_vec();
     let modification_split = split_u64_into_i32s(fe.modified_date);

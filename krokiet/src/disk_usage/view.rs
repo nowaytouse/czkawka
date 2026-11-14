@@ -418,8 +418,7 @@ fn visible_zoom(zoom: &[u32], has_content: impl Fn(&[u32]) -> bool) -> Vec<u32> 
         .rev()
         .filter_map(|length| zoom.get(..length))
         .find(|prefix| prefix.is_empty() || has_content(prefix))
-        .map(<[u32]>::to_vec)
-        .unwrap_or_default()
+        .map_or_default(<[u32]>::to_vec)
 }
 
 /// After a file type was switched on or off: when the directory the chart is in has nothing left to show,

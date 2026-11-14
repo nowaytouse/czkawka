@@ -667,16 +667,14 @@ pub fn format_bitrate_opt(bitrate: Option<u64>) -> String {
 }
 
 pub fn format_duration_opt(duration: Option<f64>) -> String {
-    duration
-        .map(|d| {
-            let hours = (d / 3600.0) as u32;
-            let minutes = ((d % 3600.0) / 60.0) as u32;
-            let seconds = (d % 60.0) as u32;
-            if hours > 0 {
-                format!("{hours:02}:{minutes:02}:{seconds:02}")
-            } else {
-                format!("{minutes:02}:{seconds:02}")
-            }
-        })
-        .unwrap_or_default()
+    duration.map_or_default(|d| {
+        let hours = (d / 3600.0) as u32;
+        let minutes = ((d % 3600.0) / 60.0) as u32;
+        let seconds = (d % 60.0) as u32;
+        if hours > 0 {
+            format!("{hours:02}:{minutes:02}:{seconds:02}")
+        } else {
+            format!("{minutes:02}:{seconds:02}")
+        }
+    })
 }

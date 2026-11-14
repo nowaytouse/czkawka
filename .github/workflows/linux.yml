@@ -31,7 +31,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default 1.94.1
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add "${TARGET_DIR#target/}"
 
       # Zig links against an old glibc, so the binaries run on older distros
@@ -50,14 +50,14 @@ jobs:
           
           echo "VERS=release" >> "$GITHUB_ENV"
           
-          cargo zigbuild --target ${{ matrix.target }} --bin czkawka_cli --bin krokiet --release
+          cargo zigbuild --locked --target ${{ matrix.target }} --bin czkawka_cli --bin krokiet --release
           mv "$TARGET_DIR/release/czkawka_cli" linux_czkawka_cli_${{ env.ARCHNAME }}
           mv "$TARGET_DIR/release/krokiet" linux_krokiet_femtovg_opengl_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "vello"
+          cargo zigbuild --locked --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "vello"
           mv "$TARGET_DIR/release/krokiet" linux_krokiet_vello_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo zigbuild --locked --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv "$TARGET_DIR/release/krokiet" linux_krokiet_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
+          cargo zigbuild --locked --target ${{ matrix.target }} --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
           mv "$TARGET_DIR/release/krokiet" linux_krokiet_all_backends_${{ env.ARCHNAME }}
 
       # Fast CI profile, to avoid out of disk space errors
@@ -70,14 +70,14 @@ jobs:
           
           echo "VERS=debug" >> "$GITHUB_ENV"
           
-          cargo zigbuild --target ${{ matrix.target }} --bin czkawka_cli --bin krokiet --profile fastci
+          cargo zigbuild --locked --target ${{ matrix.target }} --bin czkawka_cli --bin krokiet --profile fastci
           mv "$TARGET_DIR/fastci/czkawka_cli" linux_czkawka_cli_${{ env.ARCHNAME }}
           mv "$TARGET_DIR/fastci/krokiet" linux_krokiet_femtovg_opengl_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --bin krokiet --no-default-features --features "vello" --profile fastci
+          cargo zigbuild --locked --target ${{ matrix.target }} --bin krokiet --no-default-features --features "vello" --profile fastci
           mv "$TARGET_DIR/fastci/krokiet" linux_krokiet_vello_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --bin krokiet --no-default-features --features "femtovg_wgpu" --profile fastci
+          cargo zigbuild --locked --target ${{ matrix.target }} --bin krokiet --no-default-features --features "femtovg_wgpu" --profile fastci
           mv "$TARGET_DIR/fastci/krokiet" linux_krokiet_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo zigbuild --target ${{ matrix.target }} --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello" --profile fastci
+          cargo zigbuild --locked --target ${{ matrix.target }} --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello" --profile fastci
           mv "$TARGET_DIR/fastci/krokiet" linux_krokiet_all_backends_${{ env.ARCHNAME }}
 
       - name: Set default Krokiet backend
@@ -139,7 +139,7 @@ jobs:
         run: sudo apt update || true; sudo apt install libheif-dev libraw-dev libavif-dev libdav1d-dev ffmpeg p7zip-full -y
 
       - name: Setup rust version
-        run: rustup default stable
+        run: rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Build Release
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -149,14 +149,14 @@ jobs:
 
           echo "VERS=release" >> "$GITHUB_ENV"
 
-          cargo build --release --features "heif,libraw,libavif"
+          cargo build --locked --release --features "heif,libraw,libavif"
           mv target/release/czkawka_cli linux_czkawka_cli_heif_raw_avif_${{ env.ARCHNAME }}
           mv target/release/krokiet linux_krokiet_heif_raw_avif_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "vello,heif,libraw,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "vello,heif,libraw,libavif"
           mv target/release/krokiet linux_krokiet_heif_raw_avif_vello_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libraw,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libraw,libavif"
           mv target/release/krokiet linux_krokiet_heif_raw_avif_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libraw,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libraw,libavif"
           mv target/release/krokiet linux_krokiet_heif_raw_avif_all_backends_${{ env.ARCHNAME }}
 
       # Fast CI profile, to avoid out of disk space errors
@@ -169,14 +169,14 @@ jobs:
 
           echo "VERS=debug" >> "$GITHUB_ENV"
 
-          cargo build --features "heif,libraw,libavif" --profile fastci
+          cargo build --locked --features "heif,libraw,libavif" --profile fastci
           mv target/fastci/czkawka_cli linux_czkawka_cli_heif_raw_avif_${{ env.ARCHNAME }}
           mv target/fastci/krokiet linux_krokiet_heif_raw_avif_${{ env.ARCHNAME }}
-          cargo build --bin krokiet --no-default-features --features "vello,heif,libraw,libavif" --profile fastci
+          cargo build --locked --bin krokiet --no-default-features --features "vello,heif,libraw,libavif" --profile fastci
           mv target/fastci/krokiet linux_krokiet_heif_raw_avif_vello_${{ env.ARCHNAME }}
-          cargo build --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libraw,libavif" --profile fastci
+          cargo build --locked --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libraw,libavif" --profile fastci
           mv target/fastci/krokiet linux_krokiet_heif_raw_avif_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libraw,libavif" --profile fastci
+          cargo build --locked --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libraw,libavif" --profile fastci
           mv target/fastci/krokiet linux_krokiet_heif_raw_avif_all_backends_${{ env.ARCHNAME }}
 
       - name: Package krokiet (heif+avif) with launchers
@@ -237,7 +237,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add ${{ matrix.target }}
 
       - name: Build Release
@@ -245,7 +245,7 @@ jobs:
         run: |
           sed -i 's/#lto = /lto = /g' Cargo.toml
           sed -i 's/#codegen-units /codegen-units /g' Cargo.toml
-          cargo build --release --bin czkawka_cli --target ${{ matrix.target }}
+          cargo build --locked --release --bin czkawka_cli --target ${{ matrix.target }}
 
           mv target/${{ matrix.target }}/release/czkawka_cli ${{ env.OUTPUT_NAME }}
 
@@ -254,7 +254,7 @@ jobs:
         run: |
           sed -i 's/^\(\[profile\.dev\.package.*\)/#\1/' Cargo.toml
           sed -i 's|^opt-level = 3 # OPT PACKAGES|#opt-level = 3 # OPT PACKAGES|' Cargo.toml
-          cargo build --bin czkawka_cli --target ${{ matrix.target }}
+          cargo build --locked --bin czkawka_cli --target ${{ matrix.target }}
 
           mv target/${{ matrix.target }}/debug/czkawka_cli ${{ env.OUTPUT_NAME }}
 
@@ -290,14 +290,14 @@ jobs:
 
       - name: Setup rust version and target
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add i686-unknown-linux-gnu
 
       - name: Build Debug for 32-bit
         run: |
           sed -i 's/^\(\[profile\.dev\.package.*\)/#\1/' Cargo.toml
           sed -i 's|^opt-level = 3 # OPT PACKAGES|#opt-level = 3 # OPT PACKAGES|' Cargo.toml
-          cargo build --target i686-unknown-linux-gnu --bin czkawka_cli --bin krokiet
+          cargo build --locked --target i686-unknown-linux-gnu --bin czkawka_cli --bin krokiet
           mv target/i686-unknown-linux-gnu/debug/czkawka_cli linux_czkawka_cli_32bit
           mv target/i686-unknown-linux-gnu/debug/krokiet linux_krokiet_32bit
 
@@ -312,11 +312,6 @@ jobs:
   linux-stability:
     if: ${{ github.ref == 'refs/heads/master' }} # Runs only in master, because it is really time consuming
     runs-on: ubuntu-26.04
-    strategy:
-      fail-fast: false
-      matrix:
-        # nightly disabled until notify-rust includes https://github.com/hoodie/notify-rust/pull/297
-        toolchain: [1.94.1] # , nightly]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -324,27 +319,27 @@ jobs:
         run: sudo apt update || true
 
       - name: Setup rust version
-        run: rustup default ${{ matrix.toolchain }}
+        run: rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Build packages
         run: |
           rm -rf target || true
-          cargo build --bin czkawka_cli --bin krokiet
+          cargo build --locked --bin czkawka_cli --bin krokiet
           mv target/debug/czkawka_cli czkawka_cli_debug_1
           mv target/debug/krokiet krokiet_debug_1
           
           rm -rf target || true
-          cargo build --bin czkawka_cli --bin krokiet --release
+          cargo build --locked --bin czkawka_cli --bin krokiet --release
           mv target/release/czkawka_cli czkawka_cli_release_1
           mv target/release/krokiet krokiet_release_1
           
           rm -rf target || true
-          cargo build --bin czkawka_cli --bin krokiet
+          cargo build --locked --bin czkawka_cli --bin krokiet
           mv target/debug/czkawka_cli czkawka_cli_debug_2
           mv target/debug/krokiet krokiet_debug_2
           
           rm -rf target || true
-          cargo build --bin czkawka_cli --bin krokiet --release
+          cargo build --locked --bin czkawka_cli --bin krokiet --release
           mv target/release/czkawka_cli czkawka_cli_release_2
           mv target/release/krokiet krokiet_release_2
           
@@ -359,17 +354,17 @@ jobs:
         run: sudo apt update || true; sudo apt install libheif-dev libheif-plugin-libde265 libraw-dev libavif-dev libdav1d-dev libasound2-dev xvfb imagemagick libgl1-mesa-dri mesa-vulkan-drivers libxkbcommon-x11-0 -y
 
       - name: Setup rust version
-        run: rustup default stable
+        run: rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Test
         run: |
           sed -i 's/^\(\[profile\.dev\.package.*\)/#\1/' Cargo.toml
           sed -i 's|^opt-level = 3 # OPT PACKAGES|#opt-level = 3 # OPT PACKAGES|' Cargo.toml
-          xvfb-run cargo test --no-fail-fast --all-features --workspace
+          xvfb-run cargo test --locked --no-fail-fast --all-features --workspace
 
       # Reuses the dependencies compiled by the tests above
       - name: Build Krokiet
-        run: cargo build --all-features --bin krokiet
+        run: cargo build --locked --all-features --bin krokiet
 
       - name: E2E tests
         run: cd e2e && cargo run --release -- ../target/debug/krokiet
@@ -384,6 +379,8 @@ jobs:
 
   linux-regression-tests-on-minimal-rust-version:
     runs-on: ubuntu-26.04
+    env:
+      RUSTUP_TOOLCHAIN: 1.100.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -391,13 +388,13 @@ jobs:
         run: sudo apt update || true; sudo apt install ffmpeg -y
 
       - name: Setup rust version
-        run: rustup default 1.94.1
+        run: rustup toolchain install 1.100.0 --profile minimal
 
       - name: Build test version
         run: |
           sed -i 's/^\(\[profile\.dev\.package.*\)/#\1/' Cargo.toml
           sed -i 's|^opt-level = 3 # OPT PACKAGES|#opt-level = 3 # OPT PACKAGES|' Cargo.toml
-          cargo build --profile test --bin czkawka_cli
+          cargo build --locked --profile test --bin czkawka_cli
 
       - name: Linux Regression Test
         run: |
@@ -416,10 +413,10 @@ jobs:
 
       - name: Setup rust version and target
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add aarch64-linux-android
 
       - name: Check for Android
         run: |
           cd czkawka_core
-          cargo check --target aarch64-linux-android --features "blake_pure"
+          cargo check --locked --target aarch64-linux-android --features "blake_pure"

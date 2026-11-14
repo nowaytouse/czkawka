@@ -6,7 +6,7 @@ RUN apt-get update \
         libheif-dev libheif-plugin-libde265 libheif-plugin-dav1d libheif-plugin-aomdec \
     && apt-get clean ; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y # Download the latest stable Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain nightly
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 

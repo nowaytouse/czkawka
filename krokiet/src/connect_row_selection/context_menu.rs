@@ -68,7 +68,7 @@ fn remove_all_from_folder_impl(app: &MainWindow, idx: usize, recursive: bool) {
     if clicked_row.header_row {
         return;
     }
-    let target_path = clicked_row.val_str.iter().nth(path_idx).map(|s| s.to_string()).unwrap_or_default();
+    let target_path = clicked_row.val_str.iter().nth(path_idx).map_or_default(|s| s.to_string());
     let target_prefix = format!("{target_path}{}", std::path::MAIN_SEPARATOR);
 
     let mut in_reference_group = false;
@@ -81,7 +81,7 @@ fn remove_all_from_folder_impl(app: &MainWindow, idx: usize, recursive: bool) {
             } else if in_reference_group {
                 true // never remove items from a reference-folder group
             } else {
-                let p = row.val_str.iter().nth(path_idx).map(|s| s.as_str().to_owned()).unwrap_or_default();
+                let p = row.val_str.iter().nth(path_idx).map_or_default(|s| s.as_str().to_owned());
                 if recursive {
                     p != target_path && !p.starts_with(&target_prefix)
                 } else {
@@ -119,7 +119,7 @@ fn select_all_from_folder_impl(app: &MainWindow, idx: usize, recursive: bool) {
     if clicked_row.header_row {
         return;
     }
-    let target_path = clicked_row.val_str.iter().nth(path_idx).map(|s| s.to_string()).unwrap_or_default();
+    let target_path = clicked_row.val_str.iter().nth(path_idx).map_or_default(|s| s.to_string());
     let target_prefix = format!("{target_path}{}", std::path::MAIN_SEPARATOR);
 
     let items: Vec<SingleMainListModel> = model.iter().collect();
@@ -129,7 +129,7 @@ fn select_all_from_folder_impl(app: &MainWindow, idx: usize, recursive: bool) {
         if items[i].header_row {
             return false;
         }
-        let p = items[i].val_str.iter().nth(path_idx).map(|s| s.as_str().to_owned()).unwrap_or_default();
+        let p = items[i].val_str.iter().nth(path_idx).map_or_default(|s| s.as_str().to_owned());
         if recursive {
             p == target_path || p.starts_with(&target_prefix)
         } else {
@@ -391,7 +391,7 @@ fn connect_rename_item(app: &MainWindow) {
         if row.header_row {
             return;
         }
-        let name = row.val_str.iter().nth(name_idx).map(|s| s.to_string()).unwrap_or_default();
+        let name = row.val_str.iter().nth(name_idx).map_or_default(|s| s.to_string());
         app.invoke_show_rename_single_file_popup(idx, name.into());
     });
 }

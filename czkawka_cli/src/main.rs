@@ -631,7 +631,7 @@ fn exif_remover(exif_remover: ExifRemoverArgs, stop_flag: &Arc<AtomicBool>, prog
         override_file,
     } = exif_remover;
 
-    let ignored_tags_vec = ignored_tags.map(|s| s.split(',').map(|tag| tag.trim().to_string()).collect()).unwrap_or_default();
+    let ignored_tags_vec = ignored_tags.map_or_default(|s| s.split(',').map(|tag| tag.trim().to_string()).collect());
 
     let params = ExifRemoverParameters::new(ignored_tags_vec);
     let mut tool = ExifRemover::new(params);

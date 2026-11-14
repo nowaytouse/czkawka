@@ -376,8 +376,8 @@ mod tests {
 
         assert_eq!(messages.errors.len(), 2);
         assert_eq!(messages.messages.len(), 1);
-        assert!(messages.errors.contains(&"Error 1".to_string()));
-        assert!(messages.messages.contains(&"Info 1".to_string()));
+        assert!(messages.errors.iter().any(|i| i == "Error 1"));
+        assert!(messages.messages.iter().any(|i| i == "Info 1"));
     }
 
     #[test]

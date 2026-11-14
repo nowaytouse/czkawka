@@ -116,7 +116,7 @@ impl PrintResults for SimilarVideos {
 
         fn write_video_entry<T: Write>(writer: &mut T, file_entry: &crate::tools::similar_videos::VideosEntry) -> std::io::Result<()> {
             let bitrate = format_bitrate_opt(file_entry.bitrate);
-            let fps = file_entry.fps.map(|e| format!("{e:.2}")).unwrap_or_default();
+            let fps = file_entry.fps.map_or_default(|e| format!("{e:.2}"));
             let codec = file_entry.codec.clone().unwrap_or_default();
             let dimensions = if let (Some(w), Some(h)) = (file_entry.width, file_entry.height) {
                 format!("{w}x{h}")

@@ -173,8 +173,8 @@ fn find_free_output_path(desired: &Path, claimed: &HashSet<PathBuf>) -> PathBuf 
         return desired.to_path_buf();
     }
 
-    let parent = desired.parent().map(Path::to_path_buf).unwrap_or_default();
-    let stem = desired.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
+    let parent = desired.parent().map_or_default(Path::to_path_buf);
+    let stem = desired.file_stem().map_or_default(|s| s.to_string_lossy().into_owned());
     let extension = desired.extension().map(|s| s.to_string_lossy().into_owned());
 
     let mut counter: u64 = 1;

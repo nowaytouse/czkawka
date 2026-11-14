@@ -145,7 +145,7 @@ impl ModelProcessor {
                     }
 
                     let rm_idx = rm_idx.fetch_add(1, Ordering::Relaxed);
-                    let size = size.fetch_add(size_idx.map(|size_idx| data.get_size(size_idx)).unwrap_or_default(), Ordering::Relaxed);
+                    let size = size.fetch_add(size_idx.map_or_default(|size_idx| data.get_size(size_idx)), Ordering::Relaxed);
                     let mut progress = message_type.get_base_progress();
                     progress.entries_to_check = items_queued_to_process;
                     progress.entries_checked = rm_idx;
@@ -204,7 +204,7 @@ impl ModelProcessor {
                         }
 
                         let rm_idx = rm_idx.fetch_add(1, Ordering::Relaxed);
-                        let size = size.fetch_add(size_idx.map(|size_idx| data.get_size(size_idx)).unwrap_or_default(), Ordering::Relaxed);
+                        let size = size.fetch_add(size_idx.map_or_default(|size_idx| data.get_size(size_idx)), Ordering::Relaxed);
                         let mut progress = message_type.get_base_progress();
                         progress.entries_to_check = items_queued_to_process;
                         progress.entries_checked = rm_idx;
@@ -288,9 +288,7 @@ impl ModelProcessor {
         let mut base_progress = message_type.get_base_progress();
         base_progress.entries_to_check = items_queued_to_process;
         base_progress.bytes_to_check = match &process_fnc {
-            ProcessFunction::Simple(_) => size_idx
-                .map(|size_idx| simpler_model.iter().map(|(_idx, m)| if m.checked { m.get_size(size_idx) } else { 0 }).sum())
-                .unwrap_or_default(),
+            ProcessFunction::Simple(_) => size_idx.map_or_default(|size_idx| simpler_model.iter().map(|(_idx, m)| if m.checked { m.get_size(size_idx) } else { 0 }).sum()),
             ProcessFunction::Related(_) => {
                 let mut contains_main_item_in_group = false;
                 let mut items_size = 0;
@@ -300,7 +298,7 @@ impl ModelProcessor {
                     } else {
                         if item.checked {
                             if contains_main_item_in_group {
-                                items_size += size_idx.map(|size_idx| item.get_size(size_idx)).unwrap_or_default();
+                                items_size += size_idx.map_or_default(|size_idx| item.get_size(size_idx));
                             } else {
                                 contains_main_item_in_group = true;
                             }

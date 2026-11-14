@@ -27,7 +27,7 @@ jobs:
           echo "ARCHNAME=$ARCHNAME" >> "$GITHUB_ENV"
 
       - name: Setup rust version
-        run: rustup default stable
+        run: rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Install Homebrew
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -45,24 +45,24 @@ jobs:
           
           echo "VERS=release" >> "$GITHUB_ENV"
           
-          cargo build --bin czkawka_cli --bin krokiet --release
+          cargo build --locked --bin czkawka_cli --bin krokiet --release
           mv target/release/czkawka_cli mac_czkawka_cli_${{ env.ARCHNAME }}
           mv target/release/krokiet mac_krokiet_femtovg_opengl_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --release --bin krokiet --no-default-features --features "vello"
           mv target/release/krokiet mac_krokiet_vello_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --release --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/release/krokiet mac_krokiet_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
+          cargo build --locked --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
           mv target/release/krokiet mac_krokiet_all_backends_${{ env.ARCHNAME }}
           
-          cargo build --release --features "heif,libavif"
+          cargo build --locked --release --features "heif,libavif"
           mv target/release/czkawka_cli mac_czkawka_cli_heif_avif_${{ env.ARCHNAME }}
           mv target/release/krokiet mac_krokiet_heif_avif_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "vello,heif,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "vello,heif,libavif"
           mv target/release/krokiet mac_krokiet_vello_heif_avif_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libavif"
           mv target/release/krokiet mac_krokiet_heif_avif_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libavif"
+          cargo build --locked --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libavif"
           mv target/release/krokiet mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}
 
       - name: Build Debug
@@ -74,24 +74,24 @@ jobs:
           
           echo "VERS=debug" >> "$GITHUB_ENV"
           
-          cargo build --bin czkawka_cli --bin krokiet --profile fastci
+          cargo build --locked --bin czkawka_cli --bin krokiet --profile fastci
           mv target/fastci/czkawka_cli mac_czkawka_cli_${{ env.ARCHNAME }}
           mv target/fastci/krokiet mac_krokiet_femtovg_opengl_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "vello"
           mv target/fastci/krokiet mac_krokiet_vello_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/fastci/krokiet mac_krokiet_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
           mv target/fastci/krokiet mac_krokiet_all_backends_${{ env.ARCHNAME }}
           
-          cargo build --profile fastci --features "heif,libavif"
+          cargo build --locked --profile fastci --features "heif,libavif"
           mv target/fastci/czkawka_cli mac_czkawka_cli_heif_avif_${{ env.ARCHNAME }}
           mv target/fastci/krokiet mac_krokiet_heif_avif_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "vello,heif,libavif"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "vello,heif,libavif"
           mv target/fastci/krokiet mac_krokiet_vello_heif_avif_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libavif"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "femtovg_wgpu,heif,libavif"
           mv target/fastci/krokiet mac_krokiet_heif_avif_femtovg_wgpu_${{ env.ARCHNAME }}
-          cargo build --profile fastci --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libavif"
+          cargo build --locked --profile fastci --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello,heif,libavif"
           mv target/fastci/krokiet mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}
 
       - name: Set default Krokiet backend

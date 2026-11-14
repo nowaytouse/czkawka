@@ -38,7 +38,7 @@ jobs:
 
       - name: Install Android NDK, platforms and Rust targets
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add aarch64-linux-android
           cargo install cargo-apk || true
 

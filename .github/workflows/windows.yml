@@ -26,7 +26,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
           rustup target add x86_64-pc-windows-gnu
 
       - name: Download rcedit
@@ -38,14 +38,14 @@ jobs:
         run: |
           sed -i 's/#lto = /lto = /g' Cargo.toml
           sed -i 's/#codegen-units /codegen-units /g' Cargo.toml
-          cargo build --release --target x86_64-pc-windows-gnu --bin krokiet --bin czkawka_cli
+          cargo build --locked --release --target x86_64-pc-windows-gnu --bin krokiet --bin czkawka_cli
           mv target/x86_64-pc-windows-gnu/release/krokiet.exe windows_krokiet_femtovg_opengl.exe
           mv target/x86_64-pc-windows-gnu/release/czkawka_cli.exe windows_czkawka_cli.exe
-          cargo build --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/x86_64-pc-windows-gnu/release/krokiet.exe windows_krokiet_femtovg_wgpu.exe
-          cargo build --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "vello"
           mv target/x86_64-pc-windows-gnu/release/krokiet.exe windows_krokiet_vello.exe
-          cargo build --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
+          cargo build --locked --release --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
           mv target/x86_64-pc-windows-gnu/release/krokiet.exe windows_krokiet_all_backends.exe
           
           WINEPREFIX=$(mktemp -d)
@@ -58,14 +58,14 @@ jobs:
         run: |
           sed -i 's/^\(\[profile\.dev\.package.*\)/#\1/' Cargo.toml
           sed -i 's|^opt-level = 3 # OPT PACKAGES|#opt-level = 3 # OPT PACKAGES|' Cargo.toml
-          cargo build --target x86_64-pc-windows-gnu --bin krokiet --bin czkawka_cli
+          cargo build --locked --target x86_64-pc-windows-gnu --bin krokiet --bin czkawka_cli
           mv target/x86_64-pc-windows-gnu/debug/krokiet.exe windows_krokiet_femtovg_opengl.exe
           mv target/x86_64-pc-windows-gnu/debug/czkawka_cli.exe windows_czkawka_cli.exe
-          cargo build --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/x86_64-pc-windows-gnu/debug/krokiet.exe windows_krokiet_femtovg_wgpu.exe
-          cargo build --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "vello"
           mv target/x86_64-pc-windows-gnu/debug/krokiet.exe windows_krokiet_vello.exe
-          cargo build --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
+          cargo build --locked --target x86_64-pc-windows-gnu --bin krokiet --no-default-features --features "winit_femtovg,winit_software,femtovg_wgpu,vello"
           mv target/x86_64-pc-windows-gnu/debug/krokiet.exe windows_krokiet_all_backends.exe
           
           WINEPREFIX=$(mktemp -d)
@@ -115,7 +115,7 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
 
       - name: Download rcedit
         run: |
@@ -125,11 +125,11 @@ jobs:
         if: ${{ github.ref == 'refs/heads/master' }}
         run: |
           powershell -Command "(Get-Content Cargo.toml) -replace '#lto = ', 'lto = ' | Set-Content Cargo.toml; (Get-Content Cargo.toml) -replace '#codegen-units ', 'codegen-units ' | Set-Content Cargo.toml"
-          cargo build --release --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --release --bin krokiet --no-default-features --features "vello"
           mv target/release/krokiet.exe windows_krokiet_on_windows_vello.exe
-          cargo build --release --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --release --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/release/krokiet.exe windows_krokiet_on_windows_femtovg_wgpu.exe
-          cargo build --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,vello,femtovg_wgpu"
+          cargo build --locked --release --bin krokiet --no-default-features --features "winit_femtovg,winit_software,vello,femtovg_wgpu"
           mv target/release/krokiet.exe windows_krokiet_on_windows_all_backends.exe
           Get-ChildItem windows_krokiet_on_windows_*.exe | ForEach-Object { ./rcedit-x64.exe $_.Name --set-icon krokiet/icons/krokiet_logo_flag.ico }
 
@@ -138,11 +138,11 @@ jobs:
         run: |
           (Get-Content Cargo.toml) -replace '#lto = ','lto = ' -replace '#codegen-units ','codegen-units ' -replace '^\[profile\.dev\.package','#\[profile.dev.package' -replace '^opt-level = 3 # OPT PACKAGES','#opt-level = 3 # OPT PACKAGES' | Set-Content Cargo.toml
           
-          cargo build --bin krokiet --no-default-features --features "vello"
+          cargo build --locked --bin krokiet --no-default-features --features "vello"
           mv target/debug/krokiet.exe windows_krokiet_on_windows_vello.exe
-          cargo build --bin krokiet --no-default-features --features "femtovg_wgpu"
+          cargo build --locked --bin krokiet --no-default-features --features "femtovg_wgpu"
           mv target/debug/krokiet.exe windows_krokiet_on_windows_femtovg_wgpu.exe
-          cargo build --bin krokiet --no-default-features --features "winit_femtovg,winit_software,vello,femtovg_wgpu"
+          cargo build --locked --bin krokiet --no-default-features --features "winit_femtovg,winit_software,vello,femtovg_wgpu"
           mv target/debug/krokiet.exe windows_krokiet_on_windows_all_backends.exe
           
           Get-ChildItem windows_krokiet_on_windows_*.exe | ForEach-Object { ./rcedit-x64.exe $_.Name --set-icon krokiet/icons/krokiet_logo_flag.ico }
@@ -179,9 +179,9 @@ jobs:
 
       - name: Setup rust version
         run: |
-          rustup default stable
+          rustup toolchain install --no-self-update && rustc --version --verbose
 
       # Additional features are non-testable due really complicated setup of environment on Windows
       - name: Test
         run: |
-          cargo test --no-fail-fast -p czkawka_core -p krokiet
+          cargo test --locked --no-fail-fast -p czkawka_core -p krokiet

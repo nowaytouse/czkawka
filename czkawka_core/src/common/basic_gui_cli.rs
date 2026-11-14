@@ -51,7 +51,7 @@ enum ExpectedArgs {
 #[expect(clippy::print_stdout)]
 #[expect(clippy::print_stderr)]
 pub fn process_cli_args(app_display: &str, app_exec: &str, args: Vec<String>) -> Option<CliResult> {
-    if ["--help", "-h"].iter().any(|&arg| args.contains(&arg.to_string())) {
+    if ["--help", "-h"].iter().any(|&arg| args.iter().any(|i| i == arg)) {
         println!("{app_display}");
         println!("{app_display} allows you to specify folders to search for files via the CLI, and also to exclude or reference folders.");
         println!("If used, it will automatically apply the last preset and load its options.");
@@ -79,7 +79,7 @@ pub fn process_cli_args(app_display: &str, app_exec: &str, args: Vec<String>) ->
         println!("If none of the above are specified, the program launches normally with saved settings.");
         process::exit(0);
     }
-    if ["--version", "-v"].iter().any(|&arg| args.contains(&arg.to_string())) {
+    if ["--version", "-v"].iter().any(|&arg| args.iter().any(|i| i == arg)) {
         let git_commit = env!("CZKAWKA_GIT_COMMIT_SHORT");
         let official_build = if env!("CZKAWKA_OFFICIAL_BUILD") == "1" {
             "O" // Official build

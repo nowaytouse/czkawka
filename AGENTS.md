@@ -47,7 +47,7 @@ Applies to every Rust crate in the workspace (`czkawka_core`, `czkawka_cli`, `kr
 `AGENTS.md`.
 
 **Formatting & lints**
-- Format with `cargo +nightly fmt`, then `cargo fmt` for stable compatibility
+- Format with `cargo fmt` using the repository's nightly toolchain
   (`.rustfmt.toml`: `max_width = 120`, granular import grouping `group_imports = "StdExternalCrate"`).
 - Code must compile without clippy warnings. Suppress a lint locally only with a comment
   explaining why.
@@ -170,12 +170,12 @@ Running `just fix` must pass before any merge request. It runs, in order:
    - `find_unused_slint_translations.py` for krokiet and cedinia
    - `find_unused_callbacks.py` for krokiet and cedinia
    - `find_unused_settings_properties.py` for krokiet and cedinia
-5. `cargo +nightly fmt` – Rust formatting.
+5. `cargo fmt` – Rust formatting.
 6. Platform-aware `cargo clippy --fix` Rust linting. Other platforms use `--all-features
    --all-targets`; macOS checks all features for non-Slint packages and all macOS-compatible
    Krokiet/Cedinia features except Vulkan. rust-skia publishes separate Metal and Vulkan macOS
    binaries, so enabling both in one Cargo build has no supported prebuilt artifact.
-7. `cargo +nightly fmt` + `cargo fmt` again – re-format whatever clippy's fixes touched.
+7. `cargo fmt` again – re-format whatever clippy's fixes touched.
 
 For a clippy pass that also covers the `--no-default-features` build, run `just clip` separately.
 It adds a `--no-default-features --features winit_software` pass after the platform-aware check.
@@ -195,7 +195,7 @@ czkawka/
 └── misc/           # Scripts: AI translation, validation, benchmarks, CI helpers
 ```
 
-Cargo workspace resolver v3, minimum Rust 1.94.1, edition 2024 throughout.
+Cargo workspace resolver v3, rolling Rust nightly for development and CI, minimum Rust 1.100, edition 2024 throughout.
 
 ---
 

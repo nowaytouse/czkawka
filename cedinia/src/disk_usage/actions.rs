@@ -34,7 +34,7 @@ pub(super) fn show_menu(win: &MainWindow, index: i32) {
 
     let name = file_name_of(&path);
     let state = win.global::<DiskUsageState>();
-    state.set_menu_parent(path.parent().map(|parent| parent.to_string_lossy().into_owned()).unwrap_or_default().into());
+    state.set_menu_parent(path.parent().map_or_default(|parent| parent.to_string_lossy().into_owned()).into());
     state.set_confirm_message(flc!("disk_usage_confirm_delete", name = name.as_str()).into());
     state.set_menu_name(name.into());
     state.set_menu_path(path.to_string_lossy().as_ref().into());

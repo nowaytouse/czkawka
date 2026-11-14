@@ -193,8 +193,8 @@ mod tests {
         assert_eq!(msg1.messages.len(), 2);
         assert_eq!(msg1.warnings.len(), 2);
         assert_eq!(msg1.errors.len(), 2);
-        assert!(msg1.messages.contains(&"Msg1".to_string()));
-        assert!(msg1.messages.contains(&"Msg2".to_string()));
+        assert!(msg1.messages.iter().any(|i| i == "Msg1"));
+        assert!(msg1.messages.iter().any(|i| i == "Msg2"));
 
         // Test print_messages_to_writer()
         let mut buffer = Vec::new();

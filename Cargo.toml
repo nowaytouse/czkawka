@@ -23,7 +23,7 @@ rust-version = "1.100"
 slint = { version = "~1.18.1", default-features = false }
 slint-build = "~1.18.1"
 # Enable dlopen on the Fontique API series actually used by this Slint family.
-fontique = { version = "0.11.1", default-features = false, features = ["fontconfig-dlopen", "std"] }
+fontique = { version = ">=0.11.1, <0.12", default-features = false, features = ["fontconfig-dlopen", "std"] }
 
 # Temporary solution for spamming mouse events in Slint
 # Even with workaround, performance is quite low in specific cases in Cedinia

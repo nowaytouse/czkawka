@@ -213,6 +213,6 @@ mod tests {
 
         let error = check_trash_protection(&root, &protected).unwrap_err();
         assert!(error.contains("kept.txt"));
-        assert!(check_trash_protection(&root, &ProtectedFiles::default()).is_ok());
+        check_trash_protection(&root, &ProtectedFiles::default()).unwrap();
     }
 }

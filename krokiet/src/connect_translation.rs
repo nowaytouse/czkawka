@@ -144,6 +144,15 @@ fn translate_items(app: &MainWindow) {
     translation.set_path_text(flk!("path").into());
     translation.set_tool_duplicate_files_text(flk!("tool_duplicate_files").into());
     translation.set_tool_exact_filenames_text(flk!("tool_exact_filenames").into());
+    translation.set_folder_mirror_title_text(flk!("folder_mirror_title").into());
+    translation.set_folder_mirror_hint_text(flk!("folder_mirror_hint").into());
+    translation.set_folder_mirror_target_text(flk!("folder_mirror_target").into());
+    translation.set_folder_mirror_reference_text(flk!("folder_mirror_reference").into());
+    translation.set_folder_mirror_archive_text(flk!("folder_mirror_archive").into());
+    translation.set_folder_mirror_choose_text(flk!("folder_mirror_choose").into());
+    translation.set_folder_mirror_preview_text(flk!("folder_mirror_preview").into());
+    translation.set_folder_mirror_apply_text(flk!("folder_mirror_apply").into());
+    translation.set_folder_mirror_close_text(flk!("folder_mirror_close").into());
     translation.set_tool_empty_folders_text(flk!("tool_empty_folders").into());
     translation.set_tool_big_files_text(flk!("tool_big_files").into());
     translation.set_tool_empty_files_text(flk!("tool_empty_files").into());

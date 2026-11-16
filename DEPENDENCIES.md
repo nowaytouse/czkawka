@@ -66,6 +66,7 @@ not assert that an old exception remains necessary indefinitely.
 ## Upstream and Android preview follow-up: 2026-11-16
 
 - Integrated upstream `1cdc6a43`. Its SVG update already resolved to `usvg 0.50.0` in the fork. The Cargo lockfile stayed byte-identical, retaining the existing dependency refresh and compatibility pins.
+- The subsequent workspace refresh picked up ZIP 9.6.0, rand 0.10.4 and xxhash-rust 0.8.21. ZIP retains its existing features and uses nix 0.32.0 on macOS and BSD. Folder Mirror uses the already resolved tempfile, rustix and windows-sys versions for private archive allocation and exclusive native moves. The Slint/Fontique series and little_exif security revision retain their existing compatibility contracts. [ZIP release comparison](https://github.com/zip-rs/zip2/compare/v9.5.1...v9.6.0)
 - Kept the working-tree Kotlin update from `2.5.0-Beta2` to `2.5.0-RC` with AGP `9.6.0-alpha03`. Both published versions match the newest entries in their respective registries. AGP documents Gradle 9.7.1 and JDK 17 as minimums. The installed Gradle 9.9.1 launcher was checked separately. Android Gradle project resolution, APK builds and device runs were outside this check. [Kotlin Maven metadata](https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-gradle-plugin/maven-metadata.xml) · [AGP Maven metadata](https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/maven-metadata.xml) · [AGP 9.6 compatibility](https://developer.android.com/build/releases/agp-9-6-0-release-notes#compatibility)
 
 ## Dependency refresh: 2026-11-06

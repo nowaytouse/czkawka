@@ -1,0 +1,15 @@
+export enum MirrorFolder { Target, Reference, Archive }
+
+export global FolderMirrorState {
+    in-out property <string> target_path;
+    in-out property <string> reference_path;
+    in-out property <string> archive_path;
+    in-out property <string> status_text;
+    in-out property <[string]> preview_rows: [];
+    in-out property <bool> busy: false;
+    in-out property <bool> can_apply: false;
+
+    callback choose_folder(MirrorFolder);
+    callback preview();
+    callback apply();
+}

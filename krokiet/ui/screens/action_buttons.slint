@@ -4,6 +4,7 @@ import { GuiState } from "../globals/gui_state.slint";
 import { Translations } from "../globals/translations.slint";
 import { Settings } from "../globals/settings.slint";
 import { Callabler } from "../globals/callabler.slint";
+import { FolderMirrorState } from "../globals/folder_mirror_state.slint";
 
 export component VisibilityButton inherits Button {
     in-out property <BottomPanelVisibility> button_visibility;
@@ -26,6 +27,7 @@ export component ActionButtons inherits HorizontalLayout {
     callback show_select_popup(length, length);
     callback show_sort_popup(length, length);
     callback show_action_popup(PopupRequest);
+    callback show_folder_mirror_popup();
 
     in-out property <[SingleMainListModel]> duplicate_files_model: [];
     in-out property <[SingleMainListModel]> exact_filenames_model: [];
@@ -102,7 +104,7 @@ export component ActionButtons inherits HorizontalLayout {
         }
     }
 
-    if (scanning || processing): stop_button := Button {
+    if (scanning || processing) && !FolderMirrorState.busy: stop_button := Button {
         height: parent.height;
         enabled: (scanning || processing) && !stop_requested && root.lists_enabled;
         text: self.visible && Settings.show_only_icons ? "" : Translations.stop_button_text;
@@ -116,6 +118,13 @@ export component ActionButtons inherits HorizontalLayout {
 
     Rectangle {
         max-width: 6px;
+    }
+
+    if lists_enabled && active_tab == ActiveTab.ExactFilenames: Button {
+        height: parent.height;
+        enabled: !scanning && !processing && !FolderMirrorState.busy;
+        text: Translations.folder_mirror_title_text;
+        clicked => { root.show_folder_mirror_popup(); }
     }
 
     select_button := Button {

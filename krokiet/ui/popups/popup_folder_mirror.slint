@@ -1,0 +1,105 @@
+import { Button, LineEdit, ListView, ScrollView } from "std-widgets.slint";
+import { PopupBase } from "../components/popup_base.slint";
+import { FolderMirrorState, MirrorFolder } from "../globals/folder_mirror_state.slint";
+import { FontSizes } from "../globals/fonts.slint";
+import { Translations } from "../globals/translations.slint";
+
+component MirrorPath inherits VerticalLayout {
+    in property <string> label;
+    in property <string> folder_path;
+    in property <MirrorFolder> folder;
+    spacing: 3px;
+
+    Text {
+        text: root.label;
+        font-weight: FontSizes.bold_weight;
+        wrap: TextWrap.word-wrap;
+    }
+    HorizontalLayout {
+        spacing: 5px;
+        LineEdit {
+            text: root.folder_path;
+            read-only: true;
+        }
+        Button {
+            text: Translations.folder_mirror_choose_text;
+            enabled: !FolderMirrorState.busy;
+            clicked => { FolderMirrorState.choose_folder(root.folder); }
+        }
+    }
+}
+
+export component PopupFolderMirror inherits Rectangle {
+    callback show_popup();
+
+    popup_window := PopupBase {
+        width: min(680px, root.width - 20px);
+        x: round(((root.width - self.width) / 2.0) / 1px) * 1px;
+        y: round(((root.height - self.height) / 2.0) / 1px) * 1px;
+        title_text: Translations.folder_mirror_title_text;
+        ok_text: Translations.folder_mirror_close_text;
+        enabled_ok_button: !FolderMirrorState.busy;
+        show_cancel_button: false;
+
+        ScrollView {
+            height: min(450px, root.height - 112px);
+
+            VerticalLayout {
+                padding: 10px;
+                spacing: 8px;
+                Text {
+                    text: Translations.folder_mirror_hint_text;
+                    wrap: TextWrap.word-wrap;
+                }
+                MirrorPath {
+                    label: Translations.folder_mirror_target_text;
+                    folder_path: FolderMirrorState.target_path;
+                    folder: MirrorFolder.Target;
+                }
+                MirrorPath {
+                    label: Translations.folder_mirror_reference_text;
+                    folder_path: FolderMirrorState.reference_path;
+                    folder: MirrorFolder.Reference;
+                }
+                MirrorPath {
+                    label: Translations.folder_mirror_archive_text;
+                    folder_path: FolderMirrorState.archive_path;
+                    folder: MirrorFolder.Archive;
+                }
+
+                HorizontalLayout {
+                    spacing: 6px;
+                    Button {
+                        text: Translations.folder_mirror_preview_text;
+                        enabled: !FolderMirrorState.busy
+                            && FolderMirrorState.target_path != ""
+                            && FolderMirrorState.reference_path != ""
+                            && FolderMirrorState.archive_path != "";
+                        clicked => { FolderMirrorState.preview(); }
+                    }
+                    Button {
+                        text: Translations.folder_mirror_apply_text;
+                        enabled: !FolderMirrorState.busy && FolderMirrorState.can_apply;
+                        clicked => { FolderMirrorState.apply(); }
+                    }
+                    Rectangle {}
+                }
+
+                if FolderMirrorState.status_text != "": Text {
+                    text: FolderMirrorState.status_text;
+                    wrap: TextWrap.word-wrap;
+                }
+
+                if FolderMirrorState.preview_rows.length > 0: ListView {
+                    height: 140px;
+                    for row in FolderMirrorState.preview_rows: Text {
+                        text: row;
+                        wrap: TextWrap.word-wrap;
+                    }
+                }
+            }
+        }
+    }
+
+    show_popup() => { popup_window.show(); }
+}

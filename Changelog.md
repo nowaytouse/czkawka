@@ -117,6 +117,14 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Folder Mirror and upstream sync - 2026-11-16
+
+- Merged upstream `1cdc6a43` (#2139) with disk-usage extension highlighting, treemap folder headers, chart settings and native trash. The fork's trash path checks protection for the selected path and its descendants. Retained the Krokiet-only features and integrated the local Android Kotlin Gradle plugin 2.5.0-RC change.
+- Refreshed the workspace to ZIP 9.6.0, rand 0.10.4 and xxhash-rust 0.8.21. The ZIP feature definitions are unchanged. Retained the coordinated Slint/Fontique versions and the little_exif security revision.
+- Added Folder Mirror under Exact File Names. After a read-only preview, retain exact relative paths, move uniquely matched case-sensitive filenames to the template layout, and archive surplus paths under a separate directory. Report missing files and keep ambiguous candidates in A. Matching does not read file contents or copy files from B.
+- Folder Mirror checks current inventories, path identity and protection before applying. Same-filesystem moves use native no-overwrite operations. Each apply records the plan and completed steps in a separate archive for recovery if the operation stops.
+- On macOS, `just fix`, `just clip` and locked workspace tests passed (521 tests passed, zero failed, eight ignored), including ten Folder Mirror regressions. The standalone mirror module passed Linux and Windows compile and lint checks. The Simplified Chinese translation validation passed. Linux/Windows execution, live GUI interaction and Android device testing remain unverified.
+
 ### 12.0.2 security maintenance / 安全维护 - 2026-11-13
 
 - Pinned the upstream `little_exif` fix that removes `quick-xml 0.37.5` from the dependency graph. This addresses [RUSTSEC-2026-0194](https://rustsec.org/advisories/RUSTSEC-2026-0194.html) and [RUSTSEC-2026-0195](https://rustsec.org/advisories/RUSTSEC-2026-0195.html). The [dependency guide](DEPENDENCIES.md#reviewed-exceptions) records when to return to a published release.

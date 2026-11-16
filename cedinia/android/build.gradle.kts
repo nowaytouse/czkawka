@@ -3,7 +3,7 @@
 buildscript {
     dependencies {
         // AGP's bundled KGP 2.2.10 uses APIs deprecated by Gradle 9.8.
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.5.0-Beta2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.5.0-RC")
     }
 }
 

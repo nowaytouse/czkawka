@@ -51,7 +51,7 @@ You can read more about the 12.0 release, its new features, and the issues that 
 
 ## Fork-specific features (master branch)
 
-This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (merged through `74f4ca94`, release `12.0.2`; rechecked on 2026-11-06). The three upstream follow-up commits are integrated together with the fork's dependency refresh and Exact File Names reliability fixes. The fork adds:
+This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) `master` (merged through `1cdc6a43`, release `12.0.2`; rechecked on 2026-11-16). The fork adds:
 
 `master` is the fork's only development and publication branch. The former `all-features`, feature, experimental and backup branches were consolidated and retired on 2026-10-30. Their commit histories remain reachable from `master`; preserve any existing external recovery archives and verify their availability before relying on them. All maintained fork features remain on this branch.
 
@@ -60,6 +60,7 @@ This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) 
 - **Geometric invariance (Similar Images)** - match mirrored/flipped images; optional 90-degree rotation (`Off` / `Mirror + Flip` / `Mirror + Flip + Rotate 90`). Similar-images cache files change when this setting changes; the cache is regenerated automatically.
 - Other upstream fixes and features through 12.0.2 (see [Changelog.md](Changelog.md)).
 - Upstream follow-up through `74f4ca94`: scan rows are prepared before bulk GUI publication, disk-usage selection uses a separate overlay, hardware encoder probing tries supported frame sizes, and Fedora dependency updates preserve real failure statuses. The fork retains its protected-row state and independent Exact File Names results in the new row pipeline.
+- Upstream `1cdc6a43` adds disk-usage extension highlighting, treemap folder headers, per-preset chart settings, and native trash actions. Krokiet's disk-usage trash action checks file protection for the selected path and its descendants before moving anything.
 
 ### Fork-only
 

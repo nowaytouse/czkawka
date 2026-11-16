@@ -19,7 +19,7 @@ import { PopupDelete } from "popups/popup_delete.slint";
 import { PopupTrash } from "popups/popup_trash.slint";
 import { PopupMoveFolders } from "popups/popup_move_folders.slint";
 import { PopupFolderMirror } from "popups/popup_folder_mirror.slint";
-import { FolderMirrorState, MirrorFolder } from "globals/folder_mirror_state.slint";
+import { FolderMirrorState, MirrorFolder, MirrorPreviewRow } from "globals/folder_mirror_state.slint";
 import { PopupSelectResults } from "popups/popup_select_results.slint";
 import { PopupCustomSelect } from "popups/popup_custom_select.slint";
 import { PopupRenameBadExtensions } from "popups/popup_rename_bad_extensions.slint";
@@ -41,7 +41,7 @@ import { Translations } from "globals/translations.slint";
 import { ImageCompareOverlay } from "screens/image_compare.slint";
 import { ColorPalette } from "globals/color_palette.slint";
 
-export {Settings, Callabler, GuiState, Translations, Palette, DiskUsageState, HelpState, FolderMirrorState, MirrorFolder}
+export {Settings, Callabler, GuiState, Translations, Palette, DiskUsageState, HelpState, FolderMirrorState, MirrorFolder, MirrorPreviewRow}
 
 export component MainWindow inherits Window {
     default-font-family: "Noto Sans SC";

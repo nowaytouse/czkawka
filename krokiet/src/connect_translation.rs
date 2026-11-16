@@ -153,6 +153,9 @@ fn translate_items(app: &MainWindow) {
     translation.set_folder_mirror_preview_text(flk!("folder_mirror_preview").into());
     translation.set_folder_mirror_apply_text(flk!("folder_mirror_apply").into());
     translation.set_folder_mirror_close_text(flk!("folder_mirror_close").into());
+    translation.set_folder_mirror_destination_column_text(flk!("folder_mirror_destination_column").into());
+    translation.set_folder_mirror_source_column_text(flk!("folder_mirror_source_column").into());
+    translation.set_folder_mirror_action_column_text(flk!("folder_mirror_action_column").into());
     translation.set_tool_empty_folders_text(flk!("tool_empty_folders").into());
     translation.set_tool_big_files_text(flk!("tool_big_files").into());
     translation.set_tool_empty_files_text(flk!("tool_empty_files").into());

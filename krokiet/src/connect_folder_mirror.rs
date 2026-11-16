@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use rfd::FileDialog;
-use slint::{CloseRequestResponse, ComponentHandle, ModelRc, SharedString, VecModel};
+use slint::{CloseRequestResponse, ComponentHandle, ModelRc, VecModel};
 
 use crate::folder_mirror::{Plan, apply, preview};
 use crate::model_operations::replace_results_after_removal;
@@ -109,7 +109,7 @@ fn connect_preview(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>) {
             false,
             move || {
                 preview(&target, &reference, &archive).map(|next| {
-                    let rows = next.preview_rows().into_iter().map(SharedString::from).collect::<Vec<_>>();
+                    let rows = next.preview_rows();
                     let summary = next.summary();
                     (next, rows, summary)
                 })
@@ -160,7 +160,7 @@ fn connect_apply(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>, shared_models
                 let state = app.global::<FolderMirrorState>();
                 state.set_preview_rows(ModelRc::default());
                 let message = match result {
-                    Ok(report) => flk!("folder_mirror_applied", report = report.to_string()),
+                    Ok(report) => flk!("folder_mirror_applied", report = report.summary()),
                     Err(error) => flk!("folder_mirror_apply_error", error = error.to_string()),
                 };
                 state.set_status_text(message.into());

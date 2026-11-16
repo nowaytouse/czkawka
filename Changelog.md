@@ -119,6 +119,7 @@ The upstream source code remained available for manual builds at this release. T
 
 ### Folder Mirror and upstream sync - 2026-11-16
 
+- Aligned Folder Mirror with the Krokiet toolbar and dialog controls. The footer advances from Preview to Apply plan, and the preview uses localized action, source and destination columns with the standard list colors. Verified the macOS dialog and recovery records with synthetic folders.
 - Merged upstream `1cdc6a43` (#2139) with disk-usage extension highlighting, treemap folder headers, chart settings and native trash. The fork's trash path checks protection for the selected path and its descendants. Retained the Krokiet-only features and integrated the local Android Kotlin Gradle plugin 2.5.0-RC change.
 - Refreshed the workspace to ZIP 9.6.0, rand 0.10.4 and xxhash-rust 0.8.21. The ZIP feature definitions are unchanged. Retained the coordinated Slint/Fontique versions and the little_exif security revision.
 - Added Folder Mirror under Exact File Names. After a read-only preview, retain exact relative paths, move uniquely matched case-sensitive filenames to the template layout, and archive surplus paths under a separate directory. Report missing files and keep ambiguous candidates in A. Matching does not read file contents or copy files from B.

@@ -1,11 +1,13 @@
 mod execute;
 mod plan;
 
-use std::fmt::{self, Write as _};
 use std::io;
 use std::path::{Path, PathBuf};
 
 pub(crate) use plan::Plan;
+use slint::SharedString;
+
+use crate::{MirrorPreviewRow, flk};
 
 pub(crate) fn preview(a: &Path, b: &Path, c: &Path) -> io::Result<Plan> {
     let plan = plan::build_plan(a, b, c)?;
@@ -29,28 +31,56 @@ impl Plan {
     }
 
     pub(crate) fn summary(&self) -> String {
-        format!(
-            "Keep {} at their current paths · Move {} within A · Archive {} files and {} folders · Create {} folders · Missing {} · Ambiguous or blocked {}",
-            self.unchanged,
-            self.move_files.len(),
-            self.archive_files.len(),
-            self.archive_dirs.len(),
-            self.create_dirs.len(),
-            self.missing.len(),
-            self.blocked.len(),
+        flk!(
+            "folder_mirror_summary",
+            kept = self.unchanged,
+            moved = self.move_files.len(),
+            files = self.archive_files.len(),
+            folders = self.archive_dirs.len(),
+            created = self.create_dirs.len(),
+            missing = self.missing.len(),
+            unresolved = self.blocked.len(),
         )
     }
 
-    pub(crate) fn preview_rows(&self) -> Vec<String> {
+    pub(crate) fn preview_rows(&self) -> Vec<MirrorPreviewRow> {
         let mut rows = Vec::new();
-        rows.extend(self.archive_files.iter().map(|path| format!("Archive file: A/{path:?}")));
-        rows.extend(self.create_dirs.iter().map(|path| format!("Create folder: A/{path:?}")));
-        rows.extend(self.move_files.iter().map(|item| format!("Move: A/{:?} → A/{:?}", item.source, item.destination)));
-        rows.extend(self.archive_dirs.iter().map(|path| format!("Archive folder: A/{path:?}")));
-        rows.extend(self.missing.iter().map(|path| format!("Missing file: B/{path:?}")));
-        rows.extend(self.blocked.iter().map(|path| format!("Unresolved destination: B/{path:?}")));
-        rows.extend(self.ambiguous.iter().map(|path| format!("Retained candidate: A/{path:?}")));
+        let move_file = flk!("folder_mirror_move_file");
+        rows.extend(
+            self.move_files
+                .iter()
+                .map(|item| preview_row(&move_file, format!("A/{}", item.source.display()), format!("A/{}", item.destination.display()))),
+        );
+        let create_folder = flk!("folder_mirror_create_folder");
+        rows.extend(
+            self.create_dirs
+                .iter()
+                .map(|path| preview_row(&create_folder, String::new(), format!("A/{}", path.display()))),
+        );
+        for (action, paths) in [
+            (flk!("folder_mirror_archive_file"), &self.archive_files),
+            (flk!("folder_mirror_archive_folder"), &self.archive_dirs),
+        ] {
+            rows.extend(
+                paths
+                    .iter()
+                    .map(|path| preview_row(&action, format!("A/{}", path.display()), format!("C/.../files/{}", path.display()))),
+            );
+        }
+        for (action, paths) in [(flk!("folder_mirror_missing_file"), &self.missing), (flk!("folder_mirror_unresolved"), &self.blocked)] {
+            rows.extend(paths.iter().map(|path| preview_row(&action, String::new(), format!("B/{}", path.display()))));
+        }
+        let retained = flk!("folder_mirror_retained");
+        rows.extend(self.ambiguous.iter().map(|path| preview_row(&retained, format!("A/{}", path.display()), String::new())));
         rows
+    }
+}
+
+fn preview_row(action: &str, source_path: String, destination_path: String) -> MirrorPreviewRow {
+    MirrorPreviewRow {
+        action: SharedString::from(action),
+        source_path: source_path.into(),
+        destination_path: destination_path.into(),
     }
 }
 
@@ -61,17 +91,14 @@ pub(crate) struct Report {
     unresolved: usize,
 }
 
-impl fmt::Display for Report {
-    fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(output, "Completed {} operations. Recovery record: {:?}", self.completed, self.archive)?;
-        if self.missing != 0 || self.unresolved != 0 {
-            output.write_char('\n')?;
-            write!(
-                output,
-                "{} missing files and {} unresolved destinations remain. See the preview or plan.json.",
-                self.missing, self.unresolved
-            )?;
-        }
-        Ok(())
+impl Report {
+    pub(crate) fn summary(&self) -> String {
+        flk!(
+            "folder_mirror_report",
+            completed = self.completed,
+            archive = self.archive.display().to_string(),
+            missing = self.missing,
+            unresolved = self.unresolved,
+        )
     }
 }

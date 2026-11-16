@@ -6,10 +6,12 @@ import { FontSizes } from "../globals/fonts.slint";
 
 export component PopupBase inherits PopupWindow {
     in-out property <string> title_text: "TODO - needs to be changed";
-    in-out property <string> ok_text <=> Translations.ok_button_text;
-    in-out property <string> cancel_text <=> Translations.cancel_button_text;
+    in-out property <string> ok_text: Translations.ok_button_text;
+    in-out property <string> cancel_text: Translations.cancel_button_text;
     in-out property <bool> enabled_ok_button: true;
     in-out property <bool> show_cancel_button: true;
+    in property <bool> close_on_ok: true;
+    in property <bool> enabled_cancel_button: true;
     in property <length> popup_min_height: 0px;
 
     callback ok_clicked();
@@ -64,10 +66,12 @@ export component PopupBase inherits PopupWindow {
                     padding: 10px;
                     Button {
                         enabled <=> enabled_ok_button;
-                        text <=> ok_text;
+                        text: root.ok_text;
                         primary: true;
                         clicked => {
-                            root.close();
+                            if (root.close_on_ok) {
+                                root.close();
+                            }
                             ok_clicked();
                         }
                     }
@@ -75,7 +79,8 @@ export component PopupBase inherits PopupWindow {
                     Rectangle { }
 
                     if show_cancel_button: Button {
-                        text <=> cancel_text;
+                        enabled: root.enabled_cancel_button;
+                        text: root.cancel_text;
                         clicked => {
                             root.close();
                         }

@@ -120,10 +120,13 @@ export component ActionButtons inherits HorizontalLayout {
         max-width: 6px;
     }
 
-    if lists_enabled && active_tab == ActiveTab.ExactFilenames: Button {
+    if lists_enabled && active_tab == ActiveTab.ExactFilenames: mirror_button := Button {
         height: parent.height;
         enabled: !scanning && !processing && !FolderMirrorState.busy;
-        text: Translations.folder_mirror_title_text;
+        text: Settings.show_only_icons ? "" : Translations.folder_mirror_title_text;
+        icon: @image-url("../../icons/krokiet_folder_header.svg");
+        colorize-icon: true;
+        if Settings.show_only_icons: Tooltip { text: @markdown("\{Translations.folder_mirror_title_text}"); }
         clicked => { root.show_folder_mirror_popup(); }
     }
 

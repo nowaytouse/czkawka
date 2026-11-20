@@ -1,5 +1,4 @@
 use std::path::Path;
-use std::process::Command;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -7,6 +6,7 @@ use image::RgbImage;
 use log::error;
 
 use crate::common::consts::VIDEO_RESOLUTION_LIMIT;
+use crate::common::ffmpeg_utils::VideoTool;
 use crate::common::process_utils::run_command_interruptible;
 use crate::common::video_utils::{VideoMetadata, extract_frame_ffmpeg};
 use crate::flc;
@@ -437,7 +437,9 @@ pub fn fix_video_crop(video_path: &Path, params: &VideoCropSingleFixParams, stop
     let extension = video_path.extension().and_then(|ext| ext.to_str()).unwrap_or("");
     let temp_output = video_path.with_extension(format!("czkawka_cropped_{crop_type_suffix}.{extension}"));
 
-    let mut command = Command::new("ffmpeg");
+    let mut command = VideoTool::Ffmpeg
+        .command()
+        .map_err(|error| flc!("core_failed_to_execute_ffmpeg", reason = error.to_string()))?;
     command.arg("-i").arg(video_path).arg("-vf").arg(format!("crop={crop_width}:{crop_height}:{left}:{top}"));
 
     match (params.target_codec, params.quality) {

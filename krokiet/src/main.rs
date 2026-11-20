@@ -97,6 +97,8 @@ mod simpler_model;
 #[cfg(test)]
 mod test_common;
 mod tools_visibility;
+#[cfg(unix)]
+mod video_tool_path;
 
 // Slint's generated code triggers many clippy lints (unwrap_used, indexing_slicing, ...)
 // that we enforce ourselves but cannot influence in third-party generated code.
@@ -122,6 +124,10 @@ fn main() {
     }
 
     setup_logger(false, "krokiet", filtering_messages);
+    #[cfg(unix)]
+    if let Err(error) = video_tool_path::relaunch_if_needed() {
+        log::warn!("Could not configure the video tool search path: {error}");
+    }
     print_version_mode("Krokiet");
     print_infos_and_warnings(config_cache_path_set_result.infos, config_cache_path_set_result.warnings);
     print_krokiet_features();

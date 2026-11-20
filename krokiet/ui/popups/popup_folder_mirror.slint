@@ -1,7 +1,7 @@
-import { Button, LineEdit, ListView, Spinner } from "std-widgets.slint";
+import { Button, CheckBox, LineEdit } from "std-widgets.slint";
 import { PopupBase } from "../components/popup_base.slint";
 import { ColorPalette } from "../globals/color_palette.slint";
-import { FolderMirrorState, MirrorFolder, MirrorPreviewRow } from "../globals/folder_mirror_state.slint";
+import { FolderMirrorState, MirrorFolder } from "../globals/folder_mirror_state.slint";
 import { FontSizes } from "../globals/fonts.slint";
 import { Translations } from "../globals/translations.slint";
 
@@ -32,47 +32,16 @@ component MirrorPath inherits HorizontalLayout {
     }
 }
 
-component PreviewColumns inherits HorizontalLayout {
-    in property <MirrorPreviewRow> entry;
-    in property <bool> header;
-    padding: 6px;
-    spacing: 8px;
-
-    Text {
-        width: min(138px, parent.width * 0.29);
-        text: root.entry.action;
-        font-size: FontSizes.small;
-        font-weight: root.header ? FontSizes.bold_weight : 400;
-        wrap: TextWrap.word-wrap;
-    }
-    Text {
-        width: (parent.width - min(138px, parent.width * 0.29) - 28px) / 2;
-        text: root.entry.source_path;
-        font-size: FontSizes.small;
-        font-weight: root.header ? FontSizes.bold_weight : 400;
-        wrap: TextWrap.char-wrap;
-    }
-    Text {
-        horizontal-stretch: 1;
-        text: root.entry.destination_path;
-        font-size: FontSizes.small;
-        font-weight: root.header ? FontSizes.bold_weight : 400;
-        wrap: TextWrap.char-wrap;
-    }
-}
-
 export component PopupFolderMirror inherits Rectangle {
     callback show_popup();
 
     popup_window := PopupBase {
-        width: min(820px, root.width - 20px);
+        width: min(680px, root.width - 20px);
         x: round(((root.width - self.width) / 2.0) / 1px) * 1px;
         y: max(0px, round(((root.height - self.height) / 2.0) / 1px) * 1px);
         title_text: Translations.folder_mirror_title_text;
-        ok_text: FolderMirrorState.can_apply ? Translations.folder_mirror_apply_text : Translations.folder_mirror_preview_text;
+        ok_text: Translations.folder_mirror_preview_text;
         cancel_text: Translations.folder_mirror_close_text;
-        close_on_ok: false;
-        enabled_cancel_button: !FolderMirrorState.busy;
         enabled_ok_button: !FolderMirrorState.busy
             && FolderMirrorState.target_path != ""
             && FolderMirrorState.reference_path != ""
@@ -97,64 +66,21 @@ export component PopupFolderMirror inherits Rectangle {
                 folder_path: FolderMirrorState.archive_path;
                 folder: MirrorFolder.Archive;
             }
-
-            HorizontalLayout {
-                spacing: 6px;
-                if FolderMirrorState.busy: Spinner {
-                    width: 16px;
-                    height: 16px;
-                }
-                Text {
-                    text: FolderMirrorState.status_text != "" ? FolderMirrorState.status_text : Translations.folder_mirror_hint_text;
-                    color: ColorPalette.hint_color;
-                    font-size: FontSizes.small;
-                    wrap: TextWrap.word-wrap;
-                    vertical-alignment: center;
-                }
+            CheckBox {
+                text: Translations.folder_mirror_hash_matching_text;
+                checked <=> FolderMirrorState.hash_matching;
+                enabled: !FolderMirrorState.busy;
+                toggled => { FolderMirrorState.invalidate_preview(); }
             }
-
-            if FolderMirrorState.preview_rows.length > 0: VerticalLayout {
-                Rectangle {
-                    height: 27px;
-                    background: ColorPalette.list_view_header_color;
-                    PreviewColumns {
-                        width: parent.width;
-                        header: true;
-                        entry: {
-                            action: Translations.folder_mirror_action_column_text,
-                            source_path: Translations.folder_mirror_source_column_text,
-                            destination_path: Translations.folder_mirror_destination_column_text,
-                        };
-                    }
-                }
-                ListView {
-                    height: max(48px, min(350px, root.height - 280px, 30px * FolderMirrorState.preview_rows.length));
-                    for item in FolderMirrorState.preview_rows: Rectangle {
-                        min-height: max(26px, columns.preferred-height);
-                        background: ColorPalette.list_view_item_color;
-
-                        columns := PreviewColumns {
-                            width: parent.width;
-                            entry: item;
-                        }
-                        Rectangle {
-                            y: parent.height - 1px;
-                            width: parent.width;
-                            height: 1px;
-                            background: ColorPalette.line_item_color;
-                        }
-                    }
-                }
+            Text {
+                text: Translations.folder_mirror_hint_text;
+                color: ColorPalette.hint_color;
+                font-size: FontSizes.small;
+                wrap: TextWrap.word-wrap;
             }
         }
 
-        ok_clicked => {
-            if (FolderMirrorState.can_apply) {
-                FolderMirrorState.apply();
-            } else {
-                FolderMirrorState.preview();
-            }
-        }
+        ok_clicked => { FolderMirrorState.preview(); }
     }
 
     show_popup() => { popup_window.show(); }

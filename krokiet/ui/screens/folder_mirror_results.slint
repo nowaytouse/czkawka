@@ -1,0 +1,37 @@
+import { TextEdit } from "std-widgets.slint";
+import { SelectableTableView } from "../components/selectable_tree_view.slint";
+import { FolderMirrorState } from "../globals/folder_mirror_state.slint";
+import { Translations } from "../globals/translations.slint";
+
+export component FolderMirrorResults inherits VerticalLayout {
+    table := SelectableTableView {
+        visible: root.visible;
+        inspect_only: true;
+        columns: FolderMirrorState.hash_matching ? [
+            Translations.folder_mirror_action_column_text,
+            Translations.folder_mirror_source_column_text,
+            Translations.folder_mirror_destination_column_text,
+            "BLAKE3",
+        ] : [
+            Translations.folder_mirror_action_column_text,
+            Translations.folder_mirror_source_column_text,
+            Translations.folder_mirror_destination_column_text,
+        ];
+        column_sizes: [145px, max(240px, (root.width - 185px) / 2), max(240px, (root.width - 185px) / 2), FolderMirrorState.hash_matching ? 215px : 0px];
+        values: FolderMirrorState.preview_rows;
+        sort_available: !FolderMirrorState.busy;
+        vertical-stretch: 1;
+        sort_inspection(column, descending) => {
+            FolderMirrorState.sort_preview(column, descending);
+        }
+    }
+
+    if table.last_selected_idx >= 0 && table.last_selected_idx < table.values.length: TextEdit {
+        height: 82px;
+        read-only: true;
+        wrap: TextWrap.char-wrap;
+        text: Translations.folder_mirror_source_column_text + "  " + table.values[table.last_selected_idx].val_str[4] + "\n"
+            + Translations.folder_mirror_destination_column_text + "  " + table.values[table.last_selected_idx].val_str[5]
+            + (table.values[table.last_selected_idx].val_str[3] == "" ? "" : "\nBLAKE3  " + table.values[table.last_selected_idx].val_str[3]);
+    }
+}

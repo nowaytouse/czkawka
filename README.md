@@ -79,10 +79,16 @@ This fork tracks upstream [`qarmin/czkawka`](https://github.com/qarmin/czkawka) 
 ### Using Folder Mirror
 
 1. In **Exact File Names**, choose **Folder Mirror** and set A, B and C. A and C must be on the same filesystem. Use three separate folders with no nesting.
-2. Choose **Preview** in the dialog footer to see the action, source and destination for each planned change. For example, if A has `old/report.pdf` and B has `work/report.pdf`, a unique match moves A's file to `work/report.pdf`. If A also has `old/notes.txt` with no unmatched B entry for that name, the archive keeps it at `files/old/notes.txt`.
-3. Review missing and ambiguous paths, then choose **Apply plan**. Changing a folder clears the previous preview. B is read-only. Matching uses filenames and relative paths, so files already at matching paths keep their contents and missing files are never copied. Extra directories are removed from A only when empty, and their original paths are represented in the archive.
+2. Choose **Preview** to show the proposed changes in the main results table. Click a column to sort it, drag its divider to resize it, and select a row to read or copy its full paths below the table. A unique match moves `old/report.pdf` from A to `work/report.pdf` when the template uses that path. Surplus `old/notes.txt` is archived under `files/old/notes.txt`.
+3. Review missing and ambiguous paths, then click **Apply plan** in the main toolbar. Changing a folder or matching option clears the previous preview. Choose **Back** to return to the exact-filename results. B is read-only. Existing exact paths keep their contents, and extra directories are archived once empty.
+
+Matching uses case-sensitive filenames by default. Enable **Compare BLAKE3 for ambiguous filenames** to resolve a same-name group when exactly one existing A file and one B file share a fingerprint. The table shows those fingerprints for review. Any candidates still ambiguous remain in A.
 
 Each apply creates a fresh `krokiet-mirror-*` folder under C containing `files/`, `plan.json` and `completed.jsonl`. Choose an archive location with appropriate permissions for your files. The tool refuses stale previews, protected or reference paths, overlapping roots, unsupported links and file/directory conflicts. Native file moves refuse destination overwrites. Pause other programs that modify these folders before applying. If the app stops between a move and its journal entry, inspect both the source and destination from the plan before retrying. Rescan Krokiet results after applying.
+
+### FFmpeg and FFprobe in Krokiet
+
+Video tools check the executable paths set through `CZKAWKA_FFMPEG` and `CZKAWKA_FFPROBE` first, then check the app's PATH. On macOS they also search `/opt/homebrew/bin`, `/usr/local/bin` and `/opt/local/bin`. Krokiet validates the programs and gives the Similar Videos engine access to the selected paths within the app process.
 
 ### Dependency stack (fork maintenance)
 

@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
-use std::process::Command;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::{mem, panic};
@@ -19,6 +18,7 @@ use crate::common::consts::{
     XZ_FILES_EXTENSIONS, YAML_FILES_EXTENSIONS, ZIP_FILES_EXTENSIONS, ZST_FILES_EXTENSIONS,
 };
 use crate::common::dir_traversal::{DirTraversalBuilder, DirTraversalResult};
+use crate::common::ffmpeg_utils::VideoTool;
 use crate::common::model::{ToolType, WorkContinueStatus};
 use crate::common::process_utils::run_command_interruptible;
 use crate::common::progress_data::{ProgressData, ToolStage};
@@ -316,7 +316,13 @@ impl BrokenFiles {
             ("Invalid argument", Some("ffprobe seems to not recognize file format")),
         ];
 
-        let mut command = Command::new("ffprobe");
+        let mut command = match VideoTool::Ffprobe.command() {
+            Ok(command) => command,
+            Err(error) => {
+                file_entry.errors.insert(CheckedTypesSingle::VideoFfprobe, Some(error.to_string()));
+                return Some(file_entry);
+            }
+        };
         command.arg("-v").arg("error").arg(&file_entry.path);
 
         let error = match run_command_interruptible(command, stop_flag) {
@@ -369,7 +375,13 @@ impl BrokenFiles {
             "Invalid color space",                             // https://fftrac-bg.ffmpeg.org/ticket/11020 - seems to be non-fatal
         ];
 
-        let mut command = Command::new("ffmpeg");
+        let mut command = match VideoTool::Ffmpeg.command() {
+            Ok(command) => command,
+            Err(error) => {
+                file_entry.errors.insert(CheckedTypesSingle::VideoFfmpeg, Some(error.to_string()));
+                return Some(file_entry);
+            }
+        };
         command
             .arg("-v")
             .arg("error")

@@ -191,6 +191,7 @@ folder_mirror_applied = Folder mirror finished. { $report }
 folder_mirror_apply_error = Folder mirror stopped: { $error }
 folder_mirror_worker_error = Could not start the folder mirror worker: { $error }
 folder_mirror_action_column = Action
+folder_mirror_hash_matching = Compare BLAKE3 for ambiguous filenames
 folder_mirror_source_column = Source
 folder_mirror_destination_column = Destination
 folder_mirror_move_file = Move file

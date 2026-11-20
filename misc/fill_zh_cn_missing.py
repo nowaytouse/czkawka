@@ -42,6 +42,7 @@ KROKIET_ZH_CN: dict[str, str] = {
     "folder_mirror_apply_error": "文件夹镜像已停止：{ $error }",
     "folder_mirror_worker_error": "无法启动文件夹镜像任务：{ $error }",
     "folder_mirror_action_column": "操作",
+    "folder_mirror_hash_matching": "同名项有多个候选时比较 BLAKE3",
     "folder_mirror_source_column": "来源",
     "folder_mirror_destination_column": "目标",
     "folder_mirror_move_file": "移动文件",
@@ -120,7 +121,7 @@ KROKIET_ZH_CN: dict[str, str] = {
     "subsettings_duplicates_exact_name_mode": "精确文件名",
     "subsettings_duplicates_next_scan_hint": "模式更改在下次扫描时生效。已有结果和勾选状态不会改变.",
     "subsettings_duplicates_exact_name_hint": "在“路径”中添加多个文件夹，按含扩展名的完整文件名精确匹配，区分大小写。仅筛选媒体时，在“允许的扩展名”中填写 image,video,music；留空则扫描所有文件。该筛选项与其他工具共用.",
-    "subsettings_duplicates_exact_name_warning": "同名不代表内容相同，文件大小和内容可能不同。请核对每个路径，保留需要的副本；将选中项移到废纸篓比永久删除更安全。参考文件夹和受保护文件仍受到保护.",
+    "subsettings_duplicates_exact_name_warning": "同名文件的大小和内容可能不同。请核对每个路径，保留需要的副本。可将选中项移到废纸篓。标为保护路径的文件夹和单独标记的文件会受到保护.",
     "subsettings_empty_files_non_printable_content": "仅含不可打印字符的文件",
     "subsettings_empty_files_non_printable_content_hint": "同时查找非空但仅含不可打印 ASCII 字符的文件：空字符、空格、制表符、回车、换行、垂直制表符、换页符。",
     "subsettings_empty_files_type": "要查找的其他文件类型",
@@ -154,6 +155,18 @@ KROKIET_ZH_CN: dict[str, str] = {
 }
 
 
+PROTECTED_PATH_ZH_CN = {
+    "krokiet": {
+        "ref": "保护路径",
+        "rust_all_paths_referenced": "所有包含路径都已设为保护路径，无法开始扫描。请取消勾选至少一个路径旁的保护复选框.",
+        "subsettings_duplicates_exact_name_warning": KROKIET_ZH_CN["subsettings_duplicates_exact_name_warning"],
+    },
+    "czkawka_core": {
+        "core_reference_included_paths_same": "所有有效的包含路径都已设为保护路径，无法开始扫描。请取消勾选至少一个路径旁的保护复选框",
+    },
+}
+
+
 def merge_zh_cn(i18n_root: pathlib.Path, project: str, extra: dict[str, str]) -> int:
     en_file = i18n_root / "en" / f"{project}.ftl"
     zh_file = i18n_root / "zh-CN" / f"{project}.ftl"
@@ -162,6 +175,7 @@ def merge_zh_cn(i18n_root: pathlib.Path, project: str, extra: dict[str, str]) ->
 
     en_entries = parse_ftl_file(en_file)
     zh_entries = parse_ftl_file(zh_file)
+    zh_entries.update({key: text for key, text in PROTECTED_PATH_ZH_CN.get(project, {}).items() if key in en_entries})
     added = 0
 
     for key in en_entries:

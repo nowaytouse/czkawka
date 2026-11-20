@@ -76,8 +76,17 @@ export component IncludedPaths {
     in-out property <[IncludedPathsModel]> model <=> Settings.included_paths_model;
     in-out property <int> current_index <=> Settings.included_paths_model_selected_idx;
 
-    in-out property <length> size_referenced_path: 33px;
+    in-out property <length> size_referenced_path: max(33px, reference_label_measure.preferred-width + 6px);
     min-width: 50px;
+
+    reference_label_measure := Text {
+        x: -10000px;
+        y: -10000px;
+        height: 0px;
+        text: Translations.ref_text;
+        font-size: FontSizes.normal;
+        font-weight: FontSizes.bold_weight;
+    }
 
     function handle_click(idx: int, can_unselect: bool) {
         if (current_index != -1) {

@@ -2,6 +2,7 @@ import { SelectableTableView } from "../components/selectable_tree_view.slint";
 import { ActiveTab, SingleMainListModel } from "../globals/common.slint";
 import { SettingsList } from "settings_list.slint";
 import { GuiState } from "../globals/gui_state.slint";
+import { FolderMirrorState } from "../globals/folder_mirror_state.slint";
 import { About } from "about.slint";
 import { Settings } from "../globals/settings.slint";
 
@@ -63,7 +64,7 @@ export component MainList {
     }
 
     exact_filenames := SelectableTableView {
-        visible: GuiState.active_tab == ActiveTab.ExactFilenames;
+        visible: GuiState.active_tab == ActiveTab.ExactFilenames && !FolderMirrorState.results_open;
         min-width: 200px;
         height: parent.height;
         columns <=> Settings.duplicates_column_name;

@@ -6,7 +6,7 @@ use std::sync::atomic::AtomicBool;
 
 use log::{error, warn};
 
-use crate::common::ffmpeg_utils::find_vaapi_device;
+use crate::common::ffmpeg_utils::{VideoTool, find_vaapi_device};
 use crate::common::process_utils::run_command_interruptible;
 use crate::common::video_utils::VideoMetadata;
 use crate::flc;
@@ -90,7 +90,9 @@ pub fn process_video(stop_flag: &Arc<AtomicBool>, video_path: &str, original_siz
 }
 
 fn run_standard_command(params: &VideoTranscodeFixParams, video_path: &str, temp_output: &Path, stop_flag: &Arc<AtomicBool>) -> Result<(), String> {
-    let mut command = Command::new("ffmpeg");
+    let mut command = VideoTool::Ffmpeg
+        .command()
+        .map_err(|error| flc!("core_failed_to_execute_ffmpeg", reason = error.to_string()))?;
 
     // Determine whether to use a hardware encoder or the software codec.
     let hw = params.hardware_encoder;
@@ -174,7 +176,13 @@ fn run_custom_command(cmd: &str, video_path: &str, temp_output: &Path, stop_flag
         return Err(flc!("core_custom_command_empty"));
     };
 
-    let mut command = Command::new(first_arg);
+    let mut command = if first_arg == "ffmpeg" || first_arg == VideoTool::Ffmpeg.filename() {
+        VideoTool::Ffmpeg
+            .command()
+            .map_err(|error| flc!("core_failed_to_execute_ffmpeg", reason = error.to_string()))?
+    } else {
+        Command::new(first_arg)
+    };
     command.args(next_args).arg("-y").arg(temp_output);
 
     run_ffmpeg_command(command, video_path, "custom", stop_flag, temp_output)

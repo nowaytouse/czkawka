@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::time::SystemTime;
@@ -10,7 +10,7 @@ use image::{GenericImage, RgbImage};
 use serde::{Deserialize, Serialize};
 
 use crate::common::consts::VIDEO_RESOLUTION_LIMIT;
-use crate::common::process_utils::disable_windows_console_window;
+use crate::common::ffmpeg_utils::VideoTool;
 use crate::common::progress_stop_handler::check_if_stop_received;
 use crate::flc;
 use crate::helpers::ffprobe::ffprobe;
@@ -106,10 +106,10 @@ pub(crate) fn extract_frame_ffmpeg(video_path: &Path, timestamp: f32, max_values
         return Err(flc!("core_video_file_does_not_exist", path = video_path.to_string_lossy()));
     }
 
-    let mut command = Command::new("ffmpeg");
+    let mut command = VideoTool::Ffmpeg
+        .command()
+        .map_err(|error| flc!("core_failed_to_execute_ffmpeg", reason = error.to_string()))?;
     let command_mut = &mut command;
-
-    disable_windows_console_window(command_mut);
 
     command_mut.arg("-threads").arg("1").arg("-ss").arg(timestamp.to_string()).arg("-i").arg(video_path);
 

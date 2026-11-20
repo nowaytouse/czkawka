@@ -24,20 +24,16 @@
 //! https://github.com/theduke/ffprobe-rs/issues/33
 //! LICENSE: MIT
 
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
+use std::process::Command;
+
+use crate::common::ffmpeg_utils::VideoTool;
+use crate::common::process_utils::disable_windows_console_window;
 
 /// Execute ffprobe with default settings and return the extracted data.
 ///
 /// See [`ffprobe_config`] if you need to customize settings.
 pub fn ffprobe(path: impl AsRef<std::path::Path>) -> Result<FfProbe, FfProbeError> {
-    ffprobe_config(
-        Config {
-            count_frames: false,
-            ffprobe_bin: "ffprobe".into(),
-        },
-        path,
-    )
+    Config::builder().run(path)
 }
 
 /// Run ffprobe with a custom config.
@@ -45,7 +41,10 @@ pub fn ffprobe(path: impl AsRef<std::path::Path>) -> Result<FfProbe, FfProbeErro
 pub fn ffprobe_config(config: Config, path: impl AsRef<std::path::Path>) -> Result<FfProbe, FfProbeError> {
     let path = path.as_ref();
 
-    let mut cmd = std::process::Command::new(config.ffprobe_bin);
+    let mut cmd = match config.ffprobe_bin {
+        Some(executable) => Command::new(executable),
+        None => VideoTool::Ffprobe.command().map_err(FfProbeError::Io)?,
+    };
 
     // Default args.
     cmd.args(["-v", "error", "-show_format", "-show_streams", "-print_format", "json"]);
@@ -57,8 +56,7 @@ pub fn ffprobe_config(config: Config, path: impl AsRef<std::path::Path>) -> Resu
     cmd.arg(path);
 
     // Prevent CMD popup on Windows.
-    #[cfg(target_os = "windows")]
-    cmd.creation_flags(0x08000000);
+    disable_windows_console_window(&mut cmd);
 
     let out = cmd.output().map_err(FfProbeError::Io)?;
 
@@ -75,7 +73,7 @@ pub fn ffprobe_config(config: Config, path: impl AsRef<std::path::Path>) -> Resu
 #[derive(Clone, Debug)]
 pub struct Config {
     count_frames: bool,
-    ffprobe_bin: std::path::PathBuf,
+    ffprobe_bin: Option<std::path::PathBuf>,
 }
 
 impl Config {
@@ -95,7 +93,7 @@ impl ConfigBuilder {
         Self {
             config: Config {
                 count_frames: false,
-                ffprobe_bin: "ffprobe".into(),
+                ffprobe_bin: None,
             },
         }
     }
@@ -111,7 +109,7 @@ impl ConfigBuilder {
     /// Specify which binary name (e.g. `"ffprobe-6"`) or path (e.g. `"/opt/bin/ffprobe"`) to use
     /// for executing `ffprobe`.
     pub fn ffprobe_bin(mut self, ffprobe_bin: impl AsRef<std::path::Path>) -> Self {
-        self.config.ffprobe_bin = ffprobe_bin.as_ref().to_path_buf();
+        self.config.ffprobe_bin = Some(ffprobe_bin.as_ref().to_path_buf());
         self
     }
 

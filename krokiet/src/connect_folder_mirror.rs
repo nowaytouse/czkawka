@@ -3,9 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use rfd::FileDialog;
-use slint::{CloseRequestResponse, ComponentHandle, ModelRc, VecModel};
+use slint::{CloseRequestResponse, ComponentHandle, Model, ModelRc, VecModel};
 
-use crate::folder_mirror::{Plan, apply, preview};
+use crate::folder_mirror::{Plan, apply, preview, preview_model};
 use crate::model_operations::replace_results_after_removal;
 use crate::settings::collect_settings;
 use crate::shared_models::SharedModels;
@@ -15,7 +15,36 @@ pub(crate) fn connect_folder_mirror(app: &MainWindow, shared_models: Arc<Mutex<S
     let plan = Arc::new(Mutex::new(None));
     connect_choose_folder(app, Arc::clone(&plan));
     connect_preview(app, Arc::clone(&plan));
-    connect_apply(app, plan, shared_models);
+    connect_apply(app, Arc::clone(&plan), shared_models);
+
+    let weak = app.as_weak();
+    app.global::<FolderMirrorState>().on_sort_preview(move |column, descending| {
+        let Ok(column) = usize::try_from(column) else { return };
+        if let Some(app) = weak.upgrade().filter(available) {
+            let state = app.global::<FolderMirrorState>();
+            let mut rows = state.get_preview_rows().iter().collect::<Vec<_>>();
+            rows.sort_by_cached_key(|row| row.val_str.row_data(column).unwrap_or_default());
+            if descending {
+                rows.reverse();
+            }
+            state.set_preview_rows(ModelRc::new(VecModel::from(rows)));
+        }
+    });
+
+    let weak = app.as_weak();
+    let invalidate_plan = Arc::clone(&plan);
+    app.global::<FolderMirrorState>().on_invalidate_preview(move || {
+        if let Some(app) = weak.upgrade().filter(available) {
+            clear_preview(&app, &invalidate_plan);
+        }
+    });
+    let weak = app.as_weak();
+    app.global::<FolderMirrorState>().on_leave_results(move || {
+        if let Some(app) = weak.upgrade().filter(available) {
+            app.global::<FolderMirrorState>().set_results_open(false);
+            clear_preview(&app, &plan);
+        }
+    });
 
     let weak = app.as_weak();
     app.window().on_close_requested(move || {
@@ -82,6 +111,7 @@ fn connect_choose_folder(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>) {
                     MirrorFolder::Archive => state.set_archive_path(display_path),
                 }
                 if path.is_none() {
+                    state.set_results_open(true);
                     state.set_status_text(flk!("folder_mirror_path_encoding").into());
                 }
             },
@@ -101,14 +131,16 @@ fn connect_preview(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>) {
             return;
         }
         let [target, reference, archive] = paths.map(|path| PathBuf::from(path.as_str()));
+        let hash_matching = state.get_hash_matching();
         clear_preview(&app, &plan);
+        state.set_results_open(true);
         state.set_status_text(flk!("folder_mirror_previewing").into());
         let plan = Arc::clone(&plan);
         background(
             &app,
             false,
             move || {
-                preview(&target, &reference, &archive).map(|next| {
+                preview(&target, &reference, &archive, hash_matching).map(|next| {
                     let rows = next.preview_rows();
                     let summary = next.summary();
                     (next, rows, summary)
@@ -120,7 +152,7 @@ fn connect_preview(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>) {
                     Ok((next, rows, summary)) => {
                         let can_apply = next.has_changes();
                         *plan.lock().expect("Folder mirror plan mutex poisoned") = Some(next);
-                        state.set_preview_rows(ModelRc::new(VecModel::from(rows)));
+                        state.set_preview_rows(preview_model(rows));
                         state.set_status_text(summary.into());
                         state.set_can_apply(can_apply);
                     }
@@ -138,7 +170,7 @@ fn connect_apply(app: &MainWindow, plan: Arc<Mutex<Option<Plan>>>, shared_models
             return;
         };
         let state = app.global::<FolderMirrorState>();
-        if !state.get_can_apply() {
+        if !state.get_results_open() || !state.get_can_apply() {
             return;
         }
         let Some(next) = plan.lock().expect("Folder mirror plan mutex poisoned").take() else {
@@ -186,8 +218,9 @@ fn background<T: Send + 'static>(app: &MainWindow, file_dialog: bool, work: impl
         }
     }) {
         finish_background(app, file_dialog);
-        app.global::<FolderMirrorState>()
-            .set_status_text(flk!("folder_mirror_worker_error", error = error.to_string()).into());
+        let state = app.global::<FolderMirrorState>();
+        state.set_results_open(true);
+        state.set_status_text(flk!("folder_mirror_worker_error", error = error.to_string()).into());
     }
 }
 

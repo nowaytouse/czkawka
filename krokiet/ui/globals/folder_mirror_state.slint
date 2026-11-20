@@ -1,21 +1,22 @@
-export enum MirrorFolder { Target, Reference, Archive }
+import { SingleMainListModel } from "common.slint";
 
-export struct MirrorPreviewRow {
-    action: string,
-    source_path: string,
-    destination_path: string,
-}
+export enum MirrorFolder { Target, Reference, Archive }
 
 export global FolderMirrorState {
     in-out property <string> target_path;
     in-out property <string> reference_path;
     in-out property <string> archive_path;
     in-out property <string> status_text;
-    in-out property <[MirrorPreviewRow]> preview_rows: [];
+    in-out property <[SingleMainListModel]> preview_rows: [];
+    in-out property <bool> results_open: false;
+    in-out property <bool> hash_matching: false;
     in-out property <bool> busy: false;
     in-out property <bool> can_apply: false;
 
     callback choose_folder(MirrorFolder);
     callback preview();
     callback apply();
+    callback leave_results();
+    callback invalidate_preview();
+    callback sort_preview(int, bool);
 }

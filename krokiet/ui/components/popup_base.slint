@@ -10,8 +10,6 @@ export component PopupBase inherits PopupWindow {
     in-out property <string> cancel_text: Translations.cancel_button_text;
     in-out property <bool> enabled_ok_button: true;
     in-out property <bool> show_cancel_button: true;
-    in property <bool> close_on_ok: true;
-    in property <bool> enabled_cancel_button: true;
     in property <length> popup_min_height: 0px;
 
     callback ok_clicked();
@@ -69,9 +67,7 @@ export component PopupBase inherits PopupWindow {
                         text: root.ok_text;
                         primary: true;
                         clicked => {
-                            if (root.close_on_ok) {
-                                root.close();
-                            }
+                            root.close();
                             ok_clicked();
                         }
                     }
@@ -79,7 +75,6 @@ export component PopupBase inherits PopupWindow {
                     Rectangle { }
 
                     if show_cancel_button: Button {
-                        enabled: root.enabled_cancel_button;
                         text: root.cancel_text;
                         clicked => {
                             root.close();

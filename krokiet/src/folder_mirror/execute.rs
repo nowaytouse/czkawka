@@ -31,7 +31,7 @@ pub(super) fn check_volume(_plan: &Plan) -> io::Result<()> {
 }
 
 pub(super) fn apply(plan: &Plan, reference_dirs: &[PathBuf], protected: &HashSet<PathBuf>) -> io::Result<Report> {
-    let fresh = build_plan(&plan.a, &plan.b, &plan.c)?;
+    let fresh = build_plan(&plan.a, &plan.b, &plan.c, plan.match_by_hash)?;
     if &fresh != plan {
         return Err(io::Error::other("The folders changed after preview. Preview the new plan before applying it."));
     }
@@ -58,6 +58,8 @@ pub(super) fn apply(plan: &Plan, reference_dirs: &[PathBuf], protected: &HashSet
                 "missing": plan.missing,
                 "ambiguous": plan.ambiguous,
                 "blocked": plan.blocked,
+                "source_blake3": plan.source_hashes,
+                "template_blake3": plan.template_hashes,
             }),
         )?;
         receipt.sync_all()?;
@@ -268,7 +270,7 @@ fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-fn open_parent(path: &Path) -> io::Result<(rustix::fd::OwnedFd, &std::ffi::OsStr)> {
+pub(super) fn open_parent(path: &Path) -> io::Result<(rustix::fd::OwnedFd, &std::ffi::OsStr)> {
     use rustix::fs::{Mode, OFlags, open, openat};
 
     let parent = path.parent().ok_or_else(|| io::Error::other("Missing parent folder"))?;
@@ -367,7 +369,7 @@ mod tests {
         fs::write(f.b.join("missing.jpg"), "do not copy").unwrap();
         fs::write(f.a.join("old/deep/extra.jpg"), "archive me").unwrap();
 
-        let plan = build_plan(&f.a, &f.b, &f.c).unwrap();
+        let plan = build_plan(&f.a, &f.b, &f.c, false).unwrap();
         assert_eq!(fs::read_dir(&f.c).unwrap().count(), 0);
         let result = apply(&plan, &[], &HashSet::new()).unwrap();
         assert_eq!(fs::read_to_string(f.a.join("same.jpg")).unwrap(), "A contents");
@@ -392,13 +394,64 @@ mod tests {
     fn stale_or_protected_plan_stops_before_any_writes() {
         let f = fixture().unwrap();
         fs::write(f.a.join("extra"), "do not move").unwrap();
-        let plan = build_plan(&f.a, &f.b, &f.c).unwrap();
+        let plan = build_plan(&f.a, &f.b, &f.c, false).unwrap();
         assert!(apply(&plan, &[], &HashSet::from([f.a.join("extra")])).is_err());
         assert!(apply(&plan, std::slice::from_ref(&f.a), &HashSet::new()).is_err());
         fs::write(f.a.join("new-file"), "changed inventory").unwrap();
         assert!(apply(&plan, &[], &HashSet::new()).is_err());
         assert_eq!(fs::read_to_string(f.a.join("extra")).unwrap(), "do not move");
         assert_eq!(fs::read_dir(&f.c).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn blake3_disambiguates_names_only_for_unique_matching_content() {
+        let f = fixture().unwrap();
+        for (root, path, bytes) in [
+            (&f.a, "picked/same.jpg", b"match".as_slice()),
+            (&f.a, "tie1/same.jpg", b"repeat".as_slice()),
+            (&f.a, "tie2/same.jpg", b"repeat".as_slice()),
+            (&f.a, "unmatched/same.jpg", b"source only".as_slice()),
+            (&f.a, "old/unique.jpg", b"different A".as_slice()),
+            (&f.b, "layout/same.jpg", b"match".as_slice()),
+            (&f.b, "blocked/same.jpg", b"repeat".as_slice()),
+            (&f.b, "new/unique.jpg", b"different B".as_slice()),
+        ] {
+            let path = root.join(path);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, bytes).unwrap();
+        }
+        let names = build_plan(&f.a, &f.b, &f.c, false).unwrap();
+        assert_eq!(names.move_files.len(), 1);
+        assert!(names.source_hashes.is_empty());
+        let hashed = build_plan(&f.a, &f.b, &f.c, true).unwrap();
+        assert_eq!(hashed.move_files.len(), 2);
+        assert_eq!(
+            hashed.source_hashes.get(Path::new("picked/same.jpg")).unwrap(),
+            hashed.template_hashes.get(Path::new("layout/same.jpg")).unwrap()
+        );
+        assert!(!hashed.source_hashes.contains_key(Path::new("old/unique.jpg")));
+        assert_eq!(hashed.ambiguous.len(), 3);
+        assert_eq!(hashed.blocked, [PathBuf::from("blocked/same.jpg")]);
+        assert!(hashed.archive_files.is_empty());
+
+        let changed = f.b.join("layout/same.jpg");
+        let before = EntryStamp::read(&changed).unwrap();
+        let mtime = fs::metadata(&changed).unwrap().modified().unwrap();
+        fs::write(&changed, b"other").unwrap();
+        fs::File::options().write(true).open(&changed).unwrap().set_modified(mtime).unwrap();
+        assert_eq!(EntryStamp::read(&changed).unwrap(), before);
+        assert!(apply(&hashed, &[], &HashSet::new()).is_err());
+        assert_eq!(fs::read_dir(&f.c).unwrap().count(), 0);
+        assert_eq!(fs::read(f.a.join("picked/same.jpg")).unwrap(), b"match");
+
+        fs::write(&changed, b"match").unwrap();
+        let confirmed = build_plan(&f.a, &f.b, &f.c, true).unwrap();
+        let report = apply(&confirmed, &[], &HashSet::new()).unwrap();
+        assert_eq!(fs::read(f.a.join("layout/same.jpg")).unwrap(), b"match");
+        assert_eq!(fs::read(f.a.join("tie1/same.jpg")).unwrap(), b"repeat");
+        assert_eq!(fs::read(f.a.join("unmatched/same.jpg")).unwrap(), b"source only");
+        let receipt: serde_json::Value = serde_json::from_reader(fs::File::open(report.archive.join("plan.json")).unwrap()).unwrap();
+        assert_eq!(receipt["source_blake3"]["picked/same.jpg"], receipt["template_blake3"]["layout/same.jpg"]);
     }
 
     #[test]
@@ -418,7 +471,7 @@ mod tests {
         let f = fixture().unwrap();
         let source = f.a.join("extra");
         fs::create_dir(&source).unwrap();
-        let plan = build_plan(&f.a, &f.b, &f.c).unwrap();
+        let plan = build_plan(&f.a, &f.b, &f.c, false).unwrap();
         fs::write(source.join("new-file"), "keep it in A").unwrap();
         let operation = Operation::ArchiveFolder {
             source: source.clone(),

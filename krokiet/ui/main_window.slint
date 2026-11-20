@@ -3,6 +3,7 @@ import { HorizontalBox, LineEdit, Palette, VerticalBox } from "std-widgets.slint
 import { FontSizes } from "globals/fonts.slint";
 import { LeftSidePanel } from "screens/left_side_panel.slint";
 import { MainList } from "screens/main_lists.slint";
+import { FolderMirrorResults } from "screens/folder_mirror_results.slint";
 import { ActiveTab, PopupRequest, ProgressToSend, SingleMainListModel } from "globals/common.slint";
 import { ActionButtons } from "screens/action_buttons.slint";
 import { Progress } from "screens/progress.slint";
@@ -19,7 +20,7 @@ import { PopupDelete } from "popups/popup_delete.slint";
 import { PopupTrash } from "popups/popup_trash.slint";
 import { PopupMoveFolders } from "popups/popup_move_folders.slint";
 import { PopupFolderMirror } from "popups/popup_folder_mirror.slint";
-import { FolderMirrorState, MirrorFolder, MirrorPreviewRow } from "globals/folder_mirror_state.slint";
+import { FolderMirrorState, MirrorFolder } from "globals/folder_mirror_state.slint";
 import { PopupSelectResults } from "popups/popup_select_results.slint";
 import { PopupCustomSelect } from "popups/popup_custom_select.slint";
 import { PopupRenameBadExtensions } from "popups/popup_rename_bad_extensions.slint";
@@ -41,7 +42,7 @@ import { Translations } from "globals/translations.slint";
 import { ImageCompareOverlay } from "screens/image_compare.slint";
 import { ColorPalette } from "globals/color_palette.slint";
 
-export {Settings, Callabler, GuiState, Translations, Palette, DiskUsageState, HelpState, FolderMirrorState, MirrorFolder, MirrorPreviewRow}
+export {Settings, Callabler, GuiState, Translations, Palette, DiskUsageState, HelpState, FolderMirrorState, MirrorFolder}
 
 export component MainWindow inherits Window {
     default-font-family: "Noto Sans SC";
@@ -74,6 +75,7 @@ export component MainWindow inherits Window {
     in-out property <bool> scanning: false;
     in-out property <bool> processing: false;
     private property <ActiveTab> scanning_tab: ActiveTab.DuplicateFiles;
+    private property <bool> mirror_results_visible: GuiState.active_tab == ActiveTab.ExactFilenames && FolderMirrorState.results_open;
     in-out property <ProgressToSend> progress_datas: {
         current_progress: 15,
         all_progress: 20,
@@ -124,10 +126,11 @@ export component MainWindow inherits Window {
                     border-color: Palette.border;
                     background: Palette.background;
                     vertical-stretch: 1.0;
-                    property <bool> preview_shown: GuiState.preview_visible && GuiState.is_tool_tab_active;
+                    property <bool> preview_shown: !root.mirror_results_visible && GuiState.preview_visible && GuiState.is_tool_tab_active;
                     property <length> splitter_width: 10px;
                     property <length> preview_width: self.preview_shown ? max(0px, parent.width * GuiState.preview_width_ratio - splitter_width) : 0px;
                     main_list := MainList {
+                        visible: !root.mirror_results_visible;
                         main_window_width: root.width;
                         main_window_height: root.height;
                         x: 0;
@@ -160,6 +163,13 @@ export component MainWindow inherits Window {
                         }
                     }
 
+                    FolderMirrorResults {
+                        visible: root.mirror_results_visible;
+                        x: 0;
+                        width: parent.width;
+                        height: parent.height;
+                    }
+
                     DiskUsageView {
                         visible: GuiState.active_tab == ActiveTab.DiskUsage;
                         x: 0;
@@ -187,7 +197,7 @@ export component MainWindow inherits Window {
                     }
                 }
 
-                if root.scanning || root.processing: Progress {
+                if (root.scanning || root.processing) && !FolderMirrorState.busy: Progress {
                     horizontal-stretch: 0.0;
                     progress_datas <=> root.progress_datas;
                 }
@@ -195,6 +205,7 @@ export component MainWindow inherits Window {
         }
 
         action_buttons := ActionButtons {
+            mirror_results_visible: root.mirror_results_visible;
             duplicate_files_model <=> root.duplicate_files_model;
             exact_filenames_model <=> root.exact_filenames_model;
             empty_folder_model <=> root.empty_folder_model;
@@ -247,7 +258,7 @@ export component MainWindow inherits Window {
         HorizontalLayout {
             spacing: 5px;
             text_summary := LineEdit {
-                text: text_summary_text;
+                text: root.mirror_results_visible ? FolderMirrorState.status_text : text_summary_text;
                 read-only: true;
                 font-size: FontSizes.normal;
             }
@@ -260,7 +271,7 @@ export component MainWindow inherits Window {
             }
         }
 
-        bottom_panel := BottomPanel {
+        if !root.mirror_results_visible: BottomPanel {
             bottom_panel_visibility <=> action_buttons.bottom_panel_visibility;
             vertical-stretch: 0.0;
             folder_choose_requested(included_paths) => {

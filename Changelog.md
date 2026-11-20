@@ -117,6 +117,13 @@ The upstream source code remained available for manual builds at this release. T
 
 ## Fork Modifications (nowaytouse/czkawka)
 
+### Folder Mirror results and video discovery - 2026-11-21
+
+- Moved Folder Mirror preview to Krokiet's main results table, with its usual scroll, column sizing, sorting, row focus and theme. Select a row to read and copy the full paths. Apply the reviewed plan from the main toolbar.
+- Added optional BLAKE3 disambiguation for ambiguous filenames. Filename matching remains the default. Updated the Simplified Chinese include-path label to identify protected paths.
+- Centralized FFmpeg and FFprobe discovery for video metadata, checking, previews and optimization. Krokiet also makes the selected programs available to Similar Videos from Finder using the app's process environment.
+- Reviewed the workspace dependency updates, including ZIP 9.8.1, trash 5.4.0 and ashpd 0.14.1. Retained Slint's shared Fontique 0.12 line.
+
 ### Folder Mirror and upstream sync - 2026-11-16
 
 - Aligned Folder Mirror with the Krokiet toolbar and dialog controls. The footer advances from Preview to Apply plan, and the preview uses localized action, source and destination columns with the standard list colors. Verified the macOS dialog and recovery records with synthetic folders.

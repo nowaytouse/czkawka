@@ -295,6 +295,13 @@ fn read_filling(reader: &mut impl Read, buf: &mut [u8]) -> std::io::Result<usize
     Ok(total)
 }
 
+/// Computes a full BLAKE3 digest from an already opened reader.
+pub fn blake3_digest(reader: impl Read) -> std::io::Result<String> {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update_reader(reader)?;
+    Ok(hasher.finalize().to_hex().to_string())
+}
+
 pub fn hash_calculation(
     buffer: &mut [u8],
     file_entry: &DuplicateEntry,

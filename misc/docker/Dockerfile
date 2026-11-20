@@ -1,4 +1,4 @@
-FROM docker.io/library/ubuntu:26.10@sha256:b5194b8e58989da0865ebc80078bf9f5f8742ec6a867c53f6ae699f6036756f7
+FROM docker.io/library/ubuntu:26.10@sha256:1c2a84ae3f2a24aeb97cded5b41f0211b441662f1a188cbd2e139e7625f6f1d6
 
 # curl is needed by Rust update tool
 RUN apt-get update \

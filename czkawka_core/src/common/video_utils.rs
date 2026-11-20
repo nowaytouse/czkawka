@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use std::time::SystemTime;
 
 use blake3::Hasher;
 use image::{GenericImage, RgbImage};
@@ -181,7 +182,7 @@ pub fn generate_thumbnail(
     let thumbnail_path = thumbnails_dir.join(thumbnail_filename);
 
     if thumbnail_path.exists() {
-        let _ = filetime::set_file_mtime(&thumbnail_path, filetime::FileTime::now());
+        let _ = fs::set_times(&thumbnail_path, fs::FileTimes::new().set_modified(SystemTime::now()));
         return Ok(Some(thumbnail_path));
     }
 

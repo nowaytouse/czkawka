@@ -56,7 +56,6 @@ xxhash-rust = { version = "0.8", features = ["xxh3"] }
 
 # Video Duplicates
 similario_core = "0.2.1"
-filetime = "0.2.29"
 
 # For extracting video properties using ffprobe CLI
 # https://github.com/theduke/ffprobe-rs/issues/33

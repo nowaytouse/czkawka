@@ -127,8 +127,8 @@ pub fn load_and_resize_thumbnail(path: &str, cache_dir: &Path) -> Option<(Vec<u8
     let cache_file = cache_dir.join(cache_key(path, mtime_secs, file_size));
 
     if let Some(cached) = try_read_png_cache(&cache_file) {
-        let now = filetime::FileTime::now();
-        let _ = filetime::set_file_mtime(&cache_file, now);
+        let times = std::fs::FileTimes::new().set_modified(SystemTime::now());
+        let _ = std::fs::set_times(&cache_file, times);
         trace!("Loaded thumbnail from cache for {path} ({file_size} bytes)");
         return Some(cached);
     }

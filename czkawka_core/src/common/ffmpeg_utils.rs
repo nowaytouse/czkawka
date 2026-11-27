@@ -6,6 +6,8 @@ use std::time::{Duration, Instant};
 use std::{env, io};
 
 use crate::common::process_utils::disable_windows_console_window;
+use crate::flc;
+use crate::helpers::messages::Messages;
 use crate::tools::video_optimizer::{HardwareEncoder, VideoCodec};
 
 /// A video executable and its optional `CZKAWKA_FFMPEG` or `CZKAWKA_FFPROBE` override.
@@ -107,13 +109,66 @@ fn version_works(executable: &Path) -> bool {
         .is_ok_and(|mut child| wait_with_timeout(&mut child))
 }
 
-pub fn check_if_ffprobe_ffmpeg_exists() -> bool {
+/// Whether the external programs needed by the video tools can be started using the configured search order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FfmpegAvailability {
+    Available,
+    MissingFfmpeg,
+    MissingFfprobe,
+    MissingFfmpegAndFfprobe,
+}
+
+impl FfmpegAvailability {
+    fn from_probes(ffmpeg_starts: bool, ffprobe_starts: bool) -> Self {
+        match (ffmpeg_starts, ffprobe_starts) {
+            (true, true) => Self::Available,
+            (false, true) => Self::MissingFfmpeg,
+            (true, false) => Self::MissingFfprobe,
+            (false, false) => Self::MissingFfmpegAndFfprobe,
+        }
+    }
+
+    /// Names of the programs that cannot be started, empty when everything is available.
+    pub fn missing_programs(self) -> &'static str {
+        match self {
+            Self::Available => "",
+            Self::MissingFfmpeg => "ffmpeg",
+            Self::MissingFfprobe => "ffprobe",
+            Self::MissingFfmpegAndFfprobe => "ffmpeg, ffprobe",
+        }
+    }
+}
+
+/// Checks which of `ffmpeg` and `ffprobe` can be started using the configured search order.
+pub fn check_ffmpeg_availability() -> FfmpegAvailability {
     let ffmpeg = VideoTool::Ffmpeg.resolve();
     let ffprobe = VideoTool::Ffprobe.resolve();
     for error in [ffmpeg.as_ref().err(), ffprobe.as_ref().err()].into_iter().flatten() {
         log::warn!("{error}");
     }
-    ffmpeg.is_ok() && ffprobe.is_ok()
+    FfmpegAvailability::from_probes(ffmpeg.is_ok(), ffprobe.is_ok())
+}
+
+/// `true` when both `ffmpeg` and `ffprobe` can be started using the configured search order.
+pub fn check_if_ffprobe_ffmpeg_exists() -> bool {
+    check_ffmpeg_availability() == FfmpegAvailability::Available
+}
+
+/// Returns `false` and sets a critical message naming the missing programs when `ffmpeg` or `ffprobe`
+/// cannot be started.
+pub(crate) fn ensure_ffmpeg_programs_available(messages: &mut Messages) -> bool {
+    let availability = check_ffmpeg_availability();
+    if availability == FfmpegAvailability::Available {
+        return true;
+    }
+    messages.critical = Some(format!(
+        "{}\n{}",
+        flc!("core_ffmpeg_not_found"),
+        flc!("core_ffmpeg_missing_programs", programs = availability.missing_programs())
+    ));
+    #[cfg(target_os = "windows")]
+    messages.errors.push(flc!("core_ffmpeg_not_found_windows"));
+    false
 }
 
 /// Returns the subset of hardware encoders that actually work on this machine.
@@ -262,5 +317,13 @@ mod tests {
             search_executable("ffprobe", None, Some(path_dir.path().as_os_str()), [fallback.path().to_path_buf()]).unwrap(),
             alternate
         );
+    }
+
+    #[test]
+    fn availability_from_probes() {
+        assert_eq!(FfmpegAvailability::from_probes(true, true), FfmpegAvailability::Available);
+        assert_eq!(FfmpegAvailability::from_probes(false, true), FfmpegAvailability::MissingFfmpeg);
+        assert_eq!(FfmpegAvailability::from_probes(true, false), FfmpegAvailability::MissingFfprobe);
+        assert_eq!(FfmpegAvailability::from_probes(false, false), FfmpegAvailability::MissingFfmpegAndFfprobe);
     }
 }

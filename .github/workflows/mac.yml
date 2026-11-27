@@ -102,6 +102,10 @@ jobs:
           bash misc/pack_all_backends.sh mac_krokiet_all_backends_${{ env.ARCHNAME }} mac_krokiet_all_backends_${{ env.ARCHNAME }}.zip
           bash misc/pack_all_backends.sh mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }} mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}.zip
 
+      - name: Package krokiet as DMG
+        run: |
+          bash misc/pack_macos_dmg.sh mac_krokiet_all_backends_${{ env.ARCHNAME }} mac_krokiet_${{ env.ARCHNAME }}.dmg
+
       - name: Store MacOS
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -113,6 +117,7 @@ jobs:
             mac_krokiet_vello_heif_avif_${{ env.ARCHNAME }}
             mac_krokiet_heif_avif_femtovg_wgpu_${{ env.ARCHNAME }}
             mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}.zip
+            mac_krokiet_${{ env.ARCHNAME }}.dmg
             mac_czkawka_cli_${{ env.ARCHNAME }}
             mac_krokiet_${{ env.ARCHNAME }}
             mac_krokiet_femtovg_opengl_${{ env.ARCHNAME }}
@@ -131,6 +136,7 @@ jobs:
             mac_krokiet_vello_heif_avif_${{ env.ARCHNAME }}
             mac_krokiet_heif_avif_femtovg_wgpu_${{ env.ARCHNAME }}
             mac_krokiet_heif_avif_all_backends_${{ env.ARCHNAME }}.zip
+            mac_krokiet_${{ env.ARCHNAME }}.dmg
             mac_czkawka_cli_${{ env.ARCHNAME }}
             mac_krokiet_${{ env.ARCHNAME }}
             mac_krokiet_femtovg_opengl_${{ env.ARCHNAME }}

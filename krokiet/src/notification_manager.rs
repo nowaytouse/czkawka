@@ -24,17 +24,17 @@ pub fn set_macos_notification_sender() {
 pub fn send_scan_completed_notification(tool: &str, body: &str) {
     let tool = tool.to_string();
     let body = body.to_string();
-    match std::thread::Builder::new()
-        .name("scan_notification".to_string())
-        .spawn(move || send_notification_blocking(&tool, &body))
-    {
-        Ok(handle) => {
-            let mut pending = PENDING_NOTIFICATIONS.lock().expect("notification thread list mutex poisoned");
-            pending.retain(|handle| !handle.is_finished());
-            pending.push(handle);
-        }
-        Err(e) => error!("Failed to spawn thread for desktop notification: {e}"),
+    if let Err(e) = spawn_notification(move || send_notification_blocking(&tool, &body)) {
+        error!("Failed to spawn thread for desktop notification: {e}");
     }
+}
+
+fn spawn_notification(send: impl FnOnce() + Send + 'static) -> std::io::Result<()> {
+    let handle = std::thread::Builder::new().name("krokiet-notification".into()).spawn(send)?;
+    let mut pending = PENDING_NOTIFICATIONS.lock().expect("notification thread list mutex poisoned");
+    pending.retain(|handle| !handle.is_finished());
+    pending.push(handle);
+    Ok(())
 }
 
 /// Lets notifications sent just before exit (e.g. `--scan --exit`) reach the system instead of dying with the process.

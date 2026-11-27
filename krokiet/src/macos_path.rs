@@ -17,7 +17,7 @@ pub(crate) fn add_homebrew_to_path() {
 }
 
 fn path_with_dirs_appended(current: Option<OsString>, dirs: &[&str]) -> Option<OsString> {
-    let mut entries: Vec<PathBuf> = current.map(|path| env::split_paths(&path).collect()).unwrap_or_default();
+    let mut entries: Vec<PathBuf> = current.map_or_default(|path| env::split_paths(&path).collect());
     let missing: Vec<PathBuf> = dirs.iter().map(PathBuf::from).filter(|dir| !entries.contains(dir)).collect();
     if missing.is_empty() {
         return None;
